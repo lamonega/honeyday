@@ -19,4 +19,5 @@ linter:
     avoid_print: true
     prefer_const_constructors: true
     prefer_const_literals_to_create_immutables: true
+    unnecessary_type_name_in_constructor: false
 
