@@ -10,36 +10,69 @@ export 'package:honeyday/core/theme/app_colors.dart';
 /// Why: Honeyday's physical-agenda feel relies on creamy paper tones (#FFFDF7),
 /// rich amber accents (#D97706), and crisp ink text (#1E293B) for high legibility.
 abstract final class HoneydayTheme {
-  /// Base paper background color replicating cream-colored notebook paper.
+  // ── Light theme colors (kept for backward compatibility) ──
   static const Color paperLight = AppColors.paperLight;
   static const Color paperCream = AppColors.paperCream;
   static const Color paperSurface = AppColors.paperSurface;
-
-  /// Amber brand accent representing honey, used for primary interactive elements.
   static const Color honeyAmber = AppColors.honeyAmber;
-
-  /// Light honey container fill for chips, selection cards, and badges.
   static const Color honeyContainer = AppColors.honeyContainer;
   static const Color honeyLight = AppColors.honeyLight;
   static const Color honeyDark = AppColors.honeyDark;
-
-  /// Deep slate color emulating ink for high-contrast legible text.
   static const Color inkSlate = AppColors.inkSlate;
   static const Color inkPrimary = AppColors.inkPrimary;
   static const Color inkSecondary = AppColors.inkSecondary;
   static const Color inkMuted = AppColors.inkMuted;
-
-  /// Subtle gray-stone border color for paper grids and element bounding boxes.
   static const Color paperBorder = AppColors.paperBorder;
-
-  /// Destructive/error color for deletion and alerts.
   static const Color error = AppColors.error;
   static const Color errorContainer = AppColors.errorContainer;
 
-  /// Light theme definition adhering to Material 3 guidelines.
+  // ── Typography ──
+
+  static TextTheme _buildTextTheme(TextTheme base, Color textColor) {
+    return base.copyWith(
+      displayLarge: GoogleFonts.fraunces(
+        textStyle: base.displayLarge,
+        fontWeight: FontWeight.w700,
+        color: textColor,
+        letterSpacing: -0.5,
+      ),
+      displayMedium: GoogleFonts.fraunces(
+        textStyle: base.displayMedium,
+        fontWeight: FontWeight.w700,
+        color: textColor,
+        letterSpacing: -0.5,
+      ),
+      headlineLarge: GoogleFonts.fraunces(
+        textStyle: base.headlineLarge,
+        fontWeight: FontWeight.w700,
+        color: textColor,
+      ),
+      headlineMedium: GoogleFonts.fraunces(
+        textStyle: base.headlineMedium,
+        fontWeight: FontWeight.w600,
+        color: textColor,
+      ),
+      headlineSmall: GoogleFonts.fraunces(
+        textStyle: base.headlineSmall,
+        fontWeight: FontWeight.w600,
+        color: textColor,
+      ),
+      titleLarge: GoogleFonts.fraunces(
+        textStyle: base.titleLarge,
+        fontWeight: FontWeight.w600,
+        color: textColor,
+      ),
+    );
+  }
+
+  // ──────────────────────────────────────────────
+  // Light Theme
+  // ──────────────────────────────────────────────
+
   static ThemeData get lightTheme {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.honeyAmber,
+      brightness: Brightness.light,
       primary: AppColors.honeyAmber,
       onPrimary: Colors.white,
       primaryContainer: AppColors.honeyContainer,
@@ -59,46 +92,12 @@ abstract final class HoneydayTheme {
       displayColor: AppColors.inkPrimary,
     );
 
-    final textTheme = baseSans.copyWith(
-      displayLarge: GoogleFonts.fraunces(
-        textStyle: baseSans.displayLarge,
-        fontWeight: FontWeight.w700,
-        color: AppColors.inkPrimary,
-        letterSpacing: -0.5,
-      ),
-      displayMedium: GoogleFonts.fraunces(
-        textStyle: baseSans.displayMedium,
-        fontWeight: FontWeight.w700,
-        color: AppColors.inkPrimary,
-        letterSpacing: -0.5,
-      ),
-      headlineLarge: GoogleFonts.fraunces(
-        textStyle: baseSans.headlineLarge,
-        fontWeight: FontWeight.w700,
-        color: AppColors.inkPrimary,
-      ),
-      headlineMedium: GoogleFonts.fraunces(
-        textStyle: baseSans.headlineMedium,
-        fontWeight: FontWeight.w600,
-        color: AppColors.inkPrimary,
-      ),
-      headlineSmall: GoogleFonts.fraunces(
-        textStyle: baseSans.headlineSmall,
-        fontWeight: FontWeight.w600,
-        color: AppColors.inkPrimary,
-      ),
-      titleLarge: GoogleFonts.fraunces(
-        textStyle: baseSans.titleLarge,
-        fontWeight: FontWeight.w600,
-        color: AppColors.inkPrimary,
-      ),
-    );
-
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.light,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.paperLight,
-      textTheme: textTheme,
+      textTheme: _buildTextTheme(baseSans, AppColors.inkPrimary),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.paperLight,
         elevation: 0,
@@ -146,6 +145,134 @@ abstract final class HoneydayTheme {
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           side: BorderSide(color: AppColors.paperBorder),
         ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: AppColors.paperLight,
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: AppColors.honeyContainer,
+        elevation: 0,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          return TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? AppColors.honeyAmber : AppColors.inkMuted,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            size: 24,
+            color: isSelected ? AppColors.honeyAmber : AppColors.inkMuted,
+          );
+        }),
+      ),
+    );
+  }
+
+  // ──────────────────────────────────────────────
+  // Dark Theme
+  // ──────────────────────────────────────────────
+
+  static ThemeData get darkTheme {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.honeyAmber,
+      brightness: Brightness.dark,
+      primary: AppColors.honeyAmberDark,
+      onPrimary: AppColors.paperDark,
+      primaryContainer: AppColors.honeyContainerDark,
+      onPrimaryContainer: AppColors.honeyDarkOnDark,
+      surface: AppColors.paperDark,
+      onSurface: AppColors.inkPrimaryDark,
+      surfaceContainerHighest: AppColors.surfaceContainerDark,
+      outline: AppColors.paperBorderDark,
+      error: AppColors.errorDark,
+      onError: AppColors.paperDark,
+      errorContainer: AppColors.errorContainerDark,
+      onErrorContainer: AppColors.errorDark,
+    );
+
+    final baseSans = GoogleFonts.plusJakartaSansTextTheme(
+      const TextTheme(),
+    ).apply(
+      bodyColor: AppColors.inkPrimaryDark,
+      displayColor: AppColors.inkPrimaryDark,
+    );
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: AppColors.paperDark,
+      textTheme: _buildTextTheme(baseSans, AppColors.inkPrimaryDark),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.paperDark,
+        elevation: 0,
+        scrolledUnderElevation: 1,
+        foregroundColor: AppColors.inkPrimaryDark,
+        centerTitle: false,
+      ),
+      cardTheme: CardThemeData(
+        color: AppColors.surfaceDark,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.paperBorderDark),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.surfaceDark,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.paperBorderDark),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.paperBorderDark),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.honeyAmberDark, width: 2),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.surfaceDark,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.paperBorderDark),
+        ),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.surfaceDark,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          side: BorderSide(color: AppColors.paperBorderDark),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: AppColors.paperDark,
+        surfaceTintColor: Colors.transparent,
+        indicatorColor: AppColors.honeyContainerDark,
+        elevation: 0,
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          return TextStyle(
+            fontSize: 12,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+            color: isSelected ? AppColors.honeyAmberDark : AppColors.inkMutedDark,
+          );
+        }),
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          final isSelected = states.contains(WidgetState.selected);
+          return IconThemeData(
+            size: 24,
+            color: isSelected ? AppColors.honeyAmberDark : AppColors.inkMutedDark,
+          );
+        }),
       ),
     );
   }

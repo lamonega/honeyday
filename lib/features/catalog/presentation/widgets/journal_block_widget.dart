@@ -1,23 +1,16 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 
-/// Single bullet item in the journal's priority section.
-///
-/// What: Stores the priority text and boolean completion state.
-/// Why: Provides an immutable model for daily top-3 focus targets.
 @immutable
 class JournalPriorityItem {
-  /// Constructs a [JournalPriorityItem].
   const JournalPriorityItem({
     required this.id,
     required this.text,
     required this.isDone,
   });
 
-  /// Decodes priority item from a JSON map.
   factory JournalPriorityItem.fromJson(Map<String, dynamic> json) {
     return JournalPriorityItem(
       id: json['id']?.toString() ?? UniqueKey().toString(),
@@ -26,16 +19,10 @@ class JournalPriorityItem {
     );
   }
 
-  /// Unique identifier.
   final String id;
-
-  /// Goal or priority description.
   final String text;
-
-  /// Completion state.
   final bool isDone;
 
-  /// Creates a copy with optionally updated fields.
   JournalPriorityItem copyWith({String? id, String? text, bool? isDone}) {
     return JournalPriorityItem(
       id: id ?? this.id,
@@ -44,19 +31,13 @@ class JournalPriorityItem {
     );
   }
 
-  /// Serializes to JSON map.
   Map<String, dynamic> toJson() {
     return {'id': id, 'text': text, 'isDone': isDone};
   }
 }
 
-/// Parsed configuration model for [JournalBlockWidget].
-///
-/// What: Holds date header, selected mood emoji, priority bullets, and lined note body.
-/// Why: Delivers structured daily/weekly reflection data with robust JSON fallback.
 @immutable
 class JournalBlockConfig {
-  /// Constructs a [JournalBlockConfig].
   const JournalBlockConfig({
     required this.date,
     required this.mood,
@@ -64,7 +45,6 @@ class JournalBlockConfig {
     required this.notes,
   });
 
-  /// Decodes JSON string into a [JournalBlockConfig].
   factory JournalBlockConfig.fromJsonString(String rawJson) {
     if (rawJson.trim().isEmpty) {
       return JournalBlockConfig.defaultConfig();
@@ -91,13 +71,10 @@ class JournalBlockConfig {
           notes: notes,
         );
       }
-    } on Object catch (_) {
-      // Fallback on JSON parse error
-    }
+    } on Object catch (_) {}
     return JournalBlockConfig.defaultConfig();
   }
 
-  /// Factory defaults for newly created journal blocks.
   factory JournalBlockConfig.defaultConfig() {
     return const JournalBlockConfig(
       date: 'Viernes, 11 de Septiembre',
@@ -123,19 +100,11 @@ class JournalBlockConfig {
     );
   }
 
-  /// Date string displayed in the header.
   final String date;
-
-  /// Selected mood emoji.
   final String mood;
-
-  /// Top 3 priority checklist items.
   final List<JournalPriorityItem> priorities;
-
-  /// Freeform multiline journal text.
   final String notes;
 
-  /// Creates a copy with optionally updated fields.
   JournalBlockConfig copyWith({
     String? date,
     String? mood,
@@ -150,7 +119,6 @@ class JournalBlockConfig {
     );
   }
 
-  /// Serializes to JSON string.
   String toJsonString() {
     return jsonEncode({
       'date': date,
@@ -161,12 +129,7 @@ class JournalBlockConfig {
   }
 }
 
-/// Catalog definition for [JournalBlockWidget].
-///
-/// What: Implements [AgendaWidgetDefinition] for daily/weekly journal blocks.
-/// Why: Enables registration in the catalog registry for canvas element insertion.
 class JournalBlockDefinition extends AgendaWidgetDefinition {
-  /// Const constructor for definition registration.
   const JournalBlockDefinition();
 
   @override
@@ -202,12 +165,7 @@ class JournalBlockDefinition extends AgendaWidgetDefinition {
   }
 }
 
-/// Presentation widget rendering a daily/weekly journal block.
-///
-/// What: Combines a date header, mood emoji selector, 3 priority bullets, and a lined note section.
-/// Why: Provides an authentic stationery journal block optimized for both active writing and aesthetic reading.
 class JournalBlockWidget extends StatefulWidget {
-  /// Constructs a [JournalBlockWidget].
   const JournalBlockWidget({
     required this.elementId,
     required this.configJson,
@@ -216,16 +174,9 @@ class JournalBlockWidget extends StatefulWidget {
     super.key,
   });
 
-  /// Unique canvas element UUID.
   final String elementId;
-
-  /// JSON payload encoding journal data.
   final String configJson;
-
-  /// Interactivity flag (true in writing mode, false in reading/edit mode).
   final bool isInteractive;
-
-  /// Persistence callback.
   final ValueChanged<String> onConfigChanged;
 
   @override
@@ -311,14 +262,16 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: HoneydayTheme.paperBorder),
+        border: Border.all(color: colorScheme.outline),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: Colors.black12,
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -328,7 +281,6 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header: Date & Mood Selector
           Row(
             children: [
               Expanded(
@@ -336,21 +288,21 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                     ? TextFormField(
                         initialValue: _config.date,
                         key: ValueKey('date_${widget.elementId}'),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: HoneydayTheme.inkSlate,
+                          color: colorScheme.onSurface,
                         ),
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           isDense: true,
-                          contentPadding: EdgeInsets.symmetric(
+                          contentPadding: const EdgeInsets.symmetric(
                             horizontal: 4,
                             vertical: 2,
                           ),
                           border: InputBorder.none,
                           focusedBorder: UnderlineInputBorder(
                             borderSide: BorderSide(
-                              color: HoneydayTheme.honeyAmber,
+                              color: colorScheme.primary,
                             ),
                           ),
                         ),
@@ -358,17 +310,16 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                       )
                     : Text(
                         _config.date,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: HoneydayTheme.inkSlate,
+                          color: colorScheme.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
               ),
               const SizedBox(width: 8),
-              // Mood Selector
               if (widget.isInteractive)
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -382,12 +333,12 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                         margin: const EdgeInsets.symmetric(horizontal: 1.5),
                         decoration: BoxDecoration(
                           color: isSelected
-                              ? HoneydayTheme.honeyContainer
+                              ? colorScheme.primaryContainer
                               : Colors.transparent,
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: isSelected
-                                ? HoneydayTheme.honeyAmber
+                                ? colorScheme.primary
                                 : Colors.transparent,
                             width: 1.2,
                           ),
@@ -407,9 +358,9 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: HoneydayTheme.honeyContainer,
+                    color: colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: HoneydayTheme.honeyAmber),
+                    border: Border.all(color: colorScheme.primary),
                   ),
                   child: Text(
                     _config.mood,
@@ -419,16 +370,14 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
             ],
           ),
           const SizedBox(height: 6),
-          const Divider(height: 1, color: HoneydayTheme.paperBorder),
+          Divider(height: 1, color: colorScheme.outline),
           const SizedBox(height: 8),
-
-          // Priority Section (3 bullets)
-          const Text(
+          Text(
             'Prioridades del Día',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: HoneydayTheme.honeyAmber,
+              color: colorScheme.primary,
               letterSpacing: 0.3,
             ),
           ),
@@ -449,21 +398,21 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                       height: 18,
                       decoration: BoxDecoration(
                         color: priority.isDone
-                            ? HoneydayTheme.honeyAmber
-                            : const Color(0xFFF8FAFC),
+                            ? colorScheme.primary
+                            : colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(5),
                         border: Border.all(
                           color: priority.isDone
-                              ? HoneydayTheme.honeyAmber
-                              : HoneydayTheme.paperBorder,
+                              ? colorScheme.primary
+                              : colorScheme.outline,
                           width: 1.2,
                         ),
                       ),
                       child: priority.isDone
-                          ? const Icon(
+                          ? Icon(
                               Icons.check_rounded,
                               size: 13,
-                              color: Colors.white,
+                              color: colorScheme.onPrimary,
                             )
                           : null,
                     ),
@@ -477,24 +426,22 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                             style: TextStyle(
                               fontSize: 11,
                               color: priority.isDone
-                                  ? HoneydayTheme.inkSlate.withValues(
-                                      alpha: 0.4,
-                                    )
-                                  : HoneydayTheme.inkSlate,
+                                  ? colorScheme.onSurfaceVariant
+                                  : colorScheme.onSurface,
                               decoration: priority.isDone
                                   ? TextDecoration.lineThrough
                                   : TextDecoration.none,
                             ),
-                            decoration: const InputDecoration(
+                            decoration: InputDecoration(
                               isDense: true,
-                              contentPadding: EdgeInsets.symmetric(
+                              contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 4,
                                 vertical: 2,
                               ),
                               border: InputBorder.none,
                               focusedBorder: UnderlineInputBorder(
                                 borderSide: BorderSide(
-                                  color: HoneydayTheme.honeyAmber,
+                                  color: colorScheme.primary,
                                 ),
                               ),
                             ),
@@ -506,10 +453,8 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                             style: TextStyle(
                               fontSize: 11,
                               color: priority.isDone
-                                  ? HoneydayTheme.inkSlate.withValues(
-                                      alpha: 0.4,
-                                    )
-                                  : HoneydayTheme.inkSlate,
+                                  ? colorScheme.onSurfaceVariant
+                                  : colorScheme.onSurface,
                               decoration: priority.isDone
                                   ? TextDecoration.lineThrough
                                   : TextDecoration.none,
@@ -522,18 +467,15 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
               ),
             );
           }),
-
           const SizedBox(height: 8),
-          const Divider(height: 1, color: HoneydayTheme.paperBorder),
+          Divider(height: 1, color: colorScheme.outline),
           const SizedBox(height: 6),
-
-          // Lined Notes Section
-          const Text(
+          Text(
             'Notas & Reflexión',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
-              color: HoneydayTheme.inkSlate,
+              color: colorScheme.onSurface,
               letterSpacing: 0.3,
             ),
           ),
@@ -546,22 +488,22 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                     maxLines: null,
                     expands: true,
                     textAlignVertical: TextAlignVertical.top,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       height: 1.6,
-                      color: HoneydayTheme.inkSlate,
+                      color: colorScheme.onSurface,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Escribe aquí tus pensamientos del día...',
                       hintStyle: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF94A3B8),
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       isDense: true,
-                      contentPadding: EdgeInsets.all(6),
+                      contentPadding: const EdgeInsets.all(6),
                       border: InputBorder.none,
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: HoneydayTheme.honeyAmber),
+                        borderSide: BorderSide(color: colorScheme.primary),
                       ),
                     ),
                     onChanged: _updateNotes,
@@ -577,8 +519,8 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                         fontSize: 12,
                         height: 1.6,
                         color: _config.notes.isEmpty
-                            ? const Color(0xFF94A3B8)
-                            : HoneydayTheme.inkSlate,
+                            ? colorScheme.onSurfaceVariant
+                            : colorScheme.onSurface,
                       ),
                     ),
                   ),

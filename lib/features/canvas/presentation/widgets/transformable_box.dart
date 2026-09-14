@@ -3,28 +3,18 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/snapping.dart';
 import 'package:honeyday/features/catalog/domain/element_config.dart';
 
-/// Callback signature for transform updates on a modular canvas element.
 typedef OnTransformChanged = void Function(
   Offset position,
   Size size,
   double rotation,
 );
 
-/// Interactive container wrapping Layer 1 & 2 modular widgets and Canva-like elements.
-///
-/// What: In [CanvasMode.edit], displays an amber selection border, 4 corner resize handles,
-/// a rotation anchor handle, and quick action buttons (adapt to full page, fit width, center, duplicate, recolor).
-/// In [CanvasMode.writing] and [CanvasMode.reading], simply renders the child element
-/// at its configured position, dimensions, and rotation without interactive overlays.
-/// Why: Provides Canva-like direct manipulation of agenda elements while guaranteeing
-/// accidental shifts do not happen during note-taking or page flips.
+/// Interactive container wrapping modular widgets with Canva-like transforms.
 class TransformableBox extends StatefulWidget {
-  /// Constructs a [TransformableBox].
   const TransformableBox({
     required this.child,
     required this.position,
@@ -49,64 +39,25 @@ class TransformableBox extends StatefulWidget {
     this.minHeight = 24,
   });
 
-  /// The modular agenda widget to display within the transform box.
   final Widget child;
-
-  /// Top-left position on the unscaled canvas coordinate system.
   final Offset position;
-
-  /// Current width and height of the widget container.
   final Size size;
-
-  /// Rotation angle around center in radians.
   final double rotation;
-
-  /// Current active operational mode.
   final CanvasMode canvasMode;
-
-  /// Whether this box is currently selected in edit mode.
   final bool isSelected;
-
-  /// Dimensions of the parent page, used to compute center and margin snapping.
   final Size? pageSize;
-
-  /// Bounding rectangles of sibling elements on the page for magnetic edge snapping.
   final List<Rect> siblingRects;
-
-  /// Emits updated position, size, and rotation during gesture interaction.
   final OnTransformChanged? onTransformChanged;
-
-  /// Emits active magnetic guidelines during drag for overlay rendering.
   final ValueChanged<List<SnapGuideLine>>? onSnapGuidesChanged;
-
-  /// Triggered when the user taps the delete handle.
   final VoidCallback? onDelete;
-
-  /// Triggered when the user taps this box to select it.
   final VoidCallback? onTap;
-
-  /// Callback to adapt this element to cover the entire page.
   final VoidCallback? onAdaptToPage;
-
-  /// Callback to stretch this element across the page width.
   final VoidCallback? onFitWidth;
-
-  /// Callback to center this element on the page.
   final VoidCallback? onCenter;
-
-  /// Callback to duplicate this element.
   final VoidCallback? onDuplicate;
-
-  /// Callback to change the color attributes of this element.
   final void Function(Color fillColor, Color borderColor)? onColorChanged;
-
-  /// Current fill color of the element for previewing in the toolbar.
   final Color? currentColor;
-
-  /// Minimum allowable width when resizing.
   final double minWidth;
-
-  /// Minimum allowable height when resizing.
   final double minHeight;
 
   @override
@@ -118,15 +69,10 @@ class _TransformableBoxState extends State<TransformableBox> {
   static const double _topMargin = 48;
   static const double _bottomMargin = 76;
   static const double _handleRadius = 7;
-  static const Color _accentColor = HoneydayTheme.honeyAmber;
 
   Offset? _globalCenter;
   bool _showColorPalette = false;
-
-  /// Tracks the last snap result for dead zone logic.
   SnappingResult? _lastSnapResult;
-
-  /// Whether snapping is currently enabled (toggled by Ctrl/Cmd).
   bool _isSnapEnabled = true;
 
   void _updateGlobalCenter() {
@@ -144,9 +90,9 @@ class _TransformableBoxState extends State<TransformableBox> {
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.canvasMode == CanvasMode.edit;
+    final colorScheme = Theme.of(context).colorScheme;
 
     if (!isEdit) {
-      // In reading or writing mode, render pure child positioned and rotated
       return Positioned(
         left: widget.position.dx,
         top: widget.position.dy,
@@ -170,7 +116,6 @@ class _TransformableBoxState extends State<TransformableBox> {
       barTop = _topMargin + widget.size.height + 10;
     }
 
-    // In edit mode, allocate padding for handles and toolbar so hit testing never drops outside gestures
     return Positioned(
       left: widget.position.dx - _hMargin,
       top: widget.position.dy - _topMargin,
@@ -181,7 +126,6 @@ class _TransformableBoxState extends State<TransformableBox> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            // Body Content and Translation Drag Handle
             Positioned(
               left: _hMargin,
               top: _topMargin,
@@ -199,8 +143,8 @@ class _TransformableBoxState extends State<TransformableBox> {
                   decoration: BoxDecoration(
                     border: Border.all(
                       color: widget.isSelected
-                          ? _accentColor
-                          : _accentColor.withValues(alpha: 0.5),
+                          ? colorScheme.primary
+                          : colorScheme.primary.withValues(alpha: 0.5),
                       width: 2,
                     ),
                     borderRadius: BorderRadius.circular(12),
@@ -214,16 +158,13 @@ class _TransformableBoxState extends State<TransformableBox> {
             ),
 
             if (widget.isSelected) ...[
-              // Stem connector for rotation handle
               Positioned(
                 left: _hMargin + widget.size.width / 2 - 1,
                 top: _topMargin - 20,
                 width: 2,
                 height: 20,
-                child: Container(color: _accentColor),
+                child: Container(color: colorScheme.primary),
               ),
-
-              // Top Rotation Handle
               Positioned(
                 left: _hMargin + widget.size.width / 2 - 12,
                 top: _topMargin - 36,
@@ -234,27 +175,25 @@ class _TransformableBoxState extends State<TransformableBox> {
                   onPanUpdate: _handleRotationPanUpdate,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: colorScheme.surface,
                       shape: BoxShape.circle,
-                      border: Border.all(color: _accentColor, width: 2),
-                      boxShadow: const [
+                      border: Border.all(color: colorScheme.primary, width: 2),
+                      boxShadow: [
                         BoxShadow(
-                          color: Colors.black12,
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 4,
-                          offset: Offset(0, 2),
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.refresh_rounded,
                       size: 14,
-                      color: _accentColor,
+                      color: colorScheme.primary,
                     ),
                   ),
                 ),
               ),
-
-              // Top-Right Delete Action Button
               Positioned(
                 left: _hMargin + widget.size.width - 12,
                 top: _topMargin - 30,
@@ -263,67 +202,53 @@ class _TransformableBoxState extends State<TransformableBox> {
                 child: GestureDetector(
                   onTap: widget.onDelete,
                   child: Container(
-                    decoration: const BoxDecoration(
-                      color: HoneydayTheme.error,
+                    decoration: BoxDecoration(
+                      color: colorScheme.error,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black12,
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 4,
-                          offset: Offset(0, 2),
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.close_rounded,
                       size: 14,
-                      color: Colors.white,
+                      color: colorScheme.onError,
                     ),
                   ),
                 ),
               ),
-
-              // NW Corner Resize Handle
-              Positioned(
+              _buildResizeHandle(
                 left: _hMargin - _handleRadius,
                 top: _topMargin - _handleRadius,
-                child: _buildResizeHandle(
-                  cursor: SystemMouseCursors.resizeUpLeftDownRight,
-                  onPanUpdate: _handleResizeNW,
-                ),
+                cursor: SystemMouseCursors.resizeUpLeftDownRight,
+                onPanUpdate: _handleResizeNW,
+                colorScheme: colorScheme,
               ),
-
-              // NE Corner Resize Handle
-              Positioned(
+              _buildResizeHandle(
                 left: _hMargin + widget.size.width - _handleRadius,
                 top: _topMargin - _handleRadius,
-                child: _buildResizeHandle(
-                  cursor: SystemMouseCursors.resizeUpRightDownLeft,
-                  onPanUpdate: _handleResizeNE,
-                ),
+                cursor: SystemMouseCursors.resizeUpRightDownLeft,
+                onPanUpdate: _handleResizeNE,
+                colorScheme: colorScheme,
               ),
-
-              // SW Corner Resize Handle
-              Positioned(
+              _buildResizeHandle(
                 left: _hMargin - _handleRadius,
                 top: _topMargin + widget.size.height - _handleRadius,
-                child: _buildResizeHandle(
-                  cursor: SystemMouseCursors.resizeUpRightDownLeft,
-                  onPanUpdate: _handleResizeSW,
-                ),
+                cursor: SystemMouseCursors.resizeUpRightDownLeft,
+                onPanUpdate: _handleResizeSW,
+                colorScheme: colorScheme,
               ),
-
-              // SE Corner Resize Handle
-              Positioned(
+              _buildResizeHandle(
                 left: _hMargin + widget.size.width - _handleRadius,
                 top: _topMargin + widget.size.height - _handleRadius,
-                child: _buildResizeHandle(
-                  cursor: SystemMouseCursors.resizeUpLeftDownRight,
-                  onPanUpdate: _handleResizeSE,
-                ),
+                cursor: SystemMouseCursors.resizeUpLeftDownRight,
+                onPanUpdate: _handleResizeSE,
+                colorScheme: colorScheme,
               ),
-
-              // Floating Canva-like Element Action Bar
               Positioned(
                 left: 0,
                 right: 0,
@@ -334,8 +259,9 @@ class _TransformableBoxState extends State<TransformableBox> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (_showColorPalette) _buildPaletteRow(),
-                        _buildActionBar(),
+                        if (_showColorPalette)
+                          _buildPaletteRow(colorScheme),
+                        _buildActionBar(colorScheme),
                       ],
                     ),
                   ),
@@ -348,19 +274,19 @@ class _TransformableBoxState extends State<TransformableBox> {
     );
   }
 
-  Widget _buildPaletteRow() {
+  Widget _buildPaletteRow(ColorScheme colorScheme) {
     return Container(
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: HoneydayTheme.paperBorder),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outline),
+        boxShadow: [
           BoxShadow(
-            color: Colors.black12,
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -372,7 +298,10 @@ class _TransformableBoxState extends State<TransformableBox> {
             final isSelected = widget.currentColor == preset.fillColor;
             return GestureDetector(
               onTap: () {
-                widget.onColorChanged?.call(preset.fillColor, preset.borderColor);
+                widget.onColorChanged?.call(
+                  preset.fillColor,
+                  preset.borderColor,
+                );
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 3),
@@ -380,24 +309,28 @@ class _TransformableBoxState extends State<TransformableBox> {
                 height: 22,
                 decoration: BoxDecoration(
                   color: preset.fillColor == Colors.transparent
-                      ? Colors.white
+                      ? colorScheme.surface
                       : preset.fillColor,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? _accentColor : preset.borderColor,
+                    color: isSelected ? colorScheme.primary : preset.borderColor,
                     width: isSelected ? 2.5 : 1.2,
                   ),
                   boxShadow: isSelected
                       ? [
                           BoxShadow(
-                            color: _accentColor.withValues(alpha: 0.3),
+                            color: colorScheme.primary.withValues(alpha: 0.3),
                             blurRadius: 4,
                           ),
                         ]
                       : null,
                 ),
                 child: isSelected
-                    ? const Icon(Icons.check, size: 12, color: HoneydayTheme.honeyDark)
+                    ? Icon(
+                        Icons.check,
+                        size: 12,
+                        color: colorScheme.onPrimaryContainer,
+                      )
                     : null,
               ),
             );
@@ -407,18 +340,18 @@ class _TransformableBoxState extends State<TransformableBox> {
     );
   }
 
-  Widget _buildActionBar() {
+  Widget _buildActionBar(ColorScheme colorScheme) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: HoneydayTheme.paperBorder),
-        boxShadow: const [
+        border: Border.all(color: colorScheme.outline),
+        boxShadow: [
           BoxShadow(
-            color: Colors.black12,
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
-            offset: Offset(0, 4),
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -427,7 +360,6 @@ class _TransformableBoxState extends State<TransformableBox> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Color picker swatch trigger
             Tooltip(
               message: 'Cambiar color',
               child: InkWell(
@@ -441,65 +373,56 @@ class _TransformableBoxState extends State<TransformableBox> {
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
-                      color: widget.currentColor ?? HoneydayTheme.honeyContainer,
+                      color: widget.currentColor ?? colorScheme.primaryContainer,
                       shape: BoxShape.circle,
-                      border: Border.all(color: _accentColor, width: 2),
+                      border: Border.all(color: colorScheme.primary, width: 2),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.palette_outlined,
                       size: 12,
-                      color: HoneydayTheme.honeyDark,
+                      color: colorScheme.onPrimaryContainer,
                     ),
                   ),
                 ),
               ),
             ),
-
             const SizedBox(width: 2),
             Container(
               height: 16,
               width: 1,
-              color: const Color(0xFFCBD5E1),
+              color: colorScheme.outline,
               margin: const EdgeInsets.symmetric(horizontal: 2),
             ),
-
-            // Adapt to full page button
             if (widget.onAdaptToPage != null)
               IconButton(
                 icon: const Icon(Icons.fit_screen_rounded, size: 18),
                 tooltip: 'Adaptar a toda la página',
                 visualDensity: VisualDensity.compact,
-                color: const Color(0xFF334155),
+                color: colorScheme.onSurface,
                 onPressed: widget.onAdaptToPage,
               ),
-
-            // Fit page width button
             if (widget.onFitWidth != null)
               IconButton(
                 icon: const Icon(Icons.swap_horiz_rounded, size: 18),
                 tooltip: 'Ajustar al ancho',
                 visualDensity: VisualDensity.compact,
-                color: const Color(0xFF334155),
+                color: colorScheme.onSurface,
                 onPressed: widget.onFitWidth,
               ),
-
-            // Center on page button
             if (widget.onCenter != null)
               IconButton(
                 icon: const Icon(Icons.filter_center_focus_rounded, size: 18),
                 tooltip: 'Centrar en la página',
                 visualDensity: VisualDensity.compact,
-                color: const Color(0xFF334155),
+                color: colorScheme.onSurface,
                 onPressed: widget.onCenter,
               ),
-
-            // Duplicate button
             if (widget.onDuplicate != null)
               IconButton(
                 icon: const Icon(Icons.content_copy_rounded, size: 18),
                 tooltip: 'Duplicar elemento',
                 visualDensity: VisualDensity.compact,
-                color: const Color(0xFF334155),
+                color: colorScheme.onSurface,
                 onPressed: widget.onDuplicate,
               ),
           ],
@@ -509,27 +432,34 @@ class _TransformableBoxState extends State<TransformableBox> {
   }
 
   Widget _buildResizeHandle({
+    required double left,
+    required double top,
     required MouseCursor cursor,
     required GestureDragUpdateCallback onPanUpdate,
+    required ColorScheme colorScheme,
   }) {
-    return MouseRegion(
-      cursor: cursor,
-      child: GestureDetector(
-        onPanUpdate: onPanUpdate,
-        child: Container(
-          width: _handleRadius * 2,
-          height: _handleRadius * 2,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(color: _accentColor, width: 2),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 3,
-                offset: Offset(0, 1),
-              ),
-            ],
+    return Positioned(
+      left: left,
+      top: top,
+      child: MouseRegion(
+        cursor: cursor,
+        child: GestureDetector(
+          onPanUpdate: onPanUpdate,
+          child: Container(
+            width: _handleRadius * 2,
+            height: _handleRadius * 2,
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              shape: BoxShape.circle,
+              border: Border.all(color: colorScheme.primary, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 3,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -537,15 +467,12 @@ class _TransformableBoxState extends State<TransformableBox> {
   }
 
   void _handleBodyPanStart(DragStartDetails details) {
-    // Check Ctrl/Cmd at drag start to toggle snapping
     _isSnapEnabled = !HardwareKeyboard.instance.isControlPressed &&
         !HardwareKeyboard.instance.isMetaPressed;
   }
 
   void _handleBodyPanUpdate(DragUpdateDetails details) {
-    // details.delta is already in local (canvas) coordinates via PointerEvent.localDelta
     final rawCandidate = widget.position + details.delta;
-
     if (widget.pageSize != null && _isSnapEnabled) {
       final snap = CanvasSnapping.calculateSnap(
         candidateRect: Rect.fromLTWH(
@@ -558,9 +485,7 @@ class _TransformableBoxState extends State<TransformableBox> {
         siblingRects: widget.siblingRects,
         isCurrentlySnapped: _lastSnapResult?.guides.isNotEmpty == true,
       );
-
       _lastSnapResult = snap.guides.isNotEmpty ? snap : null;
-
       widget.onTransformChanged?.call(
         snap.snappedPosition,
         widget.size,
@@ -568,7 +493,6 @@ class _TransformableBoxState extends State<TransformableBox> {
       );
       widget.onSnapGuidesChanged?.call(snap.guides);
     } else {
-      // Snap disabled or no pageSize — free drag
       _lastSnapResult = null;
       widget.onTransformChanged?.call(
         rawCandidate,
@@ -588,7 +512,6 @@ class _TransformableBoxState extends State<TransformableBox> {
     if (_globalCenter == null) return;
     final dx = details.globalPosition.dx - _globalCenter!.dx;
     final dy = details.globalPosition.dy - _globalCenter!.dy;
-    // Calculate angle in radians, +pi/2 because rotation handle sits directly above top center
     final angle = math.atan2(dy, dx) + (math.pi / 2);
     widget.onTransformChanged?.call(widget.position, widget.size, angle);
   }

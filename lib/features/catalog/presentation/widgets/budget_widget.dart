@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 
 /// Entry type discriminator for budget calculations.
@@ -22,12 +21,8 @@ enum BudgetEntryType {
 }
 
 /// Representation of an individual income or expense entry.
-///
-/// What: Stores entry ID, user description, amount in primary currency, and type.
-/// Why: Provides an immutable model for live financial arithmetic on the canvas page.
 @immutable
 class BudgetEntryItem {
-  /// Constructs a [BudgetEntryItem].
   const BudgetEntryItem({
     required this.id,
     required this.description,
@@ -35,7 +30,6 @@ class BudgetEntryItem {
     required this.type,
   });
 
-  /// Decodes entry from a JSON map.
   factory BudgetEntryItem.fromJson(Map<String, dynamic> json) {
     final rawAmount = json['amount'];
     final amount = (rawAmount is num) ? rawAmount.toDouble() : 0.0;
@@ -48,19 +42,11 @@ class BudgetEntryItem {
     );
   }
 
-  /// Unique entry identifier.
   final String id;
-
-  /// Text label explaining the transaction (e.g. 'Salario', 'Comestibles').
   final String description;
-
-  /// Monetary value of the item.
   final double amount;
-
-  /// Discriminator indicating income or expense.
   final BudgetEntryType type;
 
-  /// Creates a copy with optionally updated fields.
   BudgetEntryItem copyWith({
     String? id,
     String? description,
@@ -75,7 +61,6 @@ class BudgetEntryItem {
     );
   }
 
-  /// Serializes to JSON map.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -86,20 +71,14 @@ class BudgetEntryItem {
   }
 }
 
-/// Parsed configuration for the [BudgetWidget].
-///
-/// What: Stores budget title, currency symbol, and the list of entries.
-/// Why: Provides aggregate calculation methods for total income, total expenses, and net balance.
 @immutable
 class BudgetConfig {
-  /// Constructs a [BudgetConfig].
   const BudgetConfig({
     required this.title,
     required this.currency,
     required this.entries,
   });
 
-  /// Parses JSON string into a [BudgetConfig] with graceful fallback.
   factory BudgetConfig.fromJsonString(String rawJson) {
     if (rawJson.trim().isEmpty) {
       return BudgetConfig.defaultConfig();
@@ -123,13 +102,10 @@ class BudgetConfig {
               : BudgetConfig.defaultConfig().entries,
         );
       }
-    } on Object catch (_) {
-      // Fallback on JSON parse failure
-    }
+    } on Object catch (_) {}
     return BudgetConfig.defaultConfig();
   }
 
-  /// Default configuration for newly added budget widgets.
   factory BudgetConfig.defaultConfig() {
     return const BudgetConfig(
       title: 'Presupuesto',
@@ -157,29 +133,20 @@ class BudgetConfig {
     );
   }
 
-  /// Header title of the budget widget.
   final String title;
-
-  /// Currency symbol prefix (e.g. '$', '€', '£').
   final String currency;
-
-  /// Collection of budget items.
   final List<BudgetEntryItem> entries;
 
-  /// Sum of all entries marked as [BudgetEntryType.income].
   double get totalIncome => entries
       .where((e) => e.type == BudgetEntryType.income)
       .fold(0, (sum, e) => sum + e.amount);
 
-  /// Sum of all entries marked as [BudgetEntryType.expense].
   double get totalExpenses => entries
       .where((e) => e.type == BudgetEntryType.expense)
       .fold(0, (sum, e) => sum + e.amount);
 
-  /// Net balance calculated as `totalIncome - totalExpenses`.
   double get netBalance => totalIncome - totalExpenses;
 
-  /// Creates a copy with optionally updated fields.
   BudgetConfig copyWith({
     String? title,
     String? currency,
@@ -192,7 +159,6 @@ class BudgetConfig {
     );
   }
 
-  /// Serializes to JSON string.
   String toJsonString() {
     return jsonEncode({
       'title': title,
@@ -202,12 +168,7 @@ class BudgetConfig {
   }
 }
 
-/// Catalog definition for [BudgetWidget].
-///
-/// What: Implements [AgendaWidgetDefinition] for the budget calculator.
-/// Why: Enables registration in the catalog registry for canvas element insertion.
 class BudgetWidgetDefinition extends AgendaWidgetDefinition {
-  /// Const constructor for definition registration.
   const BudgetWidgetDefinition();
 
   @override
@@ -242,13 +203,7 @@ class BudgetWidgetDefinition extends AgendaWidgetDefinition {
   }
 }
 
-/// Presentation widget providing a clean, non-Excel Material 3 budget calculator.
-///
-/// What: Displays live summary metrics (Total Income, Total Expenses, Net Balance)
-/// and a flexible list of entries with inline editing and deletion when interactive.
-/// Why: Delivers aesthetic personal finance tracking that matches Honeyday's physical agenda feel.
 class BudgetWidget extends StatefulWidget {
-  /// Constructs a [BudgetWidget].
   const BudgetWidget({
     required this.elementId,
     required this.configJson,
@@ -257,16 +212,9 @@ class BudgetWidget extends StatefulWidget {
     super.key,
   });
 
-  /// Canvas element UUID.
   final String elementId;
-
-  /// Serialized budget JSON configuration.
   final String configJson;
-
-  /// Interactive state flag.
   final bool isInteractive;
-
-  /// Callback to persist updated JSON configuration.
   final ValueChanged<String> onConfigChanged;
 
   @override
@@ -371,15 +319,16 @@ class _BudgetWidgetState extends State<BudgetWidget> {
   Widget build(BuildContext context) {
     final netBalance = _config.netBalance;
     final isPositive = netBalance >= 0;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: HoneydayTheme.paperBorder),
+        border: Border.all(color: colorScheme.outline),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: Colors.black12,
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -389,34 +338,31 @@ class _BudgetWidgetState extends State<BudgetWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header: Title
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.account_balance_wallet_outlined,
                 size: 18,
-                color: HoneydayTheme.honeyAmber,
+                color: colorScheme.primary,
               ),
               const SizedBox(width: 6),
               Text(
                 _config.title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: HoneydayTheme.inkSlate,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 8),
-
-          // Summary Metric Cards Banner: Ingresos | Gastos | Balance
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
             decoration: BoxDecoration(
-              color: HoneydayTheme.paperLight,
+              color: colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: HoneydayTheme.paperBorder),
+              border: Border.all(color: colorScheme.outline),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -425,39 +371,37 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                   label: 'Ingresos',
                   value:
                       '+${_config.currency}${_formatNumber(_config.totalIncome)}',
-                  color: const Color(0xFF15803D), // Emerald green
+                  color: const Color(0xFF16A34A),
                 ),
                 Container(
                   width: 1,
                   height: 24,
-                  color: HoneydayTheme.paperBorder,
+                  color: colorScheme.outline,
                 ),
                 _SummaryTile(
                   label: 'Gastos',
                   value:
                       '-${_config.currency}${_formatNumber(_config.totalExpenses)}',
-                  color: const Color(0xFFB91C1C), // Deep rose/red
+                  color: const Color(0xFFDC2626),
                 ),
                 Container(
                   width: 1,
                   height: 24,
-                  color: HoneydayTheme.paperBorder,
+                  color: colorScheme.outline,
                 ),
                 _SummaryTile(
                   label: 'Balance',
                   value:
                       '${isPositive ? '+' : ''}${_config.currency}${_formatNumber(netBalance)}',
                   color: isPositive
-                      ? HoneydayTheme.honeyAmber
-                      : const Color(0xFFB91C1C),
+                      ? colorScheme.primary
+                      : const Color(0xFFDC2626),
                   isBold: true,
                 ),
               ],
             ),
           ),
           const SizedBox(height: 8),
-
-          // Entries List
           Expanded(
             child: ListView.builder(
               padding: EdgeInsets.zero,
@@ -470,7 +414,6 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                   padding: const EdgeInsets.symmetric(vertical: 3),
                   child: Row(
                     children: [
-                      // Type Toggle Icon (+/-)
                       InkWell(
                         onTap: widget.isInteractive
                             ? () => _toggleType(index)
@@ -498,27 +441,25 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                         ),
                       ),
                       const SizedBox(width: 8),
-
-                      // Description
                       Expanded(
                         child: widget.isInteractive
                             ? TextFormField(
                                 initialValue: entry.description,
                                 key: ValueKey('desc_${entry.id}'),
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: HoneydayTheme.inkSlate,
+                                  color: colorScheme.onSurface,
                                 ),
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
+                                  contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 6,
                                     vertical: 4,
                                   ),
                                   border: InputBorder.none,
                                   focusedBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: HoneydayTheme.honeyAmber,
+                                      color: colorScheme.primary,
                                     ),
                                   ),
                                 ),
@@ -527,17 +468,15 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                               )
                             : Text(
                                 entry.description,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
-                                  color: HoneydayTheme.inkSlate,
+                                  color: colorScheme.onSurface,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                       ),
                       const SizedBox(width: 8),
-
-                      // Amount
                       SizedBox(
                         width: 75,
                         child: widget.isInteractive
@@ -553,24 +492,24 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: isIncome
-                                      ? const Color(0xFF15803D)
-                                      : const Color(0xFFB91C1C),
+                                      ? const Color(0xFF16A34A)
+                                      : const Color(0xFFDC2626),
                                 ),
                                 decoration: InputDecoration(
                                   isDense: true,
                                   prefixText: _config.currency,
-                                  prefixStyle: const TextStyle(
+                                  prefixStyle: TextStyle(
                                     fontSize: 11,
-                                    color: HoneydayTheme.inkSlate,
+                                    color: colorScheme.onSurface,
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 4,
                                     vertical: 4,
                                   ),
                                   border: InputBorder.none,
-                                  focusedBorder: const UnderlineInputBorder(
+                                  focusedBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: HoneydayTheme.honeyAmber,
+                                      color: colorScheme.primary,
                                     ),
                                   ),
                                 ),
@@ -584,13 +523,11 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: isIncome
-                                      ? const Color(0xFF15803D)
-                                      : const Color(0xFFB91C1C),
+                                      ? const Color(0xFF16A34A)
+                                      : const Color(0xFFDC2626),
                                 ),
                               ),
                       ),
-
-                      // Delete action
                       if (widget.isInteractive)
                         InkWell(
                           onTap: () => _removeEntry(index),
@@ -600,7 +537,7 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                             child: Icon(
                               Icons.close_rounded,
                               size: 16,
-                              color: Colors.grey.shade400,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -610,8 +547,6 @@ class _BudgetWidgetState extends State<BudgetWidget> {
               },
             ),
           ),
-
-          // Add Entry Action Button
           if (widget.isInteractive)
             Padding(
               padding: const EdgeInsets.only(top: 4),
@@ -625,7 +560,7 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                     style: TextStyle(fontSize: 12),
                   ),
                   style: TextButton.styleFrom(
-                    foregroundColor: HoneydayTheme.honeyAmber,
+                    foregroundColor: colorScheme.primary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
                       vertical: 4,
@@ -642,7 +577,6 @@ class _BudgetWidgetState extends State<BudgetWidget> {
   }
 }
 
-/// Helper tile rendering a single summary statistic inside the banner.
 class _SummaryTile extends StatelessWidget {
   const _SummaryTile({
     required this.label,
@@ -658,6 +592,7 @@ class _SummaryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -665,7 +600,7 @@ class _SummaryTile extends StatelessWidget {
           label,
           style: TextStyle(
             fontSize: 10,
-            color: HoneydayTheme.inkSlate.withValues(alpha: 0.6),
+            color: colorScheme.onSurfaceVariant,
             fontWeight: FontWeight.w500,
           ),
         ),

@@ -1,17 +1,37 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:honeyday/app/app_shell.dart';
 import 'package:honeyday/features/agendas/presentation/pages/agenda_viewer_page.dart';
 import 'package:honeyday/features/agendas/presentation/pages/home_page.dart';
+import 'package:honeyday/features/settings/presentation/pages/settings_page.dart';
 
-/// Provider exposing the declarative [GoRouter] instance.
-///
-/// What: Configures deep-linkable URLs for cross-platform navigation (Web & Desktop).
-/// Why: Directs `/` to [HomePage] and `/agenda/:id` to [AgendaViewerPage] with mode query parameters.
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/',
     routes: [
-      GoRoute(path: '/', builder: (context, state) => const HomePage()),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return AppShell(navigationShell: navigationShell);
+        },
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/',
+                builder: (context, state) => const HomePage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsPage(),
+              ),
+            ],
+          ),
+        ],
+      ),
       GoRoute(
         path: '/agenda/:id',
         builder: (context, state) {

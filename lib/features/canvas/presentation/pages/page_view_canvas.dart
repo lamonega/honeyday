@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 import 'package:honeyday/features/canvas/domain/snapping.dart';
@@ -12,20 +11,13 @@ import 'package:honeyday/features/catalog/domain/element_config.dart';
 export 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 
 /// CustomPainter rendering magnetic alignment guidelines during widget drag.
-///
-/// What: Draws dashed/solid lines at snapped page centers, margins, or sibling edges.
-/// Why: Gives immediate visual confirmation of magnetic locks in [CanvasMode.edit].
 class SnapGuideOverlayPainter extends CustomPainter {
-  /// Constructs a [SnapGuideOverlayPainter].
   const SnapGuideOverlayPainter({
     required this.guides,
-    this.guideColor = HoneydayTheme.honeyAmber,
+    this.guideColor = const Color(0xFFD97706),
   });
 
-  /// Active alignment lines to paint.
   final List<SnapGuideLine> guides;
-
-  /// Line color.
   final Color guideColor;
 
   @override
@@ -49,12 +41,7 @@ class SnapGuideOverlayPainter extends CustomPainter {
 }
 
 /// The multi-layer interactive canvas page for Honeyday planners.
-///
-/// What: Combines Layer 0 (PageSurface), Layer 1 (Modular Widgets in TransformableBoxes),
-/// Layer 1.5 (Snapping Guide Overlay), and Layer 3 (Vector InkCanvas).
-/// Why: Orchestrates mode-specific interactions (Reading, Writing, Edit) within a shared coordinate system.
 class PageViewCanvas extends ConsumerStatefulWidget {
-  /// Constructs a [PageViewCanvas].
   const PageViewCanvas({
     required this.pageId,
     super.key,
@@ -70,38 +57,17 @@ class PageViewCanvas extends ConsumerStatefulWidget {
     this.showToolbar = true,
   });
 
-  /// Parent page identifier.
   final String pageId;
-
-  /// Background paper texture.
   final PaperStyle paperStyle;
-
-  /// Base virtual dimensions of the page coordinate system.
   final Size pageSize;
-
-  /// Modular catalog elements initially on the page.
   final List<CanvasWidgetData> initialElements;
-
-  /// Freehand ink strokes initially on the page.
   final List<InkStroke> initialStrokes;
-
-  /// Optional factory producing the UI widget for a given [CanvasWidgetData].
   final Widget Function(BuildContext context, CanvasWidgetData element)?
-  elementBuilder;
-
-  /// Emits updated transform attributes for an element.
+      elementBuilder;
   final void Function(CanvasWidgetData updatedElement)? onElementUpdated;
-
-  /// Emits when an element is deleted via its handle in edit mode.
   final void Function(String elementId)? onElementDeleted;
-
-  /// Emits when an element is duplicated via the quick action bar.
   final void Function(CanvasWidgetData sourceElement)? onElementDuplicated;
-
-  /// Emits when vector strokes are created, erased, or undone/redone.
   final ValueChanged<List<InkStroke>>? onStrokesChanged;
-
-  /// Whether to show the floating mode and ink toolbar overlay.
   final bool showToolbar;
 
   @override
@@ -244,35 +210,31 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
   Widget build(BuildContext context) {
     final mode = ref.watch(canvasModeProvider);
     final inkToolState = ref.watch(inkToolProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: const Color(
-        0xFFF1F5F9,
-      ), // Subtle canvas workbench backdrop
+      backgroundColor: colorScheme.surfaceContainerHighest,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Pre-compute sibling bounding rects once for all elements
-            final allSiblingRects = _elements
-                .map((e) => e.boundingBox)
-                .toList();
+            final allSiblingRects =
+                _elements.map((e) => e.boundingBox).toList();
 
             return Stack(
               children: [
-                // Center canvas sheet with physical paper shadow
                 Center(
                   child: FittedBox(
                     child: Container(
                       width: widget.pageSize.width,
                       height: widget.pageSize.height,
                       decoration: BoxDecoration(
-                        color: HoneydayTheme.paperLight,
+                        color: colorScheme.surface,
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: const [
+                        boxShadow: [
                           BoxShadow(
-                            color: Colors.black12,
+                            color: Colors.black.withValues(alpha: 0.12),
                             blurRadius: 16,
-                            offset: Offset(0, 6),
+                            offset: const Offset(0, 6),
                           ),
                         ],
                       ),
@@ -280,20 +242,14 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                         borderRadius: BorderRadius.circular(16),
                         child: Stack(
                           children: [
-                            // --- LAYER 0: Paper Surface Texture ---
                             Positioned.fill(
                               child: PageSurface(paperStyle: widget.paperStyle),
                             ),
-
-                            // --- LAYER 1: Modular Catalog Widgets ---
                             ..._elements.map((element) {
                               final isSelected =
                                   _selectedElementId == element.id;
-                              // Sibling rects exclude the current element
                               final siblingRects = allSiblingRects
-                                  .where((r) =>
-                                      r !=
-                                      element.boundingBox)
+                                  .where((r) => r != element.boundingBox)
                                   .toList();
 
                               return TransformableBox(
@@ -346,11 +302,12 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                                       context,
                                       element,
                                     ) ??
-                                    _buildDefaultElementCard(element),
+                                    _buildDefaultElementCard(
+                                      element,
+                                      colorScheme,
+                                    ),
                               );
                             }),
-
-                            // --- LAYER 1.5: Magnetic Snapping Guidelines ---
                             if (mode == CanvasMode.edit &&
                                 _activeSnapGuides.isNotEmpty)
                               Positioned.fill(
@@ -358,12 +315,11 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                                   child: CustomPaint(
                                     painter: SnapGuideOverlayPainter(
                                       guides: _activeSnapGuides,
+                                      guideColor: colorScheme.primary,
                                     ),
                                   ),
                                 ),
                               ),
-
-                            // --- LAYER 3: Vector Ink Drawing Layer ---
                             Positioned.fill(
                               child: IgnorePointer(
                                 ignoring: mode != CanvasMode.writing,
@@ -384,8 +340,6 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                     ),
                   ),
                 ),
-
-                // Top Floating Canvas Toolbar (only in writing mode, showing inking tools)
                 if (widget.showToolbar && mode == CanvasMode.writing)
                   Positioned(
                     top: 16,
@@ -408,35 +362,38 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
     );
   }
 
-  Widget _buildDefaultElementCard(CanvasWidgetData element) {
+  Widget _buildDefaultElementCard(
+    CanvasWidgetData element,
+    ColorScheme colorScheme,
+  ) {
     return Material(
-      color: Colors.white,
+      color: colorScheme.surface,
       elevation: 1,
       borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: HoneydayTheme.paperBorder),
+          border: Border.all(color: colorScheme.outline),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.widgets_outlined,
                   size: 16,
-                  color: HoneydayTheme.honeyAmber,
+                  color: colorScheme.primary,
                 ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(
                     element.widgetType,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
-                      color: HoneydayTheme.inkSlate,
+                      color: colorScheme.onSurface,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -445,11 +402,14 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
               ],
             ),
             const Divider(height: 12),
-            const Expanded(
+            Expanded(
               child: Center(
                 child: Text(
                   'Modular Widget Container',
-                  style: TextStyle(fontSize: 10, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: colorScheme.onSurface.withValues(alpha: 0.4),
+                  ),
                 ),
               ),
             ),
@@ -461,10 +421,6 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
 }
 
 /// Floating pill toolbar providing controls for CanvasMode and Ink tools.
-///
-/// What: Lets users switch modes (Reading, Writing, Edit), pick brush tools (Pen,
-/// Highlighter, Eraser), select palette colors, and trigger Undo/Redo.
-/// Why: Offers an integrated toolbar adhering to Material 3 and Honeyday design aesthetics.
 class _CanvasFloatingToolbar extends ConsumerWidget {
   const _CanvasFloatingToolbar({
     required this.inkController,
@@ -477,23 +433,24 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final inkState = ref.watch(inkToolProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
       elevation: 6,
       shadowColor: Colors.black.withValues(alpha: 0.14),
       borderRadius: BorderRadius.circular(32),
-      color: Colors.white,
+      color: colorScheme.surface,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(32),
-          border: Border.all(color: HoneydayTheme.paperBorder),
+          border: Border.all(color: colorScheme.outline),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Pen Tool
             _buildToolButton(
+              context: context,
               icon: Icons.edit_outlined,
               tooltip: 'Lápiz / Pluma',
               isSelected: inkState.tool == InkToolType.pen,
@@ -502,9 +459,8 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                   .selectTool(InkToolType.pen),
             ),
             const SizedBox(width: 4),
-
-            // Highlighter Tool
             _buildToolButton(
+              context: context,
               icon: Icons.brush_outlined,
               tooltip: 'Resaltador',
               isSelected: inkState.tool == InkToolType.highlighter,
@@ -513,9 +469,8 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                   .selectTool(InkToolType.highlighter),
             ),
             const SizedBox(width: 4),
-
-            // Eraser Tool
             _buildToolButton(
+              context: context,
               icon: Icons.auto_fix_normal_outlined,
               tooltip: 'Borrador',
               isSelected: inkState.tool == InkToolType.eraser,
@@ -529,13 +484,12 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
               Container(
                 height: 24,
                 width: 1,
-                color: HoneydayTheme.paperBorder,
+                color: colorScheme.outline,
               ),
               const SizedBox(width: 8),
-
-              // Stroke Width Presets
               ..._getStrokeWidthsForTool(inkState.tool).map((width) {
-                final isWidthSelected = (inkState.strokeWidth - width).abs() < 0.5;
+                final isWidthSelected =
+                    (inkState.strokeWidth - width).abs() < 0.5;
                 return Tooltip(
                   message: 'Grosor ${width.toInt()}px',
                   child: InkWell(
@@ -550,12 +504,12 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                       margin: const EdgeInsets.symmetric(horizontal: 2),
                       decoration: BoxDecoration(
                         color: isWidthSelected
-                            ? HoneydayTheme.honeyContainer
+                            ? colorScheme.primaryContainer
                             : Colors.transparent,
                         shape: BoxShape.circle,
                         border: isWidthSelected
                             ? Border.all(
-                                color: HoneydayTheme.honeyAmber,
+                                color: colorScheme.primary,
                                 width: 1.5,
                               )
                             : null,
@@ -565,8 +519,8 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                         height: (width * 1.4).clamp(3.0, 10.0),
                         decoration: BoxDecoration(
                           color: isWidthSelected
-                              ? HoneydayTheme.honeyAmber
-                              : HoneydayTheme.inkSecondary,
+                              ? colorScheme.primary
+                              : colorScheme.onSurface.withValues(alpha: 0.5),
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -574,16 +528,13 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                   ),
                 );
               }),
-
               const SizedBox(width: 8),
               Container(
                 height: 24,
                 width: 1,
-                color: HoneydayTheme.paperBorder,
+                color: colorScheme.outline,
               ),
               const SizedBox(width: 8),
-
-              // Palette Colors
               ...InkToolState.defaultPalette.map((color) {
                 final isColorSelected = inkState.color == color;
                 return GestureDetector(
@@ -598,11 +549,11 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                       shape: BoxShape.circle,
                       border: isColorSelected
                           ? Border.all(
-                              color: HoneydayTheme.honeyAmber,
+                              color: colorScheme.primary,
                               width: 2.5,
                             )
                           : Border.all(
-                              color: Colors.black.withValues(alpha: 0.1),
+                              color: colorScheme.onSurface.withValues(alpha: 0.15),
                               width: 1,
                             ),
                     ),
@@ -612,10 +563,9 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
             ],
 
             const SizedBox(width: 8),
-            Container(height: 24, width: 1, color: HoneydayTheme.paperBorder),
+            Container(height: 24, width: 1, color: colorScheme.outline),
             const SizedBox(width: 4),
 
-            // Reactive Undo & Redo
             ListenableBuilder(
               listenable: inkController,
               builder: (context, _) {
@@ -627,18 +577,20 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                       tooltip: 'Deshacer',
                       visualDensity: VisualDensity.compact,
                       color: inkController.canUndo
-                          ? HoneydayTheme.inkPrimary
-                          : HoneydayTheme.inkMuted,
-                      onPressed: inkController.canUndo ? inkController.undo : null,
+                          ? colorScheme.onSurface
+                          : colorScheme.onSurface.withValues(alpha: 0.3),
+                      onPressed:
+                          inkController.canUndo ? inkController.undo : null,
                     ),
                     IconButton(
                       icon: const Icon(Icons.redo_rounded, size: 19),
                       tooltip: 'Rehacer',
                       visualDensity: VisualDensity.compact,
                       color: inkController.canRedo
-                          ? HoneydayTheme.inkPrimary
-                          : HoneydayTheme.inkMuted,
-                      onPressed: inkController.canRedo ? inkController.redo : null,
+                          ? colorScheme.onSurface
+                          : colorScheme.onSurface.withValues(alpha: 0.3),
+                      onPressed:
+                          inkController.canRedo ? inkController.redo : null,
                     ),
                   ],
                 );
@@ -647,14 +599,19 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
 
             if (onCloseWriting != null) ...[
               const SizedBox(width: 4),
-              Container(height: 24, width: 1, color: HoneydayTheme.paperBorder),
+              Container(
+                height: 24,
+                width: 1,
+                color: colorScheme.outline,
+              ),
               const SizedBox(width: 6),
               FilledButton.tonalIcon(
                 style: FilledButton.styleFrom(
-                  backgroundColor: HoneydayTheme.honeyContainer,
-                  foregroundColor: HoneydayTheme.honeyDark,
+                  backgroundColor: colorScheme.primaryContainer,
+                  foregroundColor: colorScheme.onPrimaryContainer,
                   visualDensity: VisualDensity.compact,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -685,23 +642,27 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
   }
 
   Widget _buildToolButton({
+    required BuildContext context,
     required IconData icon,
     required String tooltip,
     required bool isSelected,
     required VoidCallback onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     return IconButton(
       icon: Icon(
         icon,
         size: 20,
         color: isSelected
-            ? HoneydayTheme.honeyAmber
-            : HoneydayTheme.inkSecondary,
+            ? colorScheme.primary
+            : colorScheme.onSurface.withValues(alpha: 0.6),
       ),
       tooltip: tooltip,
       visualDensity: VisualDensity.compact,
       style: isSelected
-          ? IconButton.styleFrom(backgroundColor: HoneydayTheme.honeyContainer)
+          ? IconButton.styleFrom(
+              backgroundColor: colorScheme.primaryContainer,
+            )
           : null,
       onPressed: onTap,
     );

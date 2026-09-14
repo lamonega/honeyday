@@ -2,10 +2,15 @@ import 'package:flutter/material.dart';
 
 /// Central design tokens and color palette for Honeyday.
 ///
-/// What: Defines brand colors, container tones, ink text colors, and paper background shades.
+/// What: Defines brand colors, container tones, ink text colors, and paper background shades
+/// for both light and dark themes.
 /// Why: Honeyday's physical-agenda feel relies on creamy paper tones (#FFFDF7),
 /// rich amber accents (#D97706), and crisp ink text (#1E293B) for high legibility.
 abstract final class AppColors {
+  // ──────────────────────────────────────────────
+  // Light Theme
+  // ──────────────────────────────────────────────
+
   /// Base paper background color replicating cream-colored notebook paper.
   static const Color paperLight = Color(0xFFFFFDF7);
   static const Color paperCream = Color(0xFFFFFDF7);
@@ -43,4 +48,47 @@ abstract final class AppColors {
 
   /// Light error red container fill for destructive action badges.
   static const Color errorContainer = Color(0xFFFEE2E2);
+
+  // ──────────────────────────────────────────────
+  // Dark Theme
+  // ──────────────────────────────────────────────
+
+  /// Dark paper background — warm charcoal instead of pure black to avoid halation.
+  static const Color paperDark = Color(0xFF1A1614);
+
+  /// Dark surface for cards and panels.
+  static const Color surfaceDark = Color(0xFF252019);
+
+  /// Elevated surface for cards in dark mode.
+  static const Color surfaceContainerDark = Color(0xFF302A20);
+
+  /// Primary amber for dark mode — slightly brighter for contrast.
+  static const Color honeyAmberDark = Color(0xFFFBBF24);
+
+  /// Honey container for dark mode.
+  static const Color honeyContainerDark = Color(0xFF3D2E0A);
+
+  /// Honey light for dark mode selections.
+  static const Color honeyLightDark = Color(0xFF2A2008);
+
+  /// Honey dark text on dark honey container.
+  static const Color honeyDarkOnDark = Color(0xFFFEF3C7);
+
+  /// Primary text for dark mode — off-white.
+  static const Color inkPrimaryDark = Color(0xFFF1F5F9);
+
+  /// Secondary text for dark mode.
+  static const Color inkSecondaryDark = Color(0xFF94A3B8);
+
+  /// Muted text for dark mode.
+  static const Color inkMutedDark = Color(0xFF64748B);
+
+  /// Border color for dark mode.
+  static const Color paperBorderDark = Color(0xFF3E362C);
+
+  /// Error color for dark mode.
+  static const Color errorDark = Color(0xFFFCA5A5);
+
+  /// Error container for dark mode.
+  static const Color errorContainerDark = Color(0xFF450A0A);
 }

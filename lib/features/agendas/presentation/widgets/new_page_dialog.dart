@@ -1,11 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/page_surface.dart';
 
 /// Shows a dialog prompting the user to choose the layout/paper design for a new page.
-///
-/// Returns the chosen `PaperStyle.name` (e.g. `'lined'`, `'dotted'`, `'blank'`, `'grid'`)
-/// or `null` if the user cancelled the dialog.
 Future<String?> showNewPageDesignDialog(BuildContext context) {
   return showDialog<String>(
     context: context,
@@ -14,17 +10,12 @@ Future<String?> showNewPageDesignDialog(BuildContext context) {
 }
 
 /// Modal dialog allowing users to pick a paper design when adding a new agenda page.
-///
-/// What: Prompts user to choose between Lined, Dotted, Blank, or Grid paper styles with live previews.
-/// Why: Fulfills Requirement 2: "las páginas nuevas tienen que pedirte que elijas qué diseño van a tener".
 class NewPageDesignDialog extends StatefulWidget {
-  /// Constructs a [NewPageDesignDialog].
   const NewPageDesignDialog({
     super.key,
     this.initialStyle = PaperStyle.dotted,
   });
 
-  /// The initially highlighted paper style.
   final PaperStyle initialStyle;
 
   @override
@@ -65,22 +56,21 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return AlertDialog(
+      backgroundColor: colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      title: const Row(
+      title: Row(
         children: [
-          Icon(
-            Icons.note_add_rounded,
-            color: HoneydayTheme.honeyAmber,
-            size: 24,
-          ),
-          SizedBox(width: 10),
+          Icon(Icons.note_add_rounded, color: colorScheme.primary, size: 24),
+          const SizedBox(width: 10),
           Text(
             'Diseño de la Página',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: HoneydayTheme.inkSlate,
+              color: colorScheme.onSurface,
             ),
           ),
         ],
@@ -93,17 +83,17 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
           children: [
             Row(
               children: [
-                Expanded(child: _buildOptionCard(_designs[0])),
+                Expanded(child: _buildOptionCard(_designs[0], colorScheme)),
                 const SizedBox(width: 12),
-                Expanded(child: _buildOptionCard(_designs[1])),
+                Expanded(child: _buildOptionCard(_designs[1], colorScheme)),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(child: _buildOptionCard(_designs[2])),
+                Expanded(child: _buildOptionCard(_designs[2], colorScheme)),
                 const SizedBox(width: 12),
-                Expanded(child: _buildOptionCard(_designs[3])),
+                Expanded(child: _buildOptionCard(_designs[3], colorScheme)),
               ],
             ),
           ],
@@ -117,8 +107,8 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
         ),
         FilledButton.icon(
           style: FilledButton.styleFrom(
-            backgroundColor: HoneydayTheme.honeyAmber,
-            foregroundColor: Colors.white,
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -128,39 +118,33 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
             'Crear Página',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          onPressed: () {
-            Navigator.of(context).pop(_selectedStyle.name);
-          },
+          onPressed: () => Navigator.of(context).pop(_selectedStyle.name),
         ),
       ],
     );
   }
 
-  Widget _buildOptionCard(_PageDesignOption option) {
+  Widget _buildOptionCard(_PageDesignOption option, ColorScheme colorScheme) {
     final isSelected = _selectedStyle == option.style;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () {
-        setState(() => _selectedStyle = option.style);
-      },
+      onTap: () => setState(() => _selectedStyle = option.style),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         height: 95,
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: isSelected ? HoneydayTheme.honeyContainer : Colors.white,
+          color: isSelected ? colorScheme.primaryContainer : colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected
-                ? HoneydayTheme.honeyAmber
-                : HoneydayTheme.paperBorder,
+            color: isSelected ? colorScheme.primary : colorScheme.outline,
             width: isSelected ? 2.5 : 1.0,
           ),
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? HoneydayTheme.honeyAmber.withValues(alpha: 0.15)
+                  ? colorScheme.primary.withValues(alpha: 0.15)
                   : Colors.black.withValues(alpha: 0.03),
               blurRadius: isSelected ? 8 : 4,
               offset: const Offset(0, 2),
@@ -175,23 +159,25 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.white : const Color(0xFFF1F5F9),
+                    color: isSelected
+                        ? colorScheme.surface
+                        : colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     option.icon,
                     size: 16,
                     color: isSelected
-                        ? HoneydayTheme.honeyAmber
-                        : const Color(0xFF64748B),
+                        ? colorScheme.primary
+                        : colorScheme.onSurface.withValues(alpha: 0.5),
                   ),
                 ),
                 const Spacer(),
                 if (isSelected)
-                  const Icon(
+                  Icon(
                     Icons.check_circle_rounded,
                     size: 18,
-                    color: HoneydayTheme.honeyAmber,
+                    color: colorScheme.primary,
                   ),
               ],
             ),
@@ -206,18 +192,17 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: isSelected
-                        ? const Color(0xFF78350F)
-                        : HoneydayTheme.inkSlate,
+                        ? colorScheme.onPrimaryContainer
+                        : colorScheme.onSurface,
                   ),
                 ),
-                // Mini preview sheet showing paper pattern
                 Container(
                   width: 44,
                   height: 22,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
                     border: Border.all(
-                      color: HoneydayTheme.paperBorder,
+                      color: colorScheme.outline,
                       width: 0.8,
                     ),
                   ),

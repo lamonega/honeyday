@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 
 /// Modal bottom sheet displaying the catalog of Canva-like agenda design elements.
-///
-/// What: Presents registered shapes, planner layout templates, and stickers.
-/// Why: Allows users to select and place static visual building blocks onto the agenda page.
 class AddCatalogElementSheet extends StatefulWidget {
-  /// Constructs an [AddCatalogElementSheet].
   const AddCatalogElementSheet({super.key});
 
   @override
@@ -30,9 +25,10 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
     final visibleDefs = _selectedCategory == null
         ? allDefs.where((d) => d.category != ElementCategory.legacy).toList()
         : allDefs.where((d) => d.category == _selectedCategory).toList();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
-      color: Colors.white,
+      color: colorScheme.surface,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -49,25 +45,21 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: HoneydayTheme.paperBorder,
+                  color: colorScheme.outline,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
             Row(
               children: [
-                const Icon(
-                  Icons.interests_rounded,
-                  color: HoneydayTheme.honeyAmber,
-                  size: 24,
-                ),
+                Icon(Icons.interests_rounded, color: colorScheme.primary, size: 24),
                 const SizedBox(width: 10),
-                const Text(
+                Text(
                   'Catálogo de Elementos',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: HoneydayTheme.inkSlate,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const Spacer(),
@@ -78,8 +70,6 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
               ],
             ),
             const SizedBox(height: 12),
-
-            // Category Chips
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -94,16 +84,16 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
                         fontWeight:
                             isSelected ? FontWeight.bold : FontWeight.w500,
                         color: isSelected
-                            ? const Color(0xFF78350F)
-                            : const Color(0xFF475569),
+                            ? colorScheme.onPrimaryContainer
+                            : colorScheme.onSurface.withValues(alpha: 0.6),
                       ),
                       selected: isSelected,
-                      selectedColor: HoneydayTheme.honeyContainer,
-                      backgroundColor: const Color(0xFFF8FAFC),
+                      selectedColor: colorScheme.primaryContainer,
+                      backgroundColor: colorScheme.surfaceContainerHighest,
                       side: BorderSide(
                         color: isSelected
-                            ? HoneydayTheme.honeyAmber
-                            : HoneydayTheme.paperBorder,
+                            ? colorScheme.primary
+                            : colorScheme.outline,
                       ),
                       onSelected: (_) {
                         setState(() => _selectedCategory = tab.$2);
@@ -114,8 +104,6 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
               ),
             ),
             const SizedBox(height: 14),
-
-            // List of items
             Flexible(
               child: ListView.separated(
                 shrinkWrap: true,
@@ -123,7 +111,6 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
                 separatorBuilder: (context, index) => const Divider(height: 1),
                 itemBuilder: (context, index) {
                   final def = visibleDefs[index];
-
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -136,23 +123,23 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
                       width: 44,
                       height: 44,
                       decoration: BoxDecoration(
-                        color: HoneydayTheme.honeyContainer,
+                        color: colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(def.icon, color: HoneydayTheme.honeyAmber),
+                      child: Icon(def.icon, color: colorScheme.primary),
                     ),
                     title: Text(
                       def.name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
-                        color: HoneydayTheme.inkSlate,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                     trailing: FilledButton.tonal(
                       style: FilledButton.styleFrom(
-                        backgroundColor: HoneydayTheme.honeyContainer,
-                        foregroundColor: const Color(0xFF78350F),
+                        backgroundColor: colorScheme.primaryContainer,
+                        foregroundColor: colorScheme.onPrimaryContainer,
                         visualDensity: VisualDensity.compact,
                       ),
                       onPressed: () => Navigator.of(context).pop(def),

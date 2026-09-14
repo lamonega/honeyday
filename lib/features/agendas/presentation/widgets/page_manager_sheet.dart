@@ -1,15 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/core/database/app_database.dart';
 
 /// Bottom sheet allowing users to view page thumbnails, jump between pages,
 /// reorder pages, delete pages, and change page texture.
-///
-/// What: Orchestrates multi-page management for an agenda.
-/// Why: Fulfills the master plan requirement for page navigation, reordering,
-/// texture toggles, and deletion.
 class PageManagerSheet extends StatefulWidget {
-  /// Constructs a [PageManagerSheet].
   const PageManagerSheet({
     required this.pages,
     required this.currentPageIndex,
@@ -20,22 +14,11 @@ class PageManagerSheet extends StatefulWidget {
     super.key,
   });
 
-  /// All non-deleted pages in this agenda.
   final List<AgendaPage> pages;
-
-  /// 0-indexed position of the currently visible page.
   final int currentPageIndex;
-
-  /// Triggered when the user taps a page to jump to it.
   final ValueChanged<int> onSelectPage;
-
-  /// Triggered when deleting a page.
   final ValueChanged<String> onDeletePage;
-
-  /// Triggered when the user changes paper style for the active page.
   final ValueChanged<String> onChangePaperStyle;
-
-  /// Triggered when pages are reordered.
   final ValueChanged<List<String>> onReorderPages;
 
   @override
@@ -94,12 +77,13 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
     final currentPage = _currentPageIndex < _pages.length
         ? _pages[_currentPageIndex]
         : null;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -111,27 +95,26 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
               height: 4,
               margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
-                color: HoneydayTheme.paperBorder,
+                color: colorScheme.outline,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
           Row(
             children: [
-              const Icon(Icons.layers_rounded, color: HoneydayTheme.honeyAmber),
+              Icon(Icons.layers_rounded, color: colorScheme.primary),
               const SizedBox(width: 8),
               Text(
                 'Páginas (${_pages.length})',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: HoneydayTheme.inkSlate,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          // Horizontal list of page thumbnails with reordering support
           SizedBox(
             height: 170,
             child: ReorderableListView.builder(
@@ -157,12 +140,12 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
                   width: 125,
                   margin: const EdgeInsets.only(right: 14),
                   decoration: BoxDecoration(
-                    color: HoneydayTheme.paperLight,
+                    color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isCurrent
-                          ? HoneydayTheme.honeyAmber
-                          : HoneydayTheme.paperBorder,
+                          ? colorScheme.primary
+                          : colorScheme.outline,
                       width: isCurrent ? 3 : 1,
                     ),
                     boxShadow: [
@@ -194,11 +177,11 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
                                 page.backgroundStyle == 'grid'
                                     ? Icons.grid_4x4_rounded
                                     : page.backgroundStyle == 'lined'
-                                    ? Icons.view_headline_rounded
-                                    : Icons.grain_rounded,
+                                        ? Icons.view_headline_rounded
+                                        : Icons.grain_rounded,
                                 color: isCurrent
-                                    ? HoneydayTheme.honeyAmber
-                                    : const Color(0xFF94A3B8),
+                                    ? colorScheme.primary
+                                    : colorScheme.onSurface.withValues(alpha: 0.4),
                                 size: 26,
                               ),
                               const SizedBox(height: 4),
@@ -210,16 +193,16 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
                                       ? FontWeight.bold
                                       : FontWeight.w500,
                                   color: isCurrent
-                                      ? HoneydayTheme.honeyAmber
-                                      : HoneydayTheme.inkSlate,
+                                      ? colorScheme.primary
+                                      : colorScheme.onSurface,
                                 ),
                               ),
                               Text(
                                 _paperStyles[page.backgroundStyle] ??
                                     page.backgroundStyle,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 11,
-                                  color: Color(0xFF64748B),
+                                  color: colorScheme.onSurface.withValues(alpha: 0.5),
                                 ),
                               ),
                             ],
@@ -228,10 +211,10 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
                       ),
                       Container(
                         height: 36,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           border: Border(
                             top: BorderSide(
-                              color: HoneydayTheme.paperBorder,
+                              color: colorScheme.outline,
                               width: 0.8,
                             ),
                           ),
@@ -258,12 +241,12 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
                             ),
                             ReorderableDragStartListener(
                               index: index,
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 2),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 2),
                                 child: Icon(
                                   Icons.drag_indicator_rounded,
                                   size: 16,
-                                  color: Color(0xFF94A3B8),
+                                  color: colorScheme.onSurface.withValues(alpha: 0.4),
                                 ),
                               ),
                             ),
@@ -299,9 +282,13 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Text(
+                Text(
                   'Fondo de la página actual:',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
                 const Spacer(),
                 DropdownButton<String>(
@@ -326,9 +313,9 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
                 if (_pages.length > 1) ...[
                   const SizedBox(width: 8),
                   IconButton(
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.delete_outline_rounded,
-                      color: Color(0xFFEF4444),
+                      color: colorScheme.error,
                     ),
                     tooltip: 'Eliminar esta página',
                     onPressed: () {

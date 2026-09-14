@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:honeyday/app/theme.dart';
+import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:honeyday/core/database/app_database.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/agenda_viewer_controller.dart';
@@ -15,23 +16,14 @@ import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/presentation/pages/page_view_canvas.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 
-/// The central planner viewer and editor page for an active agenda.
-///
-/// Implements the View in the MVVM pattern recommended by the Flutter team:
-/// Decoupled from direct database access and Drift companion models, delegating all state
-/// and mutations to [AgendaViewerController] and reactive providers.
 class AgendaViewerPage extends ConsumerStatefulWidget {
-  /// Constructs an [AgendaViewerPage].
   const AgendaViewerPage({
     required this.agendaId,
     this.initialMode = 'writing',
     super.key,
   });
 
-  /// The unique identifier of the agenda being edited/viewed.
   final String agendaId;
-
-  /// Initial mode string: 'reading', 'writing', or 'edit'.
   final String initialMode;
 
   @override
@@ -49,7 +41,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     super.initState();
     _pageController = PageController();
 
-    // Set initial canvas mode from route parameter
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_isEditMode) {
         ref.read(canvasModeProvider.notifier).setEdit();
@@ -77,7 +68,14 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         duration: const Duration(milliseconds: 350),
         curve: Curves.easeInOutCubic,
       );
+      _hapticLight();
     }
+  }
+
+  void _hapticLight() {
+    unawaited(
+      Haptics.vibrate(HapticsType.light).onError((_, _) {}),
+    );
   }
 
   @override
@@ -92,7 +90,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     return _buildReadWriteScaffold(context, pagesAsync, currentMode);
   }
 
-  /// Builds the dedicated Modo Edición layout matching the top-right drawings in the SVG.
   Widget _buildEditModeScaffold(
     BuildContext context,
     AsyncValue<List<AgendaPage>> pagesAsync,
@@ -100,21 +97,22 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     final pages = pagesAsync.value ?? [];
     final totalPages = pages.length;
     final controller = ref.read(agendaViewerControllerProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: HoneydayTheme.paperLight,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           tooltip: 'Volver a tus agendas',
           onPressed: () => context.go('/'),
         ),
-        title: const Text(
+        title: Text(
           'Herramientas',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: HoneydayTheme.inkSlate,
+            color: colorScheme.onSurface,
           ),
         ),
         actions: [
@@ -131,10 +129,10 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                 ),
                 Text(
                   'Pág. ${_currentPageIndex + 1} / $totalPages',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: HoneydayTheme.inkSlate,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 IconButton(
@@ -155,8 +153,8 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                 padding: const EdgeInsets.only(right: 12),
                 child: FilledButton.icon(
                   style: FilledButton.styleFrom(
-                    backgroundColor: HoneydayTheme.honeyAmber,
-                    foregroundColor: Colors.white,
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
                     visualDensity: VisualDensity.compact,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -175,28 +173,27 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         ],
       ),
       body: pagesAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: HoneydayTheme.honeyAmber),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: colorScheme.primary),
         ),
         error: (error, _) => Center(
           child: Text(
             'Error al cargar páginas: $error',
-            style: const TextStyle(color: Color(0xFF64748B)),
+            style: TextStyle(color: colorScheme.onSurfaceVariant),
           ),
         ),
         data: (pagesList) {
           if (pagesList.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 'No hay páginas disponibles.',
-                style: TextStyle(color: Color(0xFF64748B)),
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
             );
           }
 
           return Row(
             children: [
-              // Panel izquierdo: Catálogo de recursos
               ResourceCatalogSidebar(
                 onSelectDefinition: (def) {
                   unawaited(
@@ -204,8 +201,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                   );
                 },
               ),
-
-              // Área central: Página en modo edición
               Expanded(
                 child: PageView.builder(
                   controller: _pageController,
@@ -224,24 +219,22 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                   },
                 ),
               ),
-
-              // Borde derecho: '+' para agregar una página
               Container(
                 width: 48,
-                decoration: const BoxDecoration(
-                  color: HoneydayTheme.paperLight,
+                decoration: BoxDecoration(
+                  color: colorScheme.surface,
                   border: Border(
-                    left: BorderSide(color: HoneydayTheme.paperBorder),
+                    left: BorderSide(color: colorScheme.outline),
                   ),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.add_rounded,
                         size: 28,
-                        color: HoneydayTheme.honeyAmber,
+                        color: colorScheme.primary,
                       ),
                       tooltip: 'Nueva página',
                       onPressed: () async {
@@ -270,7 +263,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     );
   }
 
-  /// Builds the Modo Lectura / Modo Escritura layout matching the bottom drawing in the SVG.
   Widget _buildReadWriteScaffold(
     BuildContext context,
     AsyncValue<List<AgendaPage>> pagesAsync,
@@ -278,80 +270,99 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   ) {
     final pages = pagesAsync.value ?? [];
     final totalPages = pages.length;
+    final isWriting = currentMode == CanvasMode.writing;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: HoneydayTheme.paperLight,
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           tooltip: 'Volver a tus agendas',
           onPressed: () => context.go('/'),
         ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              currentMode == CanvasMode.writing
-                  ? 'Modo Escritura'
-                  : 'Modo Lectura',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: HoneydayTheme.inkSlate,
+        title: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 250),
+          transitionBuilder: (child, animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0, 0.15),
+                  end: Offset.zero,
+                ).animate(animation),
+                child: child,
               ),
+            );
+          },
+          child: Text(
+            isWriting ? 'Modo Escritura' : 'Modo Lectura',
+            key: ValueKey(currentMode),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
             ),
-            if (totalPages > 0) ...[
-              const SizedBox(width: 16),
-              IconButton(
-                icon: const Icon(Icons.chevron_left_rounded),
-                tooltip: 'Página anterior',
-                onPressed: _currentPageIndex > 0
-                    ? () => _goToPage(_currentPageIndex - 1, totalPages)
-                    : null,
-              ),
-              Text(
-                'Pág. ${_currentPageIndex + 1} / $totalPages',
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: HoneydayTheme.inkSlate,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right_rounded),
-                tooltip: 'Página siguiente',
-                onPressed: _currentPageIndex < totalPages - 1
-                    ? () => _goToPage(_currentPageIndex + 1, totalPages)
-                    : null,
-              ),
-            ],
-          ],
+          ),
         ),
         actions: [
+          if (totalPages > 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${_currentPageIndex + 1}/$totalPages',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          const SizedBox(width: 4),
           IconButton(
             icon: const Icon(Icons.layers_rounded),
             tooltip: 'Gestionar páginas',
             onPressed: () => _showPageManagerSheet(context, pages),
           ),
-          const SizedBox(width: 8),
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: IconButton(
+              icon: const Icon(Icons.check_circle_rounded),
+              tooltip: 'Finalizar',
+              color: colorScheme.primary,
+              onPressed: () => context.go('/'),
+            ),
+          ),
         ],
       ),
       body: pagesAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: HoneydayTheme.honeyAmber),
+        loading: () => Center(
+          child: CircularProgressIndicator(color: colorScheme.primary),
         ),
         error: (error, _) => Center(
           child: Text(
             'Error al cargar páginas: $error',
-            style: const TextStyle(color: Color(0xFF64748B)),
+            style: TextStyle(color: colorScheme.onSurfaceVariant),
           ),
         ),
         data: (pagesList) {
           if (pagesList.isEmpty) {
-            return const Center(
+            return Center(
               child: Text(
                 'No hay páginas disponibles.',
-                style: TextStyle(color: Color(0xFF64748B)),
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
               ),
             );
           }
@@ -368,11 +379,11 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                 itemCount: pagesList.length,
                 onPageChanged: (index) {
                   setState(() => _currentPageIndex = index);
+                  _hapticLight();
                 },
                 itemBuilder: (context, index) {
                   final page = pagesList[index];
 
-                  // 3D Page Turn Flip & Curl effect matching Google Play Books
                   return AnimatedBuilder(
                     animation: _pageController,
                     builder: (context, child) {
@@ -441,38 +452,122 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                 },
               ),
 
-              // Botón de alternancia de lápiz en la esquina superior derecha
-              Positioned(
-                top: 24,
-                right: 28,
-                child: Material(
-                  elevation: 4,
-                  shape: const CircleBorder(),
-                  color: currentMode == CanvasMode.writing
-                      ? HoneydayTheme.honeyAmber
-                      : Colors.white,
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-                    onTap: () {
-                      if (currentMode == CanvasMode.writing) {
-                        ref.read(canvasModeProvider.notifier).setReading();
-                      } else {
-                        ref.read(canvasModeProvider.notifier).setWriting();
-                      }
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Icon(
-                        currentMode == CanvasMode.writing
-                            ? Icons.menu_book_rounded
-                            : Icons.edit_outlined,
-                        color: currentMode == CanvasMode.writing
-                            ? Colors.white
-                            : HoneydayTheme.honeyAmber,
-                        size: 24,
+              if (totalPages > 1)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Material(
+                    elevation: 2,
+                    color: colorScheme.surface.withValues(alpha: 0.92),
+                    child: SafeArea(
+                      top: false,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            IconButton(
+                              onPressed: _currentPageIndex > 0
+                                  ? () => _goToPage(
+                                      _currentPageIndex - 1,
+                                      totalPages,
+                                    )
+                                  : null,
+                              icon: const Icon(
+                                Icons.chevron_left_rounded,
+                                size: 28,
+                              ),
+                              color: colorScheme.onSurface,
+                            ),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: List.generate(totalPages, (i) {
+                                final isActive = i == _currentPageIndex;
+                                return AnimatedContainer(
+                                  duration: const Duration(milliseconds: 250),
+                                  margin: const EdgeInsets.symmetric(
+                                    horizontal: 3,
+                                  ),
+                                  width: isActive ? 20 : 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: isActive
+                                        ? colorScheme.primary
+                                        : colorScheme.primary
+                                            .withValues(alpha: 0.25),
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                );
+                              }),
+                            ),
+                            IconButton(
+                              onPressed: _currentPageIndex < totalPages - 1
+                                  ? () => _goToPage(
+                                      _currentPageIndex + 1,
+                                      totalPages,
+                                    )
+                                  : null,
+                              icon: const Icon(
+                                Icons.chevron_right_rounded,
+                                size: 28,
+                              ),
+                              color: colorScheme.onSurface,
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
+                ),
+
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: totalPages > 1 ? 72 : 16,
+                child: Center(
+                  child: Material(
+                    elevation: 4,
+                    borderRadius: BorderRadius.circular(28),
+                    color: colorScheme.surface,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _ModePillButton(
+                            icon: Icons.menu_book_rounded,
+                            label: 'Lectura',
+                            isActive: !isWriting,
+                            onTap: () {
+                              ref.read(canvasModeProvider.notifier).setReading();
+                              _hapticLight();
+                            },
+                          ),
+                          _ModePillButton(
+                            icon: Icons.edit_rounded,
+                            label: 'Escritura',
+                            isActive: isWriting,
+                            onTap: () {
+                              ref.read(canvasModeProvider.notifier).setWriting();
+                              _hapticLight();
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ).animate().fadeIn(duration: 350.ms).slideY(
+                        begin: 0.15,
+                        end: 0,
+                        duration: 350.ms,
+                        curve: Curves.easeOutCubic,
+                      ),
                 ),
               ),
             ],
@@ -536,10 +631,66 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   }
 }
 
-/// Helper sub-widget displaying elements and strokes for a specific page.
-///
-/// Follows MVVM by observing dedicated providers and dispatching actions
-/// to [AgendaViewerController], eliminating raw SQL/Drift logic from UI.
+class _ModePillButton extends StatelessWidget {
+  const _ModePillButton({
+    required this.icon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isActive
+              ? colorScheme.primary
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 20,
+              color: isActive ? colorScheme.onPrimary : colorScheme.onSurface,
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child: isActive
+                  ? Padding(
+                      padding: const EdgeInsets.only(left: 6),
+                      child: Text(
+                        label,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onPrimary,
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _PageContentLoader extends ConsumerWidget {
   const _PageContentLoader({
     required this.page,

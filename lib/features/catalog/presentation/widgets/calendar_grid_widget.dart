@@ -1,23 +1,16 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 
-/// Representation of a single habit row in the calendar grid.
-///
-/// What: Holds habit title and 7-day boolean completion states.
-/// Why: Provides an immutable model for daily/weekly habit tracking spread across L-M-M-J-V-S-D.
 @immutable
 class HabitRowItem {
-  /// Constructs a [HabitRowItem].
   const HabitRowItem({
     required this.id,
     required this.title,
     required this.checks,
   });
 
-  /// Creates a [HabitRowItem] from a decoded JSON map.
   factory HabitRowItem.fromJson(Map<String, dynamic> json) {
     final rawChecks = json['checks'] as List<dynamic>? ?? const [];
     final checks = List<bool>.generate(7, (index) {
@@ -34,16 +27,10 @@ class HabitRowItem {
     );
   }
 
-  /// Unique identifier for this habit item.
   final String id;
-
-  /// Human-readable name or description of the habit (e.g. 'Tomar 2L de agua').
   final String title;
-
-  /// 7-day boolean checklist corresponding to [L, M, M, J, V, S, D].
   final List<bool> checks;
 
-  /// Creates a copy with optionally updated fields.
   HabitRowItem copyWith({String? id, String? title, List<bool>? checks}) {
     return HabitRowItem(
       id: id ?? this.id,
@@ -52,22 +39,15 @@ class HabitRowItem {
     );
   }
 
-  /// Serializes this habit row to JSON.
   Map<String, dynamic> toJson() {
     return {'id': id, 'title': title, 'checks': checks};
   }
 }
 
-/// Parsed configuration model for the [CalendarGridWidget].
-///
-/// What: Holds grid title and list of habit tracker rows.
-/// Why: Centralizes serialization and guarantees fallback defaults on empty or corrupt JSON payloads.
 @immutable
 class CalendarGridConfig {
-  /// Constructs a [CalendarGridConfig].
   const CalendarGridConfig({required this.title, required this.habits});
 
-  /// Parses JSON payload, returning a valid config with defaults if JSON is missing or corrupt.
   factory CalendarGridConfig.fromJsonString(String rawJson) {
     if (rawJson.trim().isEmpty) {
       return CalendarGridConfig.defaultConfig();
@@ -89,13 +69,10 @@ class CalendarGridConfig {
               : CalendarGridConfig.defaultConfig().habits,
         );
       }
-    } on Object catch (_) {
-      // Fallback on JSON parse error
-    }
+    } on Object catch (_) {}
     return CalendarGridConfig.defaultConfig();
   }
 
-  /// Provides factory defaults for newly placed widgets.
   factory CalendarGridConfig.defaultConfig() {
     return const CalendarGridConfig(
       title: 'Hábitos Semanales',
@@ -119,13 +96,9 @@ class CalendarGridConfig {
     );
   }
 
-  /// Header title for the grid.
   final String title;
-
-  /// Ordered collection of habit rows.
   final List<HabitRowItem> habits;
 
-  /// Creates a copy with optionally updated fields.
   CalendarGridConfig copyWith({String? title, List<HabitRowItem>? habits}) {
     return CalendarGridConfig(
       title: title ?? this.title,
@@ -133,7 +106,6 @@ class CalendarGridConfig {
     );
   }
 
-  /// Serializes to JSON string.
   String toJsonString() {
     return jsonEncode({
       'title': title,
@@ -142,12 +114,7 @@ class CalendarGridConfig {
   }
 }
 
-/// Catalog definition for [CalendarGridWidget].
-///
-/// What: Implements [AgendaWidgetDefinition] for the 7-day habit and calendar spread.
-/// Why: Allows dynamic registration in the catalog registry with defaults and build factory.
 class CalendarGridDefinition extends AgendaWidgetDefinition {
-  /// Const constructor for definition registration.
   const CalendarGridDefinition();
 
   @override
@@ -183,12 +150,7 @@ class CalendarGridDefinition extends AgendaWidgetDefinition {
   }
 }
 
-/// Presentation widget displaying an interactive 7-day calendar and habit tracker spread.
-///
-/// What: Renders day headers (L, M, M, J, V, S, D), habit rows with checkboxes, and live strike-throughs.
-/// Why: Delivers an authentic bullet-journal habit tracker styled with Material 3 and warm honey amber tones.
 class CalendarGridWidget extends StatefulWidget {
-  /// Constructs a [CalendarGridWidget].
   const CalendarGridWidget({
     required this.elementId,
     required this.configJson,
@@ -197,16 +159,9 @@ class CalendarGridWidget extends StatefulWidget {
     super.key,
   });
 
-  /// Unique element UUID.
   final String elementId;
-
-  /// JSON payload encoding habit items and checks.
   final String configJson;
-
-  /// Interaction mode flag (true in writing mode, false in reading/edit mode).
   final bool isInteractive;
-
-  /// Callback to persist updated JSON state.
   final ValueChanged<String> onConfigChanged;
 
   @override
@@ -292,14 +247,16 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: HoneydayTheme.paperBorder),
+        border: Border.all(color: colorScheme.outline),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A000000),
+            color: Colors.black12,
             blurRadius: 8,
             offset: Offset(0, 2),
           ),
@@ -309,23 +266,21 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header: Title and day columns
           Row(
             children: [
               Expanded(
                 child: Text(
                   _config.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: HoneydayTheme.inkSlate,
+                    color: colorScheme.onSurface,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 8),
-              // Day headers: L M M J V S D
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: List.generate(7, (index) {
@@ -337,7 +292,7 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: isWeekend
-                          ? HoneydayTheme.honeyContainer.withValues(alpha: 0.5)
+                          ? colorScheme.primaryContainer.withValues(alpha: 0.5)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(6),
                     ),
@@ -347,8 +302,8 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: isWeekend
-                            ? HoneydayTheme.honeyAmber
-                            : HoneydayTheme.inkSlate.withValues(alpha: 0.7),
+                            ? colorScheme.primary
+                            : colorScheme.onSurfaceVariant,
                       ),
                     ),
                   );
@@ -358,9 +313,8 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
             ],
           ),
           const SizedBox(height: 8),
-          const Divider(height: 1, color: HoneydayTheme.paperBorder),
+          Divider(height: 1, color: colorScheme.outline),
           const SizedBox(height: 6),
-          // Habit Rows
           Expanded(
             child: ListView.builder(
               padding: EdgeInsets.zero,
@@ -373,7 +327,6 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(
                     children: [
-                      // Habit Title
                       Expanded(
                         child: widget.isInteractive
                             ? TextFormField(
@@ -383,24 +336,22 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                   color: allCompleted
-                                      ? HoneydayTheme.inkSlate.withValues(
-                                          alpha: 0.4,
-                                        )
-                                      : HoneydayTheme.inkSlate,
+                                      ? colorScheme.onSurfaceVariant
+                                      : colorScheme.onSurface,
                                   decoration: allCompleted
                                       ? TextDecoration.lineThrough
                                       : TextDecoration.none,
                                 ),
-                                decoration: const InputDecoration(
+                                decoration: InputDecoration(
                                   isDense: true,
-                                  contentPadding: EdgeInsets.symmetric(
+                                  contentPadding: const EdgeInsets.symmetric(
                                     horizontal: 6,
                                     vertical: 4,
                                   ),
                                   border: InputBorder.none,
                                   focusedBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(
-                                      color: HoneydayTheme.honeyAmber,
+                                      color: colorScheme.primary,
                                     ),
                                   ),
                                 ),
@@ -413,10 +364,8 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                   color: allCompleted
-                                      ? HoneydayTheme.inkSlate.withValues(
-                                          alpha: 0.4,
-                                        )
-                                      : HoneydayTheme.inkSlate,
+                                      ? colorScheme.onSurfaceVariant
+                                      : colorScheme.onSurface,
                                   decoration: allCompleted
                                       ? TextDecoration.lineThrough
                                       : TextDecoration.none,
@@ -426,7 +375,6 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                               ),
                       ),
                       const SizedBox(width: 8),
-                      // 7 Day Checkboxes
                       Row(
                         mainAxisSize: MainAxisSize.min,
                         children: List.generate(7, (dayIndex) {
@@ -442,28 +390,27 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                               margin: const EdgeInsets.symmetric(horizontal: 2),
                               decoration: BoxDecoration(
                                 color: isChecked
-                                    ? HoneydayTheme.honeyAmber
-                                    : const Color(0xFFF8FAFC),
+                                    ? colorScheme.primary
+                                    : colorScheme.surfaceContainerHighest,
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
                                   color: isChecked
-                                      ? HoneydayTheme.honeyAmber
-                                      : HoneydayTheme.paperBorder,
+                                      ? colorScheme.primary
+                                      : colorScheme.outline,
                                   width: 1.2,
                                 ),
                               ),
                               child: isChecked
-                                  ? const Icon(
+                                  ? Icon(
                                       Icons.check_rounded,
                                       size: 16,
-                                      color: Colors.white,
+                                      color: colorScheme.onPrimary,
                                     )
                                   : null,
                             ),
                           );
                         }),
                       ),
-                      // Delete button in interactive mode
                       if (widget.isInteractive)
                         InkWell(
                           onTap: () => _removeHabit(habitIndex),
@@ -473,7 +420,7 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                             child: Icon(
                               Icons.close_rounded,
                               size: 16,
-                              color: Colors.grey.shade400,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ),
@@ -483,7 +430,6 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
               },
             ),
           ),
-          // Interactive Action: Add Habit
           if (widget.isInteractive)
             Padding(
               padding: const EdgeInsets.only(top: 4),
@@ -497,7 +443,7 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                     style: TextStyle(fontSize: 12),
                   ),
                   style: TextButton.styleFrom(
-                    foregroundColor: HoneydayTheme.honeyAmber,
+                    foregroundColor: colorScheme.primary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
                       vertical: 4,

@@ -1,32 +1,19 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 
-/// Supported background color styles for [TextBoxWidget].
 enum TextBoxColor {
-  /// Warm honey pastel (`#FEF3C7`).
   honey(Color(0xFFFEF3C7), 'Miel'),
-
-  /// Soft blush rose pastel (`#FFE4E6`).
   rose(Color(0xFFFFE4E6), 'Rosa'),
-
-  /// Calming herbal sage pastel (`#DCFCE7`).
   sage(Color(0xFFDCFCE7), 'Salvia'),
-
-  /// Transparent background showing underlying page grid.
   transparent(Colors.transparent, 'Transparente');
 
   TextBoxColor(this.color, this.label);
 
-  /// Actual Flutter [Color] used for container rendering.
   final Color color;
-
-  /// Human-readable Spanish name.
   final String label;
 
-  /// Parses color from string token with fallback to [TextBoxColor.honey].
   static TextBoxColor fromString(String? val) {
     return TextBoxColor.values.firstWhere(
       (e) => e.name == val?.toLowerCase(),
@@ -35,20 +22,14 @@ enum TextBoxColor {
   }
 }
 
-/// Parsed configuration model for [TextBoxWidget].
-///
-/// What: Holds text body, background color profile, and font size.
-/// Why: Provides an immutable model for sticker notes and freeform text cards.
 @immutable
 class TextBoxConfig {
-  /// Constructs a [TextBoxConfig].
   const TextBoxConfig({
     required this.text,
     required this.color,
     required this.fontSize,
   });
 
-  /// Decodes JSON string into a [TextBoxConfig].
   factory TextBoxConfig.fromJsonString(String rawJson) {
     if (rawJson.trim().isEmpty) {
       return TextBoxConfig.defaultConfig();
@@ -63,13 +44,10 @@ class TextBoxConfig {
 
         return TextBoxConfig(text: text, color: color, fontSize: fontSize);
       }
-    } on Object catch (_) {
-      // Fallback on JSON parse failure
-    }
+    } on Object catch (_) {}
     return TextBoxConfig.defaultConfig();
   }
 
-  /// Factory defaults for newly created text notes.
   factory TextBoxConfig.defaultConfig() {
     return const TextBoxConfig(
       text: '¡Nota importante!\nEscribe aquí tus ideas o recordatorios.',
@@ -78,16 +56,10 @@ class TextBoxConfig {
     );
   }
 
-  /// Text content.
   final String text;
-
-  /// Background color choice.
   final TextBoxColor color;
-
-  /// Font size in logical pixels.
   final double fontSize;
 
-  /// Creates a copy with optionally updated fields.
   TextBoxConfig copyWith({
     String? text,
     TextBoxColor? color,
@@ -100,7 +72,6 @@ class TextBoxConfig {
     );
   }
 
-  /// Serializes to JSON string.
   String toJsonString() {
     return jsonEncode({
       'text': text,
@@ -110,12 +81,7 @@ class TextBoxConfig {
   }
 }
 
-/// Catalog definition for [TextBoxWidget].
-///
-/// What: Implements [AgendaWidgetDefinition] for the custom note/sticker element.
-/// Why: Enables registration in the catalog registry for canvas element insertion.
 class TextBoxDefinition extends AgendaWidgetDefinition {
-  /// Const constructor for definition registration.
   const TextBoxDefinition();
 
   @override
@@ -150,12 +116,7 @@ class TextBoxDefinition extends AgendaWidgetDefinition {
   }
 }
 
-/// Presentation widget rendering a customizable post-it sticker note or text block.
-///
-/// What: Allows editing text body, switching pastel background colors, and adjusting font size.
-/// Why: Gives users freedom to annotate agenda pages with sticky notes matching the Honeyday palette.
 class TextBoxWidget extends StatefulWidget {
-  /// Constructs a [TextBoxWidget].
   const TextBoxWidget({
     required this.elementId,
     required this.configJson,
@@ -164,16 +125,9 @@ class TextBoxWidget extends StatefulWidget {
     super.key,
   });
 
-  /// Unique canvas element UUID.
   final String elementId;
-
-  /// JSON payload storing text and styling.
   final String configJson;
-
-  /// Interactivity flag.
   final bool isInteractive;
-
-  /// Persistence callback.
   final ValueChanged<String> onConfigChanged;
 
   @override
@@ -235,6 +189,7 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isTransparent = _config.color == TextBoxColor.transparent;
 
     return Container(
@@ -243,14 +198,14 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isTransparent
-              ? HoneydayTheme.paperBorder.withValues(alpha: 0.7)
-              : HoneydayTheme.paperBorder,
+              ? colorScheme.outline.withValues(alpha: 0.7)
+              : colorScheme.outline,
         ),
         boxShadow: isTransparent
             ? null
             : const [
                 BoxShadow(
-                  color: Color(0x0C000000),
+                  color: Colors.black12,
                   blurRadius: 6,
                   offset: Offset(0, 2),
                 ),
@@ -260,11 +215,9 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Formatting Toolbar (Visible only in interactive mode)
           if (widget.isInteractive) ...[
             Row(
               children: [
-                // Color palette circles
                 ...TextBoxColor.values.map((c) {
                   final isSelected = c == _config.color;
                   return GestureDetector(
@@ -275,22 +228,22 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
                       margin: const EdgeInsets.only(right: 6),
                       decoration: BoxDecoration(
                         color: c.color == Colors.transparent
-                            ? Colors.white
+                            ? colorScheme.surface
                             : c.color,
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isSelected
-                              ? HoneydayTheme.honeyAmber
-                              : const Color(0xFFCBD5E1),
+                              ? colorScheme.primary
+                              : colorScheme.outline,
                           width: isSelected ? 2 : 1,
                         ),
                       ),
                       child: c == TextBoxColor.transparent
-                          ? const Center(
+                          ? Center(
                               child: Icon(
                                 Icons.block_rounded,
                                 size: 10,
-                                color: Color(0xFF94A3B8),
+                                color: colorScheme.onSurfaceVariant,
                               ),
                             )
                           : null,
@@ -298,7 +251,6 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
                   );
                 }),
                 const Spacer(),
-                // Font Size Stepper
                 InkWell(
                   onTap: _cycleFontSize,
                   borderRadius: BorderRadius.circular(6),
@@ -308,24 +260,24 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.format_size_rounded,
                           size: 13,
-                          color: HoneydayTheme.inkSlate,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                         const SizedBox(width: 2),
                         Text(
                           '${_config.fontSize.toInt()}pt',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
-                            color: HoneydayTheme.inkSlate,
+                            color: colorScheme.onSurfaceVariant,
                           ),
                         ),
                       ],
@@ -337,12 +289,10 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
             const SizedBox(height: 6),
             Divider(
               height: 1,
-              color: HoneydayTheme.paperBorder.withValues(alpha: 0.8),
+              color: colorScheme.outline.withValues(alpha: 0.8),
             ),
             const SizedBox(height: 6),
           ],
-
-          // Text Content Area
           Expanded(
             child: widget.isInteractive
                 ? TextFormField(
@@ -354,16 +304,16 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
                     style: TextStyle(
                       fontSize: _config.fontSize,
                       height: 1.5,
-                      color: HoneydayTheme.inkSlate,
+                      color: colorScheme.onSurface,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
                       border: InputBorder.none,
                       hintText: 'Escribe tu nota aquí...',
                       hintStyle: TextStyle(
                         fontSize: 13,
-                        color: Color(0xFF94A3B8),
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                     onChanged: _updateText,
@@ -374,7 +324,7 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
                       style: TextStyle(
                         fontSize: _config.fontSize,
                         height: 1.5,
-                        color: HoneydayTheme.inkSlate,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                   ),
