@@ -83,7 +83,6 @@ const List<ElementColorPreset> kElementColorPresets = [
 /// Configuration model serializing visual properties (fill, border, opacity) of canvas elements.
 @immutable
 class ElementConfig {
-  /// Constructs an [ElementConfig].
   const ElementConfig({
     this.colorHex = '#FEF3C7',
     this.borderColorHex = '#D97706',
@@ -93,7 +92,6 @@ class ElementConfig {
     this.customProps = const {},
   });
 
-  /// Deserializes an [ElementConfig] from a JSON string.
   factory ElementConfig.fromJsonString(String jsonStr) {
     if (jsonStr.isEmpty || jsonStr == '{}') {
       return const ElementConfig();

@@ -1,24 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:honeyday/app/theme.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ajustes'),
       ),
       body: ListView(
         children: [
-          const _SectionHeader(label: 'General'),
+          _SectionHeader(label: 'General', colorScheme: colorScheme),
           SwitchListTile(
             title: const Text('Modo oscuro'),
-            subtitle: const Text(
+            subtitle: Text(
               'Usar el tema oscuro de la aplicación',
-              style: TextStyle(color: AppColors.inkSecondary),
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
             secondary: const Icon(Icons.dark_mode_outlined),
             value: Theme.of(context).brightness == Brightness.dark,
@@ -30,38 +31,38 @@ class SettingsPage extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.palette_outlined),
             title: const Text('Color de acento'),
-            subtitle: const Text(
+            subtitle: Text(
               'Abeja miel',
-              style: TextStyle(color: AppColors.inkSecondary),
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
             trailing: Container(
               width: 24,
               height: 24,
               decoration: BoxDecoration(
-                color: AppColors.honeyAmber,
+                color: colorScheme.primary,
                 shape: BoxShape.circle,
-                border: Border.all(color: AppColors.paperBorder),
+                border: Border.all(color: colorScheme.outline),
               ),
             ),
             onTap: () {},
           ),
           const Divider(height: 1),
-          const _SectionHeader(label: 'Acerca de'),
+          _SectionHeader(label: 'Acerca de', colorScheme: colorScheme),
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: const Text('Versión'),
-            subtitle: const Text(
+            subtitle: Text(
               '1.0.0',
-              style: TextStyle(color: AppColors.inkSecondary),
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
             onTap: () {},
           ),
           ListTile(
             leading: const Icon(Icons.description_outlined),
             title: const Text('Licencias'),
-            subtitle: const Text(
+            subtitle: Text(
               'Revisar licencias de código abierto',
-              style: TextStyle(color: AppColors.inkSecondary),
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
             onTap: () => showLicensePage(
               context: context,
@@ -75,9 +76,10 @@ class SettingsPage extends ConsumerWidget {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.label});
+  const _SectionHeader({required this.label, required this.colorScheme});
 
   final String label;
+  final ColorScheme colorScheme;
 
   @override
   Widget build(BuildContext context) {
@@ -85,10 +87,10 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: Text(
         label.toUpperCase(),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w700,
-          color: AppColors.honeyAmber,
+          color: colorScheme.primary,
           letterSpacing: 0.8,
         ),
       ),

@@ -5,29 +5,7 @@ import 'package:honeyday/core/theme/app_colors.dart';
 export 'package:honeyday/core/theme/app_colors.dart';
 
 /// Provides application-wide Material 3 themes with a warm paper & honey aesthetic.
-///
-/// What: Defines light and dark ColorSchemes, typography, and component styling.
-/// Why: Honeyday's physical-agenda feel relies on creamy paper tones (#FFFDF7),
-/// rich amber accents (#D97706), and crisp ink text (#1E293B) for high legibility.
 abstract final class HoneydayTheme {
-  // ── Light theme colors (kept for backward compatibility) ──
-  static const Color paperLight = AppColors.paperLight;
-  static const Color paperCream = AppColors.paperCream;
-  static const Color paperSurface = AppColors.paperSurface;
-  static const Color honeyAmber = AppColors.honeyAmber;
-  static const Color honeyContainer = AppColors.honeyContainer;
-  static const Color honeyLight = AppColors.honeyLight;
-  static const Color honeyDark = AppColors.honeyDark;
-  static const Color inkSlate = AppColors.inkSlate;
-  static const Color inkPrimary = AppColors.inkPrimary;
-  static const Color inkSecondary = AppColors.inkSecondary;
-  static const Color inkMuted = AppColors.inkMuted;
-  static const Color paperBorder = AppColors.paperBorder;
-  static const Color error = AppColors.error;
-  static const Color errorContainer = AppColors.errorContainer;
-
-  // ── Typography ──
-
   static TextTheme _buildTextTheme(TextTheme base, Color textColor) {
     return base.copyWith(
       displayLarge: GoogleFonts.fraunces(
@@ -74,17 +52,17 @@ abstract final class HoneydayTheme {
       seedColor: AppColors.honeyAmber,
       brightness: Brightness.light,
       primary: AppColors.honeyAmber,
-      onPrimary: Colors.white,
+      onPrimary: AppColors.paperSurface,
       primaryContainer: AppColors.honeyContainer,
       onPrimaryContainer: AppColors.honeyDark,
       surface: AppColors.paperLight,
       onSurface: AppColors.inkPrimary,
-      surfaceContainerHighest: const Color(0xFFF8FAFC),
+      surfaceContainerHighest: AppColors.surfaceContainerHighestLight,
       outline: AppColors.paperBorder,
       error: AppColors.error,
-      onError: Colors.white,
+      onError: AppColors.paperSurface,
       errorContainer: AppColors.errorContainer,
-      onErrorContainer: const Color(0xFF991B1B),
+      onErrorContainer: AppColors.onErrorContainerLight,
     );
 
     final baseSans = GoogleFonts.plusJakartaSansTextTheme().apply(
@@ -106,7 +84,7 @@ abstract final class HoneydayTheme {
         centerTitle: false,
       ),
       cardTheme: CardThemeData(
-        color: Colors.white,
+        color: AppColors.paperSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
@@ -115,7 +93,7 @@ abstract final class HoneydayTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.paperSurface,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

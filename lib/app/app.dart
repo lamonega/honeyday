@@ -13,13 +13,19 @@ final onboardingCompleteProvider = FutureProvider<bool>((ref) async {
   return prefs.getBool('onboarding_complete') ?? false;
 });
 
+/// Minimal router that only shows onboarding.
+final _onboardingRouter = GoRouter(
+  initialLocation: '/onboarding',
+  routes: [
+    GoRoute(
+      path: '/onboarding',
+      builder: (context, state) => const _OnboardingWrapper(),
+    ),
+  ],
+);
+
 /// Root application widget for Honeyday.
-///
-/// What: Sets up declarative routing, Material 3 warm honey theming,
-/// dynamic color support, system-adaptive light/dark mode, and onboarding.
-/// Why: Acts as the primary entry point rendered within [ProviderScope].
 class HoneydayApp extends ConsumerWidget {
-  /// Constructs a [HoneydayApp].
   const HoneydayApp({super.key});
 
   @override
@@ -43,7 +49,7 @@ class HoneydayApp extends ConsumerWidget {
         final lightTheme = HoneydayTheme.lightTheme.copyWith(
           colorScheme: lightScheme.copyWith(
             primary: AppColors.honeyAmber,
-            onPrimary: Colors.white,
+            onPrimary: AppColors.paperSurface,
             primaryContainer: AppColors.honeyContainer,
             onPrimaryContainer: AppColors.honeyDark,
           ),
@@ -75,33 +81,29 @@ class HoneydayApp extends ConsumerWidget {
       },
     );
   }
-
-  /// Minimal router that only shows onboarding.
-  GoRouter get _onboardingRouter => GoRouter(
-        initialLocation: '/onboarding',
-        routes: [
-          GoRoute(
-            path: '/onboarding',
-            builder: (context, state) => const _OnboardingWrapper(),
-          ),
-        ],
-      );
 }
 
 /// Wraps onboarding and handles navigation after completion.
-class _OnboardingWrapper extends ConsumerWidget {
+class _OnboardingWrapper extends ConsumerStatefulWidget {
   const _OnboardingWrapper();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final OnboardingState onboardingState = ref.watch(onboardingProvider);
+  ConsumerState<_OnboardingWrapper> createState() =>
+      _OnboardingWrapperState();
+}
 
-    if (onboardingState.completed) {
-      // Persist and navigate to main app
+class _OnboardingWrapperState extends ConsumerState<_OnboardingWrapper> {
+  bool _persisted = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final onboardingState = ref.watch(onboardingProvider);
+
+    if (onboardingState.completed && !_persisted) {
+      _persisted = true;
       SharedPreferences.getInstance().then((prefs) {
         prefs.setBool('onboarding_complete', true);
       });
-      // Rebuild with main router
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.invalidate(onboardingCompleteProvider);
       });
