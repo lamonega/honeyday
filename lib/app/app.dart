@@ -7,9 +7,14 @@ import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// Shared instance of [SharedPreferences] available app-wide.
+final sharedPreferencesProvider = FutureProvider<SharedPreferences>((ref) {
+  return SharedPreferences.getInstance();
+});
+
 /// Whether the user has completed onboarding (persisted).
 final onboardingCompleteProvider = FutureProvider<bool>((ref) async {
-  final prefs = await SharedPreferences.getInstance();
+  final prefs = await ref.watch(sharedPreferencesProvider.future);
   return prefs.getBool('onboarding_complete') ?? false;
 });
 
@@ -101,7 +106,7 @@ class _OnboardingWrapperState extends ConsumerState<_OnboardingWrapper> {
 
     if (onboardingState.completed && !_persisted) {
       _persisted = true;
-      SharedPreferences.getInstance().then((prefs) {
+      ref.read(sharedPreferencesProvider.future).then((prefs) {
         prefs.setBool('onboarding_complete', true);
       });
       WidgetsBinding.instance.addPostFrameCallback((_) {

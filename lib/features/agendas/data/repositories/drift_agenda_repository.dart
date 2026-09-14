@@ -125,17 +125,10 @@ class DriftAgendaRepository implements AgendaRepository {
 
       await _db.into(_db.pages).insert(pageCompanion);
 
-      final agenda = await (_db.select(
-        _db.agendas,
-      )..where((tbl) => tbl.id.equals(agendaId))).getSingle();
-
-      await (_db.update(
-        _db.agendas,
-      )..where((tbl) => tbl.id.equals(agendaId))).write(
-        AgendasCompanion(
-          pageCount: Value(agenda.pageCount + 1),
-          updatedAt: Value(now),
-        ),
+      // Atomic increment: avoids an extra SELECT
+      await _db.customStatement(
+        'UPDATE agendas SET page_count = page_count + 1, updated_at = ? WHERE id = ?',
+        [now.millisecondsSinceEpoch, agendaId],
       );
 
       return await (_db.select(
@@ -171,22 +164,25 @@ class DriftAgendaRepository implements AgendaRepository {
   Future<void> reorderPages(List<String> pageIdsInOrder) async {
     final now = DateTime.now().toUtc();
     await _db.transaction(() async {
-      for (var i = 0; i < pageIdsInOrder.length; i++) {
-        final pageId = pageIdsInOrder[i];
-        await (_db.update(
-          _db.pages,
-        )..where((tbl) => tbl.id.equals(pageId))).write(
-          PagesCompanion(pageNumber: Value(i + 1), updatedAt: Value(now)),
-        );
-      }
+      await _db.batch((batch) {
+        for (var i = 0; i < pageIdsInOrder.length; i++) {
+          batch.update(
+            _db.pages,
+            PagesCompanion(pageNumber: Value(i + 1), updatedAt: Value(now)),
+            where: (tbl) => tbl.id.equals(pageIdsInOrder[i]),
+          );
+        }
+      });
     });
   }
 
   @override
   Stream<List<CanvasElement>> watchCanvasElements(String pageId) {
-    return (_db.select(_db.canvasElements)..where(
-          (tbl) => tbl.pageId.equals(pageId) & tbl.isDeleted.equals(false),
-        ))
+    return (_db.select(_db.canvasElements)
+          ..where(
+            (tbl) => tbl.pageId.equals(pageId) & tbl.isDeleted.equals(false),
+          )
+          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
         .watch();
   }
 
@@ -220,6 +216,15 @@ class DriftAgendaRepository implements AgendaRepository {
   @override
   Future<void> insertStroke(StrokesCompanion stroke) async {
     await _db.into(_db.strokes).insert(stroke);
+  }
+
+  @override
+  Future<void> insertStrokesBatch(List<StrokesCompanion> strokes) async {
+    await _db.transaction(() async {
+      await _db.batch((batch) {
+        batch.insertAll(_db.strokes, strokes);
+      });
+    });
   }
 
   @override

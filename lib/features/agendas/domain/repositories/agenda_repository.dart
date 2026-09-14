@@ -57,6 +57,9 @@ abstract interface class AgendaRepository {
   /// Inserts a newly drawn freehand stroke.
   Future<void> insertStroke(StrokesCompanion stroke);
 
+  /// Inserts multiple strokes in a single batch operation.
+  Future<void> insertStrokesBatch(List<StrokesCompanion> strokes);
+
   /// Removes a single stroke by its [id].
   Future<void> deleteStroke(String id);
 

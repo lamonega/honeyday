@@ -47,7 +47,9 @@ abstract final class HoneydayTheme {
   // Light Theme
   // ──────────────────────────────────────────────
 
-  static ThemeData get lightTheme {
+  static final ThemeData lightTheme = _buildLightTheme();
+
+  static ThemeData _buildLightTheme() {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.honeyAmber,
       brightness: Brightness.light,
@@ -152,7 +154,9 @@ abstract final class HoneydayTheme {
   // Dark Theme
   // ──────────────────────────────────────────────
 
-  static ThemeData get darkTheme {
+  static final ThemeData darkTheme = _buildDarkTheme();
+
+  static ThemeData _buildDarkTheme() {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.honeyAmber,
       brightness: Brightness.dark,

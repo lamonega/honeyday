@@ -153,5 +153,81 @@ void main() {
       expect(currentStrokes, isNotNull);
       expect(currentStrokes!.isEmpty, isTrue);
     });
+
+    test('InkPainter shouldRepaint responds correctly to activePoints and strokes changes', () {
+      final strokeA = InkStroke(
+        id: 's1',
+        pageId: 'p1',
+        tool: InkToolType.pen,
+        color: Colors.black,
+        strokeWidth: 2,
+        points: const [PointVector(0, 0, 0.5)],
+        createdAt: DateTime.now(),
+      );
+
+      final idlePainter1 = InkPainter(strokes: [strokeA]);
+      final idlePainter2 = InkPainter(strokes: [strokeA]);
+      // When idle and unchanged, shouldRepaint must return false
+      expect(idlePainter1.shouldRepaint(idlePainter2), isFalse);
+
+      // When strokes change, shouldRepaint must return true
+      final idlePainter3 = InkPainter(strokes: const []);
+      expect(idlePainter1.shouldRepaint(idlePainter3), isTrue);
+
+      // When activePoints are present on either painter, shouldRepaint must return true for live stroke
+      final activePainter = InkPainter(
+        strokes: [strokeA],
+        activePoints: const [PointVector(10, 10, 0.5)],
+      );
+      expect(activePainter.shouldRepaint(idlePainter1), isTrue);
+      expect(idlePainter1.shouldRepaint(activePainter), isTrue);
+    });
+
+    testWidgets('InkCanvas renders live in-progress stroke during gesture movement', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 500,
+              height: 500,
+              child: InkCanvas(
+                pageId: 'page-1',
+                activeTool: InkToolType.pen,
+                activeColor: Color(0xFF1E293B),
+                activeStrokeWidth: 3,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Start drag gesture
+      final gesture = await tester.startGesture(const Offset(50, 50));
+      await tester.pump();
+      await gesture.moveTo(const Offset(100, 100));
+      await tester.pump();
+
+      // Find CustomPaint widgets inside InkCanvas
+      final customPaints = tester.widgetList<CustomPaint>(
+        find.descendant(of: find.byType(InkCanvas), matching: find.byType(CustomPaint)),
+      );
+
+      // Second CustomPaint is the active stroke layer
+      final activePaint = customPaints.last;
+      expect(activePaint.painter, isNotNull);
+
+      // Release pointer to commit stroke
+      await gesture.up();
+      await tester.pumpAndSettle();
+
+      // First CustomPaint (completed strokes layer) now holds the committed stroke
+      final completedPaints = tester.widgetList<CustomPaint>(
+        find.descendant(of: find.byType(InkCanvas), matching: find.byType(CustomPaint)),
+      );
+      final completedPainter = completedPaints.first.painter as InkPainter;
+      expect(completedPainter.strokes.length, 1);
+    });
   });
 }

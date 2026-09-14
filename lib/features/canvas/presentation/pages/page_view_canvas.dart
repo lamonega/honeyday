@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
@@ -36,7 +37,8 @@ class SnapGuideOverlayPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant SnapGuideOverlayPainter oldDelegate) {
-    return oldDelegate.guides != guides || oldDelegate.guideColor != guideColor;
+    return !listEquals(oldDelegate.guides, guides) ||
+        oldDelegate.guideColor != guideColor;
   }
 }
 
@@ -76,6 +78,7 @@ class PageViewCanvas extends ConsumerStatefulWidget {
 
 class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
   late List<CanvasWidgetData> _elements;
+  late List<Rect> _cachedSiblingRects;
   String? _selectedElementId;
   List<SnapGuideLine> _activeSnapGuides = const [];
   final InkCanvasController _inkController = InkCanvasController();
@@ -84,6 +87,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
   void initState() {
     super.initState();
     _elements = List.from(widget.initialElements);
+    _cachedSiblingRects = _elements.map((e) => e.boundingBox).toList();
     if (_elements.isNotEmpty) {
       _selectedElementId = _elements.first.id;
     }
@@ -96,6 +100,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
         oldWidget.initialElements.length != widget.initialElements.length ||
         oldWidget.initialElements != widget.initialElements) {
       _elements = List.from(widget.initialElements);
+      _cachedSiblingRects = _elements.map((e) => e.boundingBox).toList();
       _selectedElementId = _elements.isNotEmpty ? _elements.first.id : null;
       _activeSnapGuides = const [];
     }
@@ -122,6 +127,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
           rotation: newRotation,
         );
         _elements[index] = updated;
+        _cachedSiblingRects = _elements.map((e) => e.boundingBox).toList();
         widget.onElementUpdated?.call(updated);
       }
     });
@@ -130,6 +136,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
   void _handleDeleteElement(String elementId) {
     setState(() {
       _elements.removeWhere((e) => e.id == elementId);
+      _cachedSiblingRects = _elements.map((e) => e.boundingBox).toList();
       if (_selectedElementId == elementId) {
         _selectedElementId = _elements.isNotEmpty ? _elements.first.id : null;
       }
@@ -147,6 +154,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
           rotation: 0,
         );
         _elements[index] = updated;
+        _cachedSiblingRects = _elements.map((e) => e.boundingBox).toList();
         widget.onElementUpdated?.call(updated);
       }
     });
@@ -163,6 +171,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
           size: Size(widget.pageSize.width - (margin * 2), current.size.height),
         );
         _elements[index] = updated;
+        _cachedSiblingRects = _elements.map((e) => e.boundingBox).toList();
         widget.onElementUpdated?.call(updated);
       }
     });
@@ -180,6 +189,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
           ),
         );
         _elements[index] = updated;
+        _cachedSiblingRects = _elements.map((e) => e.boundingBox).toList();
         widget.onElementUpdated?.call(updated);
       }
     });
@@ -201,6 +211,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
         );
         final updated = current.copyWith(configJson: newJson);
         _elements[index] = updated;
+        _cachedSiblingRects = _elements.map((e) => e.boundingBox).toList();
         widget.onElementUpdated?.call(updated);
       }
     });
@@ -217,9 +228,6 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final allSiblingRects =
-                _elements.map((e) => e.boundingBox).toList();
-
             return Stack(
               children: [
                 Center(
@@ -248,7 +256,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                             ..._elements.map((element) {
                               final isSelected =
                                   _selectedElementId == element.id;
-                              final siblingRects = allSiblingRects
+                              final siblingRects = _cachedSiblingRects
                                   .where((r) => r != element.boundingBox)
                                   .toList();
 

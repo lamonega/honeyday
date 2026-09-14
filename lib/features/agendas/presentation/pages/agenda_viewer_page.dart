@@ -383,6 +383,16 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                 },
                 itemBuilder: (context, index) {
                   final page = pagesList[index];
+                  final isAdjacent =
+                      (index - _currentPageIndex).abs() <= 1;
+
+                  if (!isAdjacent || currentMode != CanvasMode.reading) {
+                    return _PageContentLoader(
+                      key: ValueKey(page.id),
+                      page: page,
+                      currentMode: currentMode,
+                    );
+                  }
 
                   return AnimatedBuilder(
                     animation: _pageController,
@@ -391,10 +401,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                       if (_pageController.position.haveDimensions &&
                           _pageController.page != null) {
                         position = index - _pageController.page!;
-                      }
-
-                      if (currentMode != CanvasMode.reading) {
-                        return child!;
                       }
 
                       final clamped = position.clamp(-1.0, 1.0);

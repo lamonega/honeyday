@@ -9,14 +9,31 @@ export 'package:honeyday/core/theme/paper_style.dart';
 /// Why: Provides an authentic physical agenda tactile feel while maintaining low CPU/GPU overhead.
 class PaperSurfacePainter extends CustomPainter {
   /// Constructs a [PaperSurfacePainter].
-  const PaperSurfacePainter({
+  PaperSurfacePainter({
     required this.paperStyle,
     this.backgroundColor = const Color(0xFFFFFDF7),
     this.guidelineColor = const Color(0xFFCBD5E1),
     this.marginColor = const Color(0xFFE2E8F0),
     this.spacing = 24,
     this.margin = 24,
-  });
+  })  : _backgroundPaint = Paint()
+          ..color = backgroundColor
+          ..style = PaintingStyle.fill,
+        _dotPaint = Paint()
+          ..color = guidelineColor
+          ..style = PaintingStyle.fill,
+        _linePaint = Paint()
+          ..color = guidelineColor
+          ..strokeWidth = 1
+          ..style = PaintingStyle.stroke,
+        _marginLinePaint = Paint()
+          ..color = marginColor
+          ..strokeWidth = 1.2
+          ..style = PaintingStyle.stroke,
+        _gridPaint = Paint()
+          ..color = guidelineColor
+          ..strokeWidth = 0.8
+          ..style = PaintingStyle.stroke;
 
   /// Paper texture pattern.
   final PaperStyle paperStyle;
@@ -36,13 +53,15 @@ class PaperSurfacePainter extends CustomPainter {
   /// Page margin offset from edges in points.
   final double margin;
 
+  final Paint _backgroundPaint;
+  final Paint _dotPaint;
+  final Paint _linePaint;
+  final Paint _marginLinePaint;
+  final Paint _gridPaint;
+
   @override
   void paint(Canvas canvas, Size size) {
-    // Fill full canvas with warm paper background
-    final backgroundPaint = Paint()
-      ..color = backgroundColor
-      ..style = PaintingStyle.fill;
-    canvas.drawRect(Offset.zero & size, backgroundPaint);
+    canvas.drawRect(Offset.zero & size, _backgroundPaint);
 
     switch (paperStyle) {
       case PaperStyle.dotted:
@@ -58,34 +77,20 @@ class PaperSurfacePainter extends CustomPainter {
 
   /// Draws a bullet journal dot grid.
   void _drawDots(Canvas canvas, Size size) {
-    final dotPaint = Paint()
-      ..color = guidelineColor
-      ..style = PaintingStyle.fill;
-
     for (var y = margin; y <= size.height - margin; y += spacing) {
       for (var x = margin; x <= size.width - margin; x += spacing) {
-        canvas.drawCircle(Offset(x, y), 1.2, dotPaint);
+        canvas.drawCircle(Offset(x, y), 1.2, _dotPaint);
       }
     }
   }
 
   /// Draws horizontal notebook lines.
   void _drawLined(Canvas canvas, Size size) {
-    final linePaint = Paint()
-      ..color = guidelineColor
-      ..strokeWidth = 1
-      ..style = PaintingStyle.stroke;
-
-    final marginLinePaint = Paint()
-      ..color = marginColor
-      ..strokeWidth = 1.2
-      ..style = PaintingStyle.stroke;
-
     // Draw left vertical notebook margin line
     canvas.drawLine(
       Offset(margin * 1.5, margin),
       Offset(margin * 1.5, size.height - margin),
-      marginLinePaint,
+      _marginLinePaint,
     );
 
     // Draw horizontal ruled lines
@@ -93,24 +98,19 @@ class PaperSurfacePainter extends CustomPainter {
       canvas.drawLine(
         Offset(margin, y),
         Offset(size.width - margin, y),
-        linePaint,
+        _linePaint,
       );
     }
   }
 
   /// Draws a graph paper grid.
   void _drawGrid(Canvas canvas, Size size) {
-    final gridPaint = Paint()
-      ..color = guidelineColor
-      ..strokeWidth = 0.8
-      ..style = PaintingStyle.stroke;
-
     // Horizontal lines
     for (var y = margin; y <= size.height - margin; y += spacing) {
       canvas.drawLine(
         Offset(margin, y),
         Offset(size.width - margin, y),
-        gridPaint,
+        _gridPaint,
       );
     }
 
@@ -119,7 +119,7 @@ class PaperSurfacePainter extends CustomPainter {
       canvas.drawLine(
         Offset(x, margin),
         Offset(x, size.height - margin),
-        gridPaint,
+        _gridPaint,
       );
     }
   }

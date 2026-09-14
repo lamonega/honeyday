@@ -186,19 +186,21 @@ class AgendaViewerController {
   /// Synchronizes vector ink strokes for a page.
   Future<void> syncStrokes(String pageId, List<InkStroke> newStrokes) async {
     await _repository.clearStrokes(pageId);
-    for (final stroke in newStrokes) {
-      await _repository.insertStroke(
-        StrokesCompanion.insert(
-          id: stroke.id,
-          pageId: pageId,
-          brushType: drift.Value(stroke.tool.name),
-          colorHex: drift.Value(stroke.toHexColor()),
-          strokeWidth: drift.Value(stroke.strokeWidth),
-          pointsJson: drift.Value(stroke.toJsonPoints()),
-          createdAt: drift.Value(stroke.createdAt),
-          updatedAt: drift.Value(DateTime.now().toUtc()),
-        ),
-      );
-    }
+    if (newStrokes.isEmpty) return;
+    final companions = newStrokes
+        .map(
+          (stroke) => StrokesCompanion.insert(
+            id: stroke.id,
+            pageId: pageId,
+            brushType: drift.Value(stroke.tool.name),
+            colorHex: drift.Value(stroke.toHexColor()),
+            strokeWidth: drift.Value(stroke.strokeWidth),
+            pointsJson: drift.Value(stroke.toJsonPoints()),
+            createdAt: drift.Value(stroke.createdAt),
+            updatedAt: drift.Value(DateTime.now().toUtc()),
+          ),
+        )
+        .toList();
+    await _repository.insertStrokesBatch(companions);
   }
 }
