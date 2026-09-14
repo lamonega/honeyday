@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/core/database/app_database.dart';
 
 /// Interactive card previewing a saved agenda notebook on the home dashboard.
 ///
-/// What: Renders a notebook-styled cover with title, page count, and quick mode shortcuts.
-/// Why: Directly reflects the SVG prototype ("Tus agendas"), providing separate entry points
-/// for reading/writing and edit mode (accessed via the pencil icon).
+/// What: Renders a tactile notebook-styled cover with spine stitch, page edges,
+/// ribbon bookmark, Fraunces editorial title, and quick mode shortcuts.
+/// Why: Directly reflects the physical agenda aesthetic of Honeyday, providing clear
+/// entry points for reading/writing and edit mode.
 class AgendaCard extends StatelessWidget {
   /// Constructs an [AgendaCard].
   const AgendaCard({
@@ -33,7 +35,7 @@ class AgendaCard extends StatelessWidget {
   /// Triggered when requesting deletion of this agenda.
   final VoidCallback onDelete;
 
-  /// Maps coverStyle string to a pleasing gradient.
+  /// Maps coverStyle string to a rich physical notebook gradient.
   LinearGradient _getCoverGradient(String style) {
     switch (style.toLowerCase()) {
       case 'lavender':
@@ -76,7 +78,8 @@ class AgendaCard extends StatelessWidget {
 
     return Card(
       clipBehavior: Clip.antiAlias,
-      elevation: 2,
+      elevation: 3,
+      shadowColor: Colors.black.withValues(alpha: 0.12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: const BorderSide(color: HoneydayTheme.paperBorder),
@@ -93,9 +96,46 @@ class AgendaCard extends StatelessWidget {
                 decoration: BoxDecoration(gradient: gradient),
                 child: Stack(
                   children: [
+                    // Subtle light curvature highlight across the notebook cover
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white.withValues(alpha: 0.12),
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.15),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Spine shadow band on left
+                    Positioned(
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 24,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              Colors.black.withValues(alpha: 0.28),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
                     // Simulated spine stitches on left
                     Positioned(
-                      left: 12,
+                      left: 10,
                       top: 0,
                       bottom: 0,
                       child: Column(
@@ -103,22 +143,81 @@ class AgendaCard extends StatelessWidget {
                         children: List.generate(
                           6,
                           (index) => Container(
-                            width: 6,
+                            width: 5,
                             height: 12,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.4),
-                              borderRadius: BorderRadius.circular(3),
+                              color: Colors.white.withValues(alpha: 0.45),
+                              borderRadius: BorderRadius.circular(2.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.15),
+                                  blurRadius: 1,
+                                  offset: const Offset(0, 1),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
                     ),
-                    // Centered title text
+
+                    // Bookmark ribbon hanging from top
+                    Positioned(
+                      top: 0,
+                      right: 44,
+                      child: Container(
+                        width: 12,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.88),
+                          borderRadius: const BorderRadius.vertical(
+                            bottom: Radius.circular(3),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 3,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Stacked paper pages edge on the right
+                    Positioned(
+                      top: 0,
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        width: 6,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFBF8EE),
+                          border: Border(
+                            left: BorderSide(
+                              color: Colors.black.withValues(alpha: 0.12),
+                            ),
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: List.generate(
+                            8,
+                            (i) => Container(
+                              height: 1,
+                              color: const Color(0xFFE2D8C0),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Notebook title text (Fraunces editorial)
                     Padding(
                       padding: const EdgeInsets.only(
-                        left: 36,
-                        right: 16,
-                        top: 16,
+                        left: 32,
+                        right: 48,
+                        top: 18,
                         bottom: 16,
                       ),
                       child: Align(
@@ -127,26 +226,35 @@ class AgendaCard extends StatelessWidget {
                           agenda.title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: GoogleFonts.fraunces(
                             color: Colors.white,
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 0.2,
+                            letterSpacing: -0.2,
+                            shadows: [
+                              Shadow(
+                                color: Colors.black.withValues(alpha: 0.25),
+                                offset: const Offset(0, 1),
+                                blurRadius: 2,
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
+
                     // Delete button in top right
                     Positioned(
-                      top: 8,
-                      right: 8,
+                      top: 6,
+                      right: 10,
                       child: IconButton(
                         icon: const Icon(
                           Icons.delete_outline_rounded,
                           color: Colors.white70,
-                          size: 20,
+                          size: 19,
                         ),
                         tooltip: 'Eliminar agenda',
+                        visualDensity: VisualDensity.compact,
                         onPressed: onDelete,
                       ),
                     ),
@@ -154,6 +262,7 @@ class AgendaCard extends StatelessWidget {
                 ),
               ),
             ),
+
             // Bottom details and actions bar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -174,7 +283,7 @@ class AgendaCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF78350F),
+                        color: HoneydayTheme.honeyDark,
                       ),
                     ),
                   ),
@@ -183,8 +292,8 @@ class AgendaCard extends StatelessWidget {
                   IconButton(
                     icon: const Icon(
                       Icons.visibility_outlined,
-                      size: 22,
-                      color: HoneydayTheme.inkSlate,
+                      size: 20,
+                      color: HoneydayTheme.inkSecondary,
                     ),
                     tooltip: 'Modo lectura (ojo)',
                     visualDensity: VisualDensity.compact,
@@ -196,7 +305,7 @@ class AgendaCard extends StatelessWidget {
                     icon: const Icon(
                       Icons.edit_outlined,
                       color: HoneydayTheme.honeyAmber,
-                      size: 22,
+                      size: 20,
                     ),
                     tooltip: 'Modo edición (lápiz)',
                     visualDensity: VisualDensity.compact,

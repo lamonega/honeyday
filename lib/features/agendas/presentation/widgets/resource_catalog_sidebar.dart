@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/app/theme.dart';
-import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 
 /// Sidebar panel displaying the "Catálogo de Elementos" in Edit Mode.
@@ -28,6 +27,7 @@ class ResourceCatalogSidebar extends StatefulWidget {
 }
 
 class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
+  bool _isCollapsed = false;
   ElementCategory? _selectedCategory; // null = Todas
 
   static const _filterTabs = <(String, ElementCategory?)>[
@@ -44,20 +44,86 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
         ? allDefs.where((d) => d.category != ElementCategory.legacy).toList()
         : allDefs.where((d) => d.category == _selectedCategory).toList();
 
-    return Container(
-      width: widget.width,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      width: _isCollapsed ? 52 : widget.width,
+      clipBehavior: Clip.hardEdge,
       decoration: const BoxDecoration(
         color: HoneydayTheme.paperLight,
         border: Border(
           right: BorderSide(color: HoneydayTheme.paperBorder),
         ),
       ),
-      child: Column(
+      child: _isCollapsed
+          ? _buildCollapsedRail()
+          : _buildExpandedSidebar(visibleDefs),
+    );
+  }
+
+  Widget _buildCollapsedRail() {
+    return OverflowBox(
+      minWidth: 52,
+      maxWidth: 52,
+      alignment: Alignment.topCenter,
+      child: SizedBox(
+        width: 52,
+        child: Column(
+          children: [
+          const SizedBox(height: 12),
+          IconButton(
+            icon: const Icon(Icons.chevron_right_rounded),
+            tooltip: 'Mostrar elementos',
+            color: HoneydayTheme.inkSlate,
+            onPressed: () {
+              setState(() {
+                _isCollapsed = false;
+              });
+            },
+          ),
+          const SizedBox(height: 8),
+          Tooltip(
+            message: 'Mostrar elementos',
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: () {
+                setState(() {
+                  _isCollapsed = false;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: HoneydayTheme.honeyContainer,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.interests_rounded,
+                  color: HoneydayTheme.honeyAmber,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      ),
+    );
+  }
+
+  Widget _buildExpandedSidebar(List<AgendaWidgetDefinition> visibleDefs) {
+    return OverflowBox(
+      minWidth: widget.width,
+      maxWidth: widget.width,
+      alignment: Alignment.topLeft,
+      child: SizedBox(
+        width: widget.width,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
             child: Row(
               children: [
                 Container(
@@ -74,27 +140,25 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
                 ),
                 const SizedBox(width: 10),
                 const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Elementos',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: HoneydayTheme.inkSlate,
-                        ),
-                      ),
-                      Text(
-                        'Diseño y plantillas',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Color(0xFF64748B),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                  child: Text(
+                    'Elementos',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: HoneydayTheme.inkSlate,
+                    ),
                   ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_left_rounded),
+                  tooltip: 'Ocultar elementos',
+                  color: HoneydayTheme.inkSlate,
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () {
+                    setState(() {
+                      _isCollapsed = true;
+                    });
+                  },
                 ),
               ],
             ),
@@ -112,12 +176,12 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
                   child: ChoiceChip(
                     label: Text(tab.$1),
                     labelStyle: TextStyle(
-                      fontSize: 11,
+                      fontSize: 11.5,
                       fontWeight:
                           isSelected ? FontWeight.bold : FontWeight.w500,
                       color: isSelected
-                          ? const Color(0xFF78350F)
-                          : const Color(0xFF475569),
+                          ? HoneydayTheme.honeyDark
+                          : HoneydayTheme.inkSecondary,
                     ),
                     selected: isSelected,
                     selectedColor: HoneydayTheme.honeyContainer,
@@ -154,37 +218,11 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
               },
             ),
           ),
-
-          // Quick tip footer
-          Container(
-            padding: const EdgeInsets.all(12),
-            margin: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: HoneydayTheme.paperBorder),
-            ),
-            child: const Row(
-              children: [
-                Icon(
-                  Icons.auto_awesome_rounded,
-                  size: 16,
-                  color: HoneydayTheme.honeyAmber,
-                ),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Toca un elemento para agregarlo. Puedes cambiar su color o adaptarlo a toda la página.',
-                    style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B)),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class _CatalogItemCard extends StatelessWidget {
@@ -198,10 +236,6 @@ class _CatalogItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final description = definition.description.isNotEmpty
-        ? definition.description
-        : _getDefaultDescription(definition.id);
-
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(12),
@@ -231,31 +265,15 @@ class _CatalogItemCard extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      definition.name,
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.bold,
-                        color: HoneydayTheme.inkSlate,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Color(0xFF64748B),
-                        height: 1.2,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                child: Text(
+                  definition.name,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: HoneydayTheme.inkPrimary,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               const SizedBox(width: 6),
@@ -269,20 +287,5 @@ class _CatalogItemCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _getDefaultDescription(String id) {
-    switch (id) {
-      case 'calendar_grid':
-        return 'Cuadrícula con días y tareas';
-      case 'budget_calculator':
-        return 'Calculadora de presupuesto simple';
-      case 'journal_block':
-        return 'Entradas para un día o una semana';
-      case 'text_box':
-        return 'Caja de notas y texto';
-      default:
-        return 'Elemento de diseño';
-    }
   }
 }

@@ -13,7 +13,6 @@ import 'package:honeyday/features/agendas/presentation/widgets/page_manager_shee
 import 'package:honeyday/features/agendas/presentation/widgets/resource_catalog_sidebar.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/presentation/pages/page_view_canvas.dart';
-import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 
 /// The central planner viewer and editor page for an active agenda.
@@ -110,23 +109,13 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
           tooltip: 'Volver a tus agendas',
           onPressed: () => context.go('/'),
         ),
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Herramientas',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: HoneydayTheme.inkSlate,
-              ),
-            ),
-            Text(
-              'Modo edición • Coloca y organiza elementos',
-              style: TextStyle(fontSize: 11, color: Color(0xFF64748B)),
-            ),
-          ],
+        title: const Text(
+          'Herramientas',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: HoneydayTheme.inkSlate,
+          ),
         ),
         actions: [
           Row(
@@ -156,15 +145,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                       : null,
                 ),
               ],
-              if (pages.isNotEmpty)
-                IconButton(
-                  icon: const Icon(Icons.texture_rounded),
-                  tooltip: 'Estilo de papel',
-                  onPressed: () => _showPaperStyleDialog(
-                    context,
-                    pages[_currentPageIndex],
-                  ),
-                ),
               IconButton(
                 icon: const Icon(Icons.layers_rounded),
                 tooltip: 'Gestionar páginas',
@@ -219,7 +199,9 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
               // Panel izquierdo: Catálogo de recursos
               ResourceCatalogSidebar(
                 onSelectDefinition: (def) {
-                  unawaited(_addCatalogElement(pagesList[_currentPageIndex].id, def));
+                  unawaited(
+                    _addCatalogElement(pagesList[_currentPageIndex].id, def),
+                  );
                 },
               ),
 
@@ -263,8 +245,9 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                       ),
                       tooltip: 'Nueva página',
                       onPressed: () async {
-                        final chosenStyle =
-                            await showNewPageDesignDialog(context);
+                        final chosenStyle = await showNewPageDesignDialog(
+                          context,
+                        );
                         if (chosenStyle == null || !mounted) return;
                         final newPageNumber = pagesList.length + 1;
                         await controller.addPage(
@@ -407,8 +390,10 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                       final isTurning = clamped.abs() > 0.001;
                       final isLeft = clamped < 0;
                       final rotationY = clamped * (math.pi / 3.5);
-                      final shadowOpacity =
-                          (clamped.abs() * 0.4).clamp(0.0, 0.45);
+                      final shadowOpacity = (clamped.abs() * 0.4).clamp(
+                        0.0,
+                        0.45,
+                      );
 
                       return Transform(
                         alignment: isLeft
@@ -508,53 +493,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     );
   }
 
-  void _showPaperStyleDialog(BuildContext context, AgendaPage currentPage) {
-    unawaited(
-      showDialog<void>(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Estilo de papel'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: PaperStyle.values.map((style) {
-                return ListTile(
-                  leading: Icon(
-                    style == PaperStyle.dotted
-                        ? Icons.grain_rounded
-                        : style == PaperStyle.grid
-                        ? Icons.grid_4x4_rounded
-                        : style == PaperStyle.lined
-                        ? Icons.reorder_rounded
-                        : Icons.crop_portrait_rounded,
-                    color: HoneydayTheme.honeyAmber,
-                  ),
-                  title: Text(
-                    style == PaperStyle.dotted
-                        ? 'Puntos'
-                        : style == PaperStyle.grid
-                        ? 'Cuadrícula'
-                        : style == PaperStyle.lined
-                        ? 'Rayas'
-                        : 'Liso',
-                  ),
-                  onTap: () async {
-                    final controller = ref.read(agendaViewerControllerProvider);
-                    await controller.updatePageBackground(
-                      currentPage.id,
-                      style.name,
-                    );
-                    if (context.mounted) Navigator.pop(context);
-                  },
-                );
-              }).toList(),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   Future<void> _showPageManagerSheet(
     BuildContext context,
     List<AgendaPage> pages,
@@ -569,17 +507,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         pages: pages,
         currentPageIndex: _currentPageIndex,
         onSelectPage: (index) => _goToPage(index, pages.length),
-        onAddPage: (chosenStyle) async {
-          final newPageNumber = pages.length + 1;
-          await controller.addPage(
-            agendaId: widget.agendaId,
-            pageNumber: newPageNumber,
-            backgroundStyle: chosenStyle,
-          );
-          if (mounted) {
-            _goToPage(pages.length, pages.length + 1);
-          }
-        },
         onDeletePage: (pageId) async {
           if (pages.length <= 1) return;
           await controller.deletePage(pageId);
@@ -590,6 +517,19 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         onChangePaperStyle: (style) async {
           final currentPage = pages[_currentPageIndex];
           await controller.updatePageBackground(currentPage.id, style);
+        },
+        onReorderPages: (pageIds) async {
+          final currentPageId = _currentPageIndex < pages.length
+              ? pages[_currentPageIndex].id
+              : null;
+          await controller.reorderPages(pageIds);
+          if (currentPageId != null && mounted) {
+            final newIndex = pageIds.indexOf(currentPageId);
+            if (newIndex != -1 && newIndex != _currentPageIndex) {
+              setState(() => _currentPageIndex = newIndex);
+              _pageController.jumpToPage(newIndex);
+            }
+          }
         },
       ),
     );
@@ -635,16 +575,12 @@ class _PageContentLoader extends ConsumerWidget {
           configJson: elementData.configJson,
           isInteractive: isInteractive,
           onConfigChanged: (newJson) {
-            unawaited(
-              controller.updateElementConfig(elementData, newJson),
-            );
+            unawaited(controller.updateElementConfig(elementData, newJson));
           },
         );
       },
       onElementUpdated: (updatedData) {
-        unawaited(
-          controller.updateElementTransform(updatedData),
-        );
+        unawaited(controller.updateElementTransform(updatedData));
       },
       onElementDeleted: controller.deleteElement,
       onElementDuplicated: (source) async {

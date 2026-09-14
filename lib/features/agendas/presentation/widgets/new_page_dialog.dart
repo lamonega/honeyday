@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/app/theme.dart';
-import 'package:honeyday/core/theme/paper_style.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/page_surface.dart';
 
 /// Shows a dialog prompting the user to choose the layout/paper design for a new page.
 ///
-/// Returns the chosen [PaperStyle.name] (e.g. `'lined'`, `'dotted'`, `'blank'`, `'grid'`)
+/// Returns the chosen `PaperStyle.name` (e.g. `'lined'`, `'dotted'`, `'blank'`, `'grid'`)
 /// or `null` if the user cancelled the dialog.
 Future<String?> showNewPageDesignDialog(BuildContext context) {
   return showDialog<String>(
@@ -39,25 +38,21 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
     _PageDesignOption(
       style: PaperStyle.lined,
       title: 'Líneas',
-      subtitle: 'Cuaderno clásico con renglones para escribir',
       icon: Icons.view_headline_rounded,
     ),
     _PageDesignOption(
       style: PaperStyle.dotted,
       title: 'Puntos',
-      subtitle: 'Bullet journal con cuadrícula de puntos guía',
       icon: Icons.grain_rounded,
     ),
     _PageDesignOption(
       style: PaperStyle.blank,
       title: 'En blanco',
-      subtitle: 'Lienzo limpio y liso para bocetos y esquemas',
       icon: Icons.crop_portrait_rounded,
     ),
     _PageDesignOption(
       style: PaperStyle.grid,
       title: 'Cuadrícula',
-      subtitle: 'Papel milimetrado para tablas y gráficos',
       icon: Icons.grid_4x4_rounded,
     ),
   ];
@@ -96,14 +91,6 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Elige qué estilo de hoja deseas para tu nueva página:',
-              style: TextStyle(
-                fontSize: 13,
-                color: Color(0xFF64748B),
-              ),
-            ),
-            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(child: _buildOptionCard(_designs[0])),
@@ -159,7 +146,7 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        height: 125,
+        height: 95,
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
           color: isSelected ? HoneydayTheme.honeyContainer : Colors.white,
@@ -208,54 +195,42 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
                   ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              option.title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: isSelected
-                    ? const Color(0xFF78350F)
-                    : HoneydayTheme.inkSlate,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Expanded(
-              child: Text(
-                option.subtitle,
-                style: TextStyle(
-                  fontSize: 10.5,
-                  color: isSelected
-                      ? const Color(0xFF92400E)
-                      : const Color(0xFF64748B),
-                  height: 1.25,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            // Mini preview sheet showing paper pattern
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Container(
-                width: 44,
-                height: 22,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: HoneydayTheme.paperBorder,
-                    width: 0.8,
+            const Spacer(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  option.title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected
+                        ? const Color(0xFF78350F)
+                        : HoneydayTheme.inkSlate,
                   ),
                 ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(3),
-                  child: PageSurface(
-                    paperStyle: option.style,
-                    spacing: 6,
-                    margin: 4,
+                // Mini preview sheet showing paper pattern
+                Container(
+                  width: 44,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: HoneydayTheme.paperBorder,
+                      width: 0.8,
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: PageSurface(
+                      paperStyle: option.style,
+                      spacing: 6,
+                      margin: 4,
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
@@ -268,12 +243,10 @@ class _PageDesignOption {
   const _PageDesignOption({
     required this.style,
     required this.title,
-    required this.subtitle,
     required this.icon,
   });
 
   final PaperStyle style;
   final String title;
-  final String subtitle;
   final IconData icon;
 }

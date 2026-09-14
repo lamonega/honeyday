@@ -11,8 +11,10 @@ import 'package:uuid/uuid.dart';
 
 /// Exposes the reactive list of pages for a given agenda ID.
 // ignore: specify_nonobvious_property_types
-final agendaPagesProvider =
-    StreamProvider.family<List<AgendaPage>, String>((ref, agendaId) {
+final agendaPagesProvider = StreamProvider.family<List<AgendaPage>, String>((
+  ref,
+  agendaId,
+) {
   final repository = ref.watch(agendaRepositoryProvider);
   return repository.watchPages(agendaId);
 });
@@ -21,26 +23,28 @@ final agendaPagesProvider =
 // ignore: specify_nonobvious_property_types
 final pageElementsProvider =
     StreamProvider.family<List<CanvasWidgetData>, String>((ref, pageId) {
-  final repository = ref.watch(agendaRepositoryProvider);
-  return repository.watchCanvasElements(pageId).map((rawList) {
-    return rawList.map((e) {
-      return CanvasWidgetData(
-        id: e.id,
-        pageId: e.pageId,
-        widgetType: e.widgetType,
-        position: Offset(e.posX, e.posY),
-        size: Size(e.width, e.height),
-        rotation: e.rotation,
-        configJson: e.configJson,
-      );
-    }).toList();
-  });
-});
+      final repository = ref.watch(agendaRepositoryProvider);
+      return repository.watchCanvasElements(pageId).map((rawList) {
+        return rawList.map((e) {
+          return CanvasWidgetData(
+            id: e.id,
+            pageId: e.pageId,
+            widgetType: e.widgetType,
+            position: Offset(e.posX, e.posY),
+            size: Size(e.width, e.height),
+            rotation: e.rotation,
+            configJson: e.configJson,
+          );
+        }).toList();
+      });
+    });
 
 /// Exposes the UI-ready vector ink strokes for a given page ID.
 // ignore: specify_nonobvious_property_types
-final pageStrokesProvider =
-    StreamProvider.family<List<InkStroke>, String>((ref, pageId) {
+final pageStrokesProvider = StreamProvider.family<List<InkStroke>, String>((
+  ref,
+  pageId,
+) {
   final repository = ref.watch(agendaRepositoryProvider);
   return repository.watchStrokes(pageId).map((rawList) {
     return rawList.map((s) {
@@ -60,9 +64,9 @@ final pageStrokesProvider =
 /// Provider for [AgendaViewerController].
 final Provider<AgendaViewerController> agendaViewerControllerProvider =
     Provider<AgendaViewerController>((ref) {
-  final repository = ref.watch(agendaRepositoryProvider);
-  return AgendaViewerController(repository);
-});
+      final repository = ref.watch(agendaRepositoryProvider);
+      return AgendaViewerController(repository);
+    });
 
 /// ViewModel/Controller managing state mutations and business logic for the agenda viewer.
 ///
@@ -91,6 +95,10 @@ class AgendaViewerController {
   Future<void> deletePage(String pageId) {
     return _repository.deletePage(pageId);
   }
+
+  /// Reorders pages according to the provided list of [pageIdsInOrder].
+  Future<void> reorderPages(List<String> pageIdsInOrder) =>
+      _repository.reorderPages(pageIdsInOrder);
 
   /// Updates the paper background pattern of a page.
   Future<void> updatePageBackground(String pageId, String backgroundStyle) {

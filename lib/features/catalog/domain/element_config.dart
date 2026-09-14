@@ -93,6 +93,26 @@ class ElementConfig {
     this.customProps = const {},
   });
 
+  /// Deserializes an [ElementConfig] from a JSON string.
+  factory ElementConfig.fromJsonString(String jsonStr) {
+    if (jsonStr.isEmpty || jsonStr == '{}') {
+      return const ElementConfig();
+    }
+    try {
+      final map = jsonDecode(jsonStr) as Map<String, dynamic>;
+      return ElementConfig(
+        colorHex: map['color'] as String? ?? '#FEF3C7',
+        borderColorHex: map['borderColor'] as String? ?? '#D97706',
+        borderWidth: (map['borderWidth'] as num?)?.toDouble() ?? 1.5,
+        opacity: (map['opacity'] as num?)?.toDouble() ?? 1.0,
+        cornerRadius: (map['cornerRadius'] as num?)?.toDouble() ?? 12.0,
+        customProps: map,
+      );
+    } on Exception catch (_) {
+      return const ElementConfig();
+    }
+  }
+
   /// Fill color in hex format (e.g. '#FEF3C7' or 'transparent').
   final String colorHex;
 
@@ -130,7 +150,7 @@ class ElementConfig {
       } else if (cleaned.length == 8) {
         return Color(int.parse('0x$cleaned'));
       }
-    } catch (_) {
+    } on FormatException catch (_) {
       return defaultColor;
     }
     return defaultColor;
@@ -140,26 +160,6 @@ class ElementConfig {
   static String colorToHex(Color color) {
     if (color == Colors.transparent) return 'transparent';
     return '#${(color.toARGB32() & 0x00FFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
-  }
-
-  /// Deserializes an [ElementConfig] from a JSON string.
-  factory ElementConfig.fromJsonString(String jsonStr) {
-    if (jsonStr.isEmpty || jsonStr == '{}') {
-      return const ElementConfig();
-    }
-    try {
-      final map = jsonDecode(jsonStr) as Map<String, dynamic>;
-      return ElementConfig(
-        colorHex: map['color'] as String? ?? '#FEF3C7',
-        borderColorHex: map['borderColor'] as String? ?? '#D97706',
-        borderWidth: (map['borderWidth'] as num?)?.toDouble() ?? 1.5,
-        opacity: (map['opacity'] as num?)?.toDouble() ?? 1.0,
-        cornerRadius: (map['cornerRadius'] as num?)?.toDouble() ?? 12.0,
-        customProps: map,
-      );
-    } catch (_) {
-      return const ElementConfig();
-    }
   }
 
   /// Serializes this config into a JSON string.

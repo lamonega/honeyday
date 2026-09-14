@@ -168,6 +168,21 @@ class DriftAgendaRepository implements AgendaRepository {
   }
 
   @override
+  Future<void> reorderPages(List<String> pageIdsInOrder) async {
+    final now = DateTime.now().toUtc();
+    await _db.transaction(() async {
+      for (var i = 0; i < pageIdsInOrder.length; i++) {
+        final pageId = pageIdsInOrder[i];
+        await (_db.update(
+          _db.pages,
+        )..where((tbl) => tbl.id.equals(pageId))).write(
+          PagesCompanion(pageNumber: Value(i + 1), updatedAt: Value(now)),
+        );
+      }
+    });
+  }
+
+  @override
   Stream<List<CanvasElement>> watchCanvasElements(String pageId) {
     return (_db.select(_db.canvasElements)..where(
           (tbl) => tbl.pageId.equals(pageId) & tbl.isDeleted.equals(false),

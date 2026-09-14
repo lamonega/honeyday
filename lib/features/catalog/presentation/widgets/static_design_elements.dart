@@ -31,9 +31,6 @@ class ShapeBoxDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#FEF3C7',
-        borderColorHex: '#D97706',
-        borderWidth: 1.5,
         cornerRadius: 16,
       ).toJsonString();
 
@@ -92,7 +89,6 @@ class ShapeCircleDefinition extends AgendaWidgetDefinition {
   String get initialConfigJson => const ElementConfig(
         colorHex: '#EDE9FE',
         borderColorHex: '#7C3AED',
-        borderWidth: 1.5,
       ).toJsonString();
 
   @override
@@ -149,8 +145,7 @@ class ShapeDividerDefinition extends AgendaWidgetDefinition {
   @override
   String get initialConfigJson => const ElementConfig(
         colorHex: 'transparent',
-        borderColorHex: '#D97706',
-        borderWidth: 2.0,
+        borderWidth: 2,
       ).toJsonString();
 
   @override
@@ -226,11 +221,7 @@ class ShapeBannerDefinition extends AgendaWidgetDefinition {
   Size get defaultSize => const Size(280, 52);
 
   @override
-  String get initialConfigJson => const ElementConfig(
-        colorHex: '#FEF3C7',
-        borderColorHex: '#D97706',
-        borderWidth: 1.5,
-      ).toJsonString();
+  String get initialConfigJson => const ElementConfig().toJsonString();
 
   @override
   Widget build(
@@ -318,8 +309,7 @@ class ShapeFrameDefinition extends AgendaWidgetDefinition {
   @override
   String get initialConfigJson => const ElementConfig(
         colorHex: 'transparent',
-        borderColorHex: '#D97706',
-        borderWidth: 2.0,
+        borderWidth: 2,
       ).toJsonString();
 
   @override
@@ -346,7 +336,6 @@ class ShapeFrameDefinition extends AgendaWidgetDefinition {
         decoration: BoxDecoration(
           border: Border.all(
             color: config.borderColor.withValues(alpha: 0.4),
-            width: 1.0,
           ),
           borderRadius: BorderRadius.circular(10),
         ),
@@ -378,11 +367,7 @@ class ShapeStarDefinition extends AgendaWidgetDefinition {
   Size get defaultSize => const Size(100, 100);
 
   @override
-  String get initialConfigJson => const ElementConfig(
-        colorHex: '#FEF3C7',
-        borderColorHex: '#D97706',
-        borderWidth: 1.5,
-      ).toJsonString();
+  String get initialConfigJson => const ElementConfig().toJsonString();
 
   @override
   Widget build(
@@ -422,7 +407,7 @@ class _StarPainter extends CustomPainter {
     final outerR = math.min(cx, cy) - borderWidth;
     final innerR = outerR * 0.45;
     const points = 5;
-    final step = math.pi / points;
+    const step = math.pi / points;
 
     for (var i = 0; i < 2 * points; i++) {
       final r = i.isEven ? outerR : innerR;
@@ -482,7 +467,6 @@ class ShapePillDefinition extends AgendaWidgetDefinition {
   String get initialConfigJson => const ElementConfig(
         colorHex: '#D1FAE5',
         borderColorHex: '#059669',
-        borderWidth: 1.5,
       ).toJsonString();
 
   @override
@@ -535,9 +519,7 @@ class PlannerStickyNoteDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#FEF3C7', // Amber 100
-        borderColorHex: '#D97706',
-        borderWidth: 1.0,
+        borderWidth: 1,
       ).toJsonString();
 
   @override
@@ -625,7 +607,7 @@ class PlannerWashiTapeDefinition extends AgendaWidgetDefinition {
   String get initialConfigJson => const ElementConfig(
         colorHex: '#FFEDD5', // Orange 100
         borderColorHex: '#EA580C',
-        borderWidth: 1.0,
+        borderWidth: 1,
       ).toJsonString();
 
   @override
@@ -730,7 +712,7 @@ class PlannerWeeklyColumnsDefinition extends AgendaWidgetDefinition {
   String get initialConfigJson => const ElementConfig(
         colorHex: '#FFFFFF',
         borderColorHex: '#CBD5E1',
-        borderWidth: 1.0,
+        borderWidth: 1,
       ).toJsonString();
 
   @override
@@ -767,7 +749,6 @@ class PlannerWeeklyColumnsDefinition extends AgendaWidgetDefinition {
                     ? Border(
                         right: BorderSide(
                           color: config.borderColor.withValues(alpha: 0.4),
-                          width: 1,
                         ),
                       )
                     : null,
@@ -852,7 +833,7 @@ class PlannerChecklistDefinition extends AgendaWidgetDefinition {
   String get initialConfigJson => const ElementConfig(
         colorHex: '#FFFFFF',
         borderColorHex: '#E2E8F0',
-        borderWidth: 1.0,
+        borderWidth: 1,
       ).toJsonString();
 
   @override
@@ -972,7 +953,7 @@ class PlannerHabitTrackerDefinition extends AgendaWidgetDefinition {
   String get initialConfigJson => const ElementConfig(
         colorHex: '#FFFFFF',
         borderColorHex: '#E2E8F0',
-        borderWidth: 1.0,
+        borderWidth: 1,
       ).toJsonString();
 
   @override
@@ -1098,11 +1079,7 @@ class PlannerPrioritiesDefinition extends AgendaWidgetDefinition {
   Size get defaultSize => const Size(260, 180);
 
   @override
-  String get initialConfigJson => const ElementConfig(
-        colorHex: '#FEF3C7', // Amber 100
-        borderColorHex: '#D97706',
-        borderWidth: 1.5,
-      ).toJsonString();
+  String get initialConfigJson => const ElementConfig().toJsonString();
 
   @override
   Widget build(
@@ -1215,7 +1192,7 @@ class PlannerNotesLinedDefinition extends AgendaWidgetDefinition {
   String get initialConfigJson => const ElementConfig(
         colorHex: '#FFFFFF',
         borderColorHex: '#CBD5E1',
-        borderWidth: 1.0,
+        borderWidth: 1,
       ).toJsonString();
 
   @override
@@ -1275,7 +1252,7 @@ class PlannerNotesGridDefinition extends AgendaWidgetDefinition {
   String get initialConfigJson => const ElementConfig(
         colorHex: '#FFFFFF',
         borderColorHex: '#CBD5E1',
-        borderWidth: 1.0,
+        borderWidth: 1,
       ).toJsonString();
 
   @override
@@ -1296,8 +1273,8 @@ class PlannerNotesGridDefinition extends AgendaWidgetDefinition {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
-        child: CustomPaint(
-          painter: _GridPainter(gridColor: const Color(0xFFE2E8F0)),
+        child: const CustomPaint(
+          painter: _GridPainter(gridColor: Color(0xFFE2E8F0)),
         ),
       ),
     );
@@ -1401,10 +1378,7 @@ class StickerStarDefinition extends AgendaWidgetDefinition {
   Size get defaultSize => const Size(80, 80);
 
   @override
-  String get initialConfigJson => const ElementConfig(
-        colorHex: '#FEF3C7',
-        borderColorHex: '#D97706',
-      ).toJsonString();
+  String get initialConfigJson => const ElementConfig().toJsonString();
 
   @override
   Widget build(

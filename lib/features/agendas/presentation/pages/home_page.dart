@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/core/database/app_database.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/home_controller.dart';
@@ -37,22 +38,23 @@ class HomePage extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 12),
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Tus agendas',
-                  style: TextStyle(
-                    fontSize: 20,
+                  style: GoogleFonts.fraunces(
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: HoneydayTheme.inkSlate,
+                    color: HoneydayTheme.inkPrimary,
+                    letterSpacing: -0.3,
                   ),
                 ),
-                Text(
+                const Text(
                   'Honeyday',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF64748B),
+                    color: HoneydayTheme.inkSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -168,21 +170,22 @@ class HomePage extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Aún no tienes agendas creadas',
-              style: TextStyle(
-                fontSize: 22,
+              style: GoogleFonts.fraunces(
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: HoneydayTheme.inkSlate,
+                color: HoneydayTheme.inkPrimary,
+                letterSpacing: -0.3,
               ),
             ),
             const SizedBox(height: 8),
             const Text(
-              'Crea tu primera agenda para comenzar a planificar, dibujar\ny organizar tus semanas con widgets visuales.',
+              'Crea tu primer cuaderno para organizar tus días, dibujar\ny planificar tus semanas con estilo.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15,
-                color: Color(0xFF64748B),
+                color: HoneydayTheme.inkSecondary,
                 height: 1.4,
               ),
             ),
@@ -246,8 +249,14 @@ class HomePage extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('¿Eliminar agenda?'),
-        content: Text('Se eliminará "${agenda.title}" y todas sus páginas.'),
+        title: Text(
+          '¿Eliminar agenda?',
+          style: GoogleFonts.fraunces(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          'Se eliminará "${agenda.title}" y todas sus páginas asociadas.',
+          style: const TextStyle(color: HoneydayTheme.inkSecondary),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -255,7 +264,8 @@ class HomePage extends ConsumerWidget {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
+              backgroundColor: HoneydayTheme.error,
+              foregroundColor: Colors.white,
             ),
             onPressed: () => Navigator.of(context).pop(true),
             child: const Text('Eliminar'),

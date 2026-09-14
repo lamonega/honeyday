@@ -139,5 +139,35 @@ void main() {
       list = await repository.watchAgendas().first;
       expect(list.any((a) => a.id == agenda.id), isFalse);
     });
+
+    test('reorderPages updates page sequence and ordering properly', () async {
+      final agenda = await repository.createAgenda(title: 'Organizador');
+      final page1 = (await repository.watchPages(agenda.id).first).first;
+
+      final page2 = await repository.createPage(
+        agendaId: agenda.id,
+        pageNumber: 2,
+        backgroundStyle: 'grid',
+      );
+
+      final page3 = await repository.createPage(
+        agendaId: agenda.id,
+        pageNumber: 3,
+        backgroundStyle: 'lined',
+      );
+
+      var pages = await repository.watchPages(agenda.id).first;
+      expect(pages.map((p) => p.id).toList(), [page1.id, page2.id, page3.id]);
+      expect(pages.map((p) => p.pageNumber).toList(), [1, 2, 3]);
+
+      // Reorder: page3, page1, page2
+      await repository.reorderPages([page3.id, page1.id, page2.id]);
+
+      pages = await repository.watchPages(agenda.id).first;
+      expect(pages.map((p) => p.id).toList(), [page3.id, page1.id, page2.id]);
+      expect(pages[0].pageNumber, 1);
+      expect(pages[1].pageNumber, 2);
+      expect(pages[2].pageNumber, 3);
+    });
   });
 }

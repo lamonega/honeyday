@@ -479,13 +479,14 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
     final inkState = ref.watch(inkToolProvider);
 
     return Material(
-      elevation: 4,
-      borderRadius: BorderRadius.circular(30),
+      elevation: 6,
+      shadowColor: Colors.black.withValues(alpha: 0.14),
+      borderRadius: BorderRadius.circular(32),
       color: Colors.white,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(32),
           border: Border.all(color: HoneydayTheme.paperBorder),
         ),
         child: Row(
@@ -532,6 +533,56 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
               ),
               const SizedBox(width: 8),
 
+              // Stroke Width Presets
+              ..._getStrokeWidthsForTool(inkState.tool).map((width) {
+                final isWidthSelected = (inkState.strokeWidth - width).abs() < 0.5;
+                return Tooltip(
+                  message: 'Grosor ${width.toInt()}px',
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () => ref
+                        .read(inkToolProvider.notifier)
+                        .setStrokeWidth(width),
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      alignment: Alignment.center,
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      decoration: BoxDecoration(
+                        color: isWidthSelected
+                            ? HoneydayTheme.honeyContainer
+                            : Colors.transparent,
+                        shape: BoxShape.circle,
+                        border: isWidthSelected
+                            ? Border.all(
+                                color: HoneydayTheme.honeyAmber,
+                                width: 1.5,
+                              )
+                            : null,
+                      ),
+                      child: Container(
+                        width: (width * 1.4).clamp(3.0, 10.0),
+                        height: (width * 1.4).clamp(3.0, 10.0),
+                        decoration: BoxDecoration(
+                          color: isWidthSelected
+                              ? HoneydayTheme.honeyAmber
+                              : HoneydayTheme.inkSecondary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+
+              const SizedBox(width: 8),
+              Container(
+                height: 24,
+                width: 1,
+                color: HoneydayTheme.paperBorder,
+              ),
+              const SizedBox(width: 8),
+
               // Palette Colors
               ...InkToolState.defaultPalette.map((color) {
                 final isColorSelected = inkState.color == color;
@@ -540,8 +591,8 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                       ref.read(inkToolProvider.notifier).setColor(color),
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: 18,
-                    height: 18,
+                    width: 20,
+                    height: 20,
                     decoration: BoxDecoration(
                       color: color,
                       shape: BoxShape.circle,
@@ -550,7 +601,10 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                               color: HoneydayTheme.honeyAmber,
                               width: 2.5,
                             )
-                          : null,
+                          : Border.all(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              width: 1,
+                            ),
                     ),
                   ),
                 );
@@ -561,32 +615,46 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
             Container(height: 24, width: 1, color: HoneydayTheme.paperBorder),
             const SizedBox(width: 4),
 
-            // Undo Button
-            IconButton(
-              icon: const Icon(Icons.undo_rounded, size: 18),
-              tooltip: 'Deshacer',
-              visualDensity: VisualDensity.compact,
-              onPressed: inkController.undo,
-            ),
-
-            // Redo Button
-            IconButton(
-              icon: const Icon(Icons.redo_rounded, size: 18),
-              tooltip: 'Rehacer',
-              visualDensity: VisualDensity.compact,
-              onPressed: inkController.redo,
+            // Reactive Undo & Redo
+            ListenableBuilder(
+              listenable: inkController,
+              builder: (context, _) {
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.undo_rounded, size: 19),
+                      tooltip: 'Deshacer',
+                      visualDensity: VisualDensity.compact,
+                      color: inkController.canUndo
+                          ? HoneydayTheme.inkPrimary
+                          : HoneydayTheme.inkMuted,
+                      onPressed: inkController.canUndo ? inkController.undo : null,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.redo_rounded, size: 19),
+                      tooltip: 'Rehacer',
+                      visualDensity: VisualDensity.compact,
+                      color: inkController.canRedo
+                          ? HoneydayTheme.inkPrimary
+                          : HoneydayTheme.inkMuted,
+                      onPressed: inkController.canRedo ? inkController.redo : null,
+                    ),
+                  ],
+                );
+              },
             ),
 
             if (onCloseWriting != null) ...[
               const SizedBox(width: 4),
               Container(height: 24, width: 1, color: HoneydayTheme.paperBorder),
-              const SizedBox(width: 4),
+              const SizedBox(width: 6),
               FilledButton.tonalIcon(
                 style: FilledButton.styleFrom(
                   backgroundColor: HoneydayTheme.honeyContainer,
-                  foregroundColor: HoneydayTheme.honeyAmber,
+                  foregroundColor: HoneydayTheme.honeyDark,
                   visualDensity: VisualDensity.compact,
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -605,6 +673,17 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
     );
   }
 
+  List<double> _getStrokeWidthsForTool(InkToolType tool) {
+    switch (tool) {
+      case InkToolType.pen:
+        return const [2.0, 4.0, 7.0];
+      case InkToolType.highlighter:
+        return const [12.0, 24.0];
+      case InkToolType.eraser:
+        return const [16.0];
+    }
+  }
+
   Widget _buildToolButton({
     required IconData icon,
     required String tooltip,
@@ -614,10 +693,10 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
     return IconButton(
       icon: Icon(
         icon,
-        size: 18,
+        size: 20,
         color: isSelected
             ? HoneydayTheme.honeyAmber
-            : const Color(0xFF64748B),
+            : HoneydayTheme.inkSecondary,
       ),
       tooltip: tooltip,
       visualDensity: VisualDensity.compact,

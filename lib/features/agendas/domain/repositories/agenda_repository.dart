@@ -34,13 +34,13 @@ abstract interface class AgendaRepository {
   });
 
   /// Updates the paper background style of a page (e.g., 'dotted', 'lined', 'grid', 'blank').
-  Future<void> updatePageBackground(
-    String pageId,
-    String backgroundStyle,
-  );
+  Future<void> updatePageBackground(String pageId, String backgroundStyle);
 
   /// Soft-deletes a page by its [pageId].
   Future<void> deletePage(String pageId);
+
+  /// Reorders pages according to the given sequential [pageIdsInOrder].
+  Future<void> reorderPages(List<String> pageIdsInOrder);
 
   /// Watches all modular canvas widgets for a given [pageId].
   Stream<List<CanvasElement>> watchCanvasElements(String pageId);

@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/snapping.dart';
 import 'package:honeyday/features/catalog/domain/element_config.dart';
@@ -117,7 +118,7 @@ class _TransformableBoxState extends State<TransformableBox> {
   static const double _topMargin = 48;
   static const double _bottomMargin = 76;
   static const double _handleRadius = 7;
-  static const Color _accentColor = Color(0xFFD97706); // Honey Amber
+  static const Color _accentColor = HoneydayTheme.honeyAmber;
 
   Offset? _globalCenter;
   bool _showColorPalette = false;
@@ -263,7 +264,7 @@ class _TransformableBoxState extends State<TransformableBox> {
                   onTap: widget.onDelete,
                   child: Container(
                     decoration: const BoxDecoration(
-                      color: Color(0xFFEF4444), // Crimson Red
+                      color: HoneydayTheme.error,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -354,7 +355,7 @@ class _TransformableBoxState extends State<TransformableBox> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: HoneydayTheme.paperBorder),
         boxShadow: const [
           BoxShadow(
             color: Colors.black12,
@@ -396,7 +397,7 @@ class _TransformableBoxState extends State<TransformableBox> {
                       : null,
                 ),
                 child: isSelected
-                    ? const Icon(Icons.check, size: 12, color: Color(0xFF78350F))
+                    ? const Icon(Icons.check, size: 12, color: HoneydayTheme.honeyDark)
                     : null,
               ),
             );
@@ -412,7 +413,7 @@ class _TransformableBoxState extends State<TransformableBox> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFCBD5E1)),
+        border: Border.all(color: HoneydayTheme.paperBorder),
         boxShadow: const [
           BoxShadow(
             color: Colors.black12,
@@ -440,14 +441,14 @@ class _TransformableBoxState extends State<TransformableBox> {
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
-                      color: widget.currentColor ?? const Color(0xFFFEF3C7),
+                      color: widget.currentColor ?? HoneydayTheme.honeyContainer,
                       shape: BoxShape.circle,
                       border: Border.all(color: _accentColor, width: 2),
                     ),
                     child: const Icon(
                       Icons.palette_outlined,
                       size: 12,
-                      color: Color(0xFF78350F),
+                      color: HoneydayTheme.honeyDark,
                     ),
                   ),
                 ),

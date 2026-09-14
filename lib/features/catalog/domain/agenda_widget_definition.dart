@@ -14,7 +14,7 @@ enum ElementCategory {
   /// Legacy interactive widgets (calendar, budget, etc.).
   legacy('Otros', 'Otros bloques');
 
-  const ElementCategory(this.label, this.description);
+  ElementCategory(this.label, this.description);
 
   /// User-facing short label for category tabs and chips.
   final String label;

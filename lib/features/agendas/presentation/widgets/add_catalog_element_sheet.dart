@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/app/theme.dart';
-import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 
 /// Modal bottom sheet displaying the catalog of Canva-like agenda design elements.
@@ -78,11 +77,6 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-            const Text(
-              'Formas geométricas, plantillas y recursos visuales para diseñar tu agenda.',
-              style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-            ),
             const SizedBox(height: 12),
 
             // Category Chips
@@ -129,9 +123,6 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
                 separatorBuilder: (context, index) => const Divider(height: 1),
                 itemBuilder: (context, index) {
                   final def = visibleDefs[index];
-                  final desc = def.description.isNotEmpty
-                      ? def.description
-                      : 'Tamaño sugerido: ${def.defaultSize.width.toInt()} × ${def.defaultSize.height.toInt()} dp';
 
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
@@ -156,13 +147,6 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                         color: HoneydayTheme.inkSlate,
-                      ),
-                    ),
-                    subtitle: Text(
-                      desc,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF64748B),
                       ),
                     ),
                     trailing: FilledButton.tonal(
