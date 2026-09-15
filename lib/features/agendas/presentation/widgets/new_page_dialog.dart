@@ -11,10 +11,7 @@ Future<String?> showNewPageDesignDialog(BuildContext context) {
 
 /// Modal dialog allowing users to pick a paper design when adding a new agenda page.
 class NewPageDesignDialog extends StatefulWidget {
-  const NewPageDesignDialog({
-    super.key,
-    this.initialStyle = PaperStyle.dotted,
-  });
+  const NewPageDesignDialog({super.key, this.initialStyle = PaperStyle.dotted});
 
   final PaperStyle initialStyle;
 
@@ -135,7 +132,9 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
         height: 95,
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: isSelected ? colorScheme.primaryContainer : colorScheme.surface,
+          color: isSelected
+              ? colorScheme.primaryContainer
+              : colorScheme.surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? colorScheme.primary : colorScheme.outline,
@@ -201,10 +200,7 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
                   height: 22,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color: colorScheme.outline,
-                      width: 0.8,
-                    ),
+                    border: Border.all(color: colorScheme.outline, width: 0.8),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(3),

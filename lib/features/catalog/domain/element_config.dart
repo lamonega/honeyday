@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 /// Predefined harmonious color palette for agenda elements (pastel and accent colors).

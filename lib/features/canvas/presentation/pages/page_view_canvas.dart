@@ -65,7 +65,7 @@ class PageViewCanvas extends ConsumerStatefulWidget {
   final List<CanvasWidgetData> initialElements;
   final List<InkStroke> initialStrokes;
   final Widget Function(BuildContext context, CanvasWidgetData element)?
-      elementBuilder;
+  elementBuilder;
   final void Function(CanvasWidgetData updatedElement)? onElementUpdated;
   final void Function(String elementId)? onElementDeleted;
   final void Function(CanvasWidgetData sourceElement)? onElementDuplicated;
@@ -294,8 +294,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                                 onFitWidth: () => _handleFitWidth(element.id),
                                 onCenter: () => _handleCenter(element.id),
                                 onDuplicate: widget.onElementDuplicated != null
-                                    ? () =>
-                                        widget.onElementDuplicated!(element)
+                                    ? () => widget.onElementDuplicated!(element)
                                     : null,
                                 onColorChanged: (fill, border) =>
                                     _handleColorChanged(
@@ -306,7 +305,8 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                                 currentColor: ElementConfig.fromJsonString(
                                   element.configJson,
                                 ).fillColor,
-                                child: widget.elementBuilder?.call(
+                                child:
+                                    widget.elementBuilder?.call(
                                       context,
                                       element,
                                     ) ??
@@ -489,11 +489,7 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
 
             if (inkState.tool != InkToolType.eraser) ...[
               const SizedBox(width: 8),
-              Container(
-                height: 24,
-                width: 1,
-                color: colorScheme.outline,
-              ),
+              Container(height: 24, width: 1, color: colorScheme.outline),
               const SizedBox(width: 8),
               ..._getStrokeWidthsForTool(inkState.tool).map((width) {
                 final isWidthSelected =
@@ -516,10 +512,7 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                             : Colors.transparent,
                         shape: BoxShape.circle,
                         border: isWidthSelected
-                            ? Border.all(
-                                color: colorScheme.primary,
-                                width: 1.5,
-                              )
+                            ? Border.all(color: colorScheme.primary, width: 1.5)
                             : null,
                       ),
                       child: Container(
@@ -537,11 +530,7 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                 );
               }),
               const SizedBox(width: 8),
-              Container(
-                height: 24,
-                width: 1,
-                color: colorScheme.outline,
-              ),
+              Container(height: 24, width: 1, color: colorScheme.outline),
               const SizedBox(width: 8),
               ...InkToolState.defaultPalette.map((color) {
                 final isColorSelected = inkState.color == color;
@@ -556,13 +545,11 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                       color: color,
                       shape: BoxShape.circle,
                       border: isColorSelected
-                          ? Border.all(
-                              color: colorScheme.primary,
-                              width: 2.5,
-                            )
+                          ? Border.all(color: colorScheme.primary, width: 2.5)
                           : Border.all(
-                              color: colorScheme.onSurface.withValues(alpha: 0.15),
-                              width: 1,
+                              color: colorScheme.onSurface.withValues(
+                                alpha: 0.15,
+                              ),
                             ),
                     ),
                   ),
@@ -587,8 +574,9 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                       color: inkController.canUndo
                           ? colorScheme.onSurface
                           : colorScheme.onSurface.withValues(alpha: 0.3),
-                      onPressed:
-                          inkController.canUndo ? inkController.undo : null,
+                      onPressed: inkController.canUndo
+                          ? inkController.undo
+                          : null,
                     ),
                     IconButton(
                       icon: const Icon(Icons.redo_rounded, size: 19),
@@ -597,8 +585,9 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
                       color: inkController.canRedo
                           ? colorScheme.onSurface
                           : colorScheme.onSurface.withValues(alpha: 0.3),
-                      onPressed:
-                          inkController.canRedo ? inkController.redo : null,
+                      onPressed: inkController.canRedo
+                          ? inkController.redo
+                          : null,
                     ),
                   ],
                 );
@@ -607,19 +596,17 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
 
             if (onCloseWriting != null) ...[
               const SizedBox(width: 4),
-              Container(
-                height: 24,
-                width: 1,
-                color: colorScheme.outline,
-              ),
+              Container(height: 24, width: 1, color: colorScheme.outline),
               const SizedBox(width: 6),
               FilledButton.tonalIcon(
                 style: FilledButton.styleFrom(
                   backgroundColor: colorScheme.primaryContainer,
                   foregroundColor: colorScheme.onPrimaryContainer,
                   visualDensity: VisualDensity.compact,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),
@@ -668,9 +655,7 @@ class _CanvasFloatingToolbar extends ConsumerWidget {
       tooltip: tooltip,
       visualDensity: VisualDensity.compact,
       style: isSelected
-          ? IconButton.styleFrom(
-              backgroundColor: colorScheme.primaryContainer,
-            )
+          ? IconButton.styleFrom(backgroundColor: colorScheme.primaryContainer)
           : null,
       onPressed: onTap,
     );

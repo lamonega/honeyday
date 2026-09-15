@@ -154,8 +154,9 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
                       label: Text(tab.$1),
                       labelStyle: TextStyle(
                         fontSize: 11.5,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.w500,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                         color: isSelected
                             ? colorScheme.onPrimaryContainer
                             : colorScheme.onSurface.withValues(alpha: 0.6),
@@ -181,11 +182,12 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
             Divider(height: 1, color: colorScheme.outline),
             Expanded(
               child: ListView.separated(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 12,
+                ),
                 itemCount: visibleDefs.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 8),
+                separatorBuilder: (context, index) => const SizedBox(height: 8),
                 itemBuilder: (context, index) {
                   final def = visibleDefs[index];
                   return _CatalogItemCard(
@@ -203,10 +205,7 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
 }
 
 class _CatalogItemCard extends StatelessWidget {
-  const _CatalogItemCard({
-    required this.definition,
-    required this.onTap,
-  });
+  const _CatalogItemCard({required this.definition, required this.onTap});
 
   final AgendaWidgetDefinition definition;
   final VoidCallback onTap;

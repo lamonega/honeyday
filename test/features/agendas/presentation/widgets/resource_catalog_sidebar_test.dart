@@ -6,56 +6,56 @@ import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 
 void main() {
   group('ResourceCatalogSidebar', () {
-    testWidgets('renders expanded sidebar initially without tip footer and without element descriptions', (
-      tester,
-    ) async {
-      AgendaWidgetDefinition? selected;
+    testWidgets(
+      'renders expanded sidebar initially without tip footer and without element descriptions',
+      (tester) async {
+        AgendaWidgetDefinition? selected;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ResourceCatalogSidebar(
-              onSelectDefinition: (def) => selected = def,
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ResourceCatalogSidebar(
+                onSelectDefinition: (def) => selected = def,
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Verify header
-      expect(find.text('Elementos'), findsOneWidget);
-      expect(find.text('Diseño y plantillas'), findsNothing);
-      expect(find.byIcon(Icons.chevron_left_rounded), findsOneWidget);
+        // Verify header
+        expect(find.text('Elementos'), findsOneWidget);
+        expect(find.text('Diseño y plantillas'), findsNothing);
+        expect(find.byIcon(Icons.chevron_left_rounded), findsOneWidget);
 
-      // Verify tip footer is removed
-      expect(
-        find.textContaining('Toca un elemento para agregarlo'),
-        findsNothing,
-      );
+        // Verify tip footer is removed
+        expect(
+          find.textContaining('Toca un elemento para agregarlo'),
+          findsNothing,
+        );
 
-      // Verify elements are shown by title only
-      expect(find.text('Caja / Rectángulo'), findsOneWidget);
-      expect(find.text('Tarjeta o contenedor para estructurar secciones'), findsNothing);
+        // Verify elements are shown by title only
+        expect(find.text('Caja / Rectángulo'), findsOneWidget);
+        expect(
+          find.text('Tarjeta o contenedor para estructurar secciones'),
+          findsNothing,
+        );
 
-      // Verify initial width is 260
-      final initialBox = tester.renderObject<RenderBox>(
-        find.byType(AnimatedContainer),
-      );
-      expect(initialBox.size.width, 260);
+        // Verify initial width is 260
+        final initialBox = tester.renderObject<RenderBox>(
+          find.byType(AnimatedContainer),
+        );
+        expect(initialBox.size.width, 260);
 
-      // Tap on item
-      await tester.tap(find.text('Caja / Rectángulo'));
-      expect(selected?.id, 'shape_box');
-    });
+        // Tap on item
+        await tester.tap(find.text('Caja / Rectángulo'));
+        expect(selected?.id, 'shape_box');
+      },
+    );
 
-    testWidgets('collapses to 52 width rail and expands back', (
-      tester,
-    ) async {
+    testWidgets('collapses to 52 width rail and expands back', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ResourceCatalogSidebar(
-              onSelectDefinition: (_) {},
-            ),
+            body: ResourceCatalogSidebar(onSelectDefinition: (_) {}),
           ),
         ),
       );
@@ -89,9 +89,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ResourceCatalogSidebar(
-              onSelectDefinition: (_) {},
-            ),
+            body: ResourceCatalogSidebar(onSelectDefinition: (_) {}),
           ),
         ),
       );
@@ -114,17 +112,16 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AddCatalogElementSheet(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: AddCatalogElementSheet())),
       );
 
       expect(find.text('Catálogo de Elementos'), findsOneWidget);
       expect(find.text('Caja / Rectángulo'), findsOneWidget);
       // Verify descriptions are not rendered
-      expect(find.text('Tarjeta o contenedor para estructurar secciones'), findsNothing);
+      expect(
+        find.text('Tarjeta o contenedor para estructurar secciones'),
+        findsNothing,
+      );
       expect(find.textContaining('Tamaño sugerido'), findsNothing);
     });
   });

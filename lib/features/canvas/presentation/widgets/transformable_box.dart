@@ -259,8 +259,7 @@ class _TransformableBoxState extends State<TransformableBox> {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        if (_showColorPalette)
-                          _buildPaletteRow(colorScheme),
+                        if (_showColorPalette) _buildPaletteRow(colorScheme),
                         _buildActionBar(colorScheme),
                       ],
                     ),
@@ -313,7 +312,9 @@ class _TransformableBoxState extends State<TransformableBox> {
                       : preset.fillColor,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isSelected ? colorScheme.primary : preset.borderColor,
+                    color: isSelected
+                        ? colorScheme.primary
+                        : preset.borderColor,
                     width: isSelected ? 2.5 : 1.2,
                   ),
                   boxShadow: isSelected
@@ -373,7 +374,8 @@ class _TransformableBoxState extends State<TransformableBox> {
                     width: 22,
                     height: 22,
                     decoration: BoxDecoration(
-                      color: widget.currentColor ?? colorScheme.primaryContainer,
+                      color:
+                          widget.currentColor ?? colorScheme.primaryContainer,
                       shape: BoxShape.circle,
                       border: Border.all(color: colorScheme.primary, width: 2),
                     ),
@@ -467,7 +469,8 @@ class _TransformableBoxState extends State<TransformableBox> {
   }
 
   void _handleBodyPanStart(DragStartDetails details) {
-    _isSnapEnabled = !HardwareKeyboard.instance.isControlPressed &&
+    _isSnapEnabled =
+        !HardwareKeyboard.instance.isControlPressed &&
         !HardwareKeyboard.instance.isMetaPressed;
   }
 

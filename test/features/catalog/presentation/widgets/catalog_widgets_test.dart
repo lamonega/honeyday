@@ -9,54 +9,60 @@ import 'package:honeyday/features/catalog/presentation/widgets/text_box_widget.d
 
 void main() {
   group('CatalogRegistry Tests', () {
-    test('contains geometric shapes, static planner templates, and stickers', () {
-      final definitions = CatalogRegistry.getAllDefinitions();
-      expect(definitions.length, greaterThanOrEqualTo(20));
+    test(
+      'contains geometric shapes, static planner templates, and stickers',
+      () {
+        final definitions = CatalogRegistry.getAllDefinitions();
+        expect(definitions.length, greaterThanOrEqualTo(20));
 
-      final ids = definitions.map((d) => d.id).toList();
-      // Shapes
-      expect(ids, contains('shape_box'));
-      expect(ids, contains('shape_circle'));
-      expect(ids, contains('shape_divider'));
-      expect(ids, contains('shape_banner'));
-      expect(ids, contains('shape_frame'));
-      expect(ids, contains('shape_star'));
-      expect(ids, contains('shape_pill'));
+        final ids = definitions.map((d) => d.id).toList();
+        // Shapes
+        expect(ids, contains('shape_box'));
+        expect(ids, contains('shape_circle'));
+        expect(ids, contains('shape_divider'));
+        expect(ids, contains('shape_banner'));
+        expect(ids, contains('shape_frame'));
+        expect(ids, contains('shape_star'));
+        expect(ids, contains('shape_pill'));
 
-      // Planner templates
-      expect(ids, contains('planner_sticky_note'));
-      expect(ids, contains('planner_washi_tape'));
-      expect(ids, contains('planner_weekly_columns'));
-      expect(ids, contains('planner_checklist'));
-      expect(ids, contains('planner_habit_tracker'));
-      expect(ids, contains('planner_priorities'));
-      expect(ids, contains('planner_notes_lined'));
-      expect(ids, contains('planner_notes_grid'));
+        // Planner templates
+        expect(ids, contains('planner_sticky_note'));
+        expect(ids, contains('planner_washi_tape'));
+        expect(ids, contains('planner_weekly_columns'));
+        expect(ids, contains('planner_checklist'));
+        expect(ids, contains('planner_habit_tracker'));
+        expect(ids, contains('planner_priorities'));
+        expect(ids, contains('planner_notes_lined'));
+        expect(ids, contains('planner_notes_grid'));
 
-      // Stickers
-      expect(ids, contains('sticker_heart'));
-      expect(ids, contains('sticker_star'));
-      expect(ids, contains('sticker_coffee'));
-      expect(ids, contains('sticker_pin'));
+        // Stickers
+        expect(ids, contains('sticker_heart'));
+        expect(ids, contains('sticker_star'));
+        expect(ids, contains('sticker_coffee'));
+        expect(ids, contains('sticker_pin'));
 
-      // Legacy
-      expect(ids, contains('calendar_grid'));
-      expect(ids, contains('budget_calculator'));
-      expect(ids, contains('journal_block'));
-      expect(ids, contains('text_box'));
-    });
+        // Legacy
+        expect(ids, contains('calendar_grid'));
+        expect(ids, contains('budget_calculator'));
+        expect(ids, contains('journal_block'));
+        expect(ids, contains('text_box'));
+      },
+    );
 
     test('getDefinitionsByCategory filters correctly', () {
-      final shapes =
-          CatalogRegistry.getDefinitionsByCategory(ElementCategory.shapes);
+      final shapes = CatalogRegistry.getDefinitionsByCategory(
+        ElementCategory.shapes,
+      );
       expect(shapes.length, 7);
 
-      final planner =
-          CatalogRegistry.getDefinitionsByCategory(ElementCategory.planner);
+      final planner = CatalogRegistry.getDefinitionsByCategory(
+        ElementCategory.planner,
+      );
       expect(planner.length, 8);
 
-      final stickers =
-          CatalogRegistry.getDefinitionsByCategory(ElementCategory.stickers);
+      final stickers = CatalogRegistry.getDefinitionsByCategory(
+        ElementCategory.stickers,
+      );
       expect(stickers.length, 4);
     });
 
@@ -327,56 +333,54 @@ void main() {
 
   group('NewPageDesignDialog Tests', () {
     testWidgets(
-        'renders 4 paper design options (Líneas, Puntos, En blanco, Cuadrícula)',
-        (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: NewPageDesignDialog(),
-          ),
-        ),
-      );
+      'renders 4 paper design options (Líneas, Puntos, En blanco, Cuadrícula)',
+      (tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(home: Scaffold(body: NewPageDesignDialog())),
+        );
 
-      expect(find.text('Diseño de la Página'), findsOneWidget);
-      expect(find.text('Líneas'), findsOneWidget);
-      expect(find.text('Puntos'), findsOneWidget);
-      expect(find.text('En blanco'), findsOneWidget);
-      expect(find.text('Cuadrícula'), findsOneWidget);
-      expect(find.text('Crear Página'), findsOneWidget);
-    });
+        expect(find.text('Diseño de la Página'), findsOneWidget);
+        expect(find.text('Líneas'), findsOneWidget);
+        expect(find.text('Puntos'), findsOneWidget);
+        expect(find.text('En blanco'), findsOneWidget);
+        expect(find.text('Cuadrícula'), findsOneWidget);
+        expect(find.text('Crear Página'), findsOneWidget);
+      },
+    );
 
     testWidgets(
-        'selecting option and tapping Crear Página returns selected style',
-        (tester) async {
-      String? chosen;
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) => ElevatedButton(
-                onPressed: () async {
-                  chosen = await showNewPageDesignDialog(context);
-                },
-                child: const Text('Open'),
+      'selecting option and tapping Crear Página returns selected style',
+      (tester) async {
+        String? chosen;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => ElevatedButton(
+                  onPressed: () async {
+                    chosen = await showNewPageDesignDialog(context);
+                  },
+                  child: const Text('Open'),
+                ),
               ),
             ),
           ),
-        ),
-      );
+        );
 
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Open'));
+        await tester.pumpAndSettle();
 
-      // Tap 'Líneas'
-      await tester.tap(find.text('Líneas'));
-      await tester.pumpAndSettle();
+        // Tap 'Líneas'
+        await tester.tap(find.text('Líneas'));
+        await tester.pumpAndSettle();
 
-      // Tap 'Crear Página'
-      await tester.tap(find.text('Crear Página'));
-      await tester.pumpAndSettle();
+        // Tap 'Crear Página'
+        await tester.tap(find.text('Crear Página'));
+        await tester.pumpAndSettle();
 
-      expect(chosen, 'lined');
-    });
+        expect(chosen, 'lined');
+      },
+    );
   });
 
   group('StaticDesignElements Rendering Tests', () {

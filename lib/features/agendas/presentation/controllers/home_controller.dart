@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:honeyday/core/database/app_database.dart';
 import 'package:honeyday/features/agendas/data/repositories/agenda_repository_provider.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.dart';
 
 /// StreamProvider exposing the reactive list of active agendas.
@@ -8,16 +8,16 @@ import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.
 /// Follows the MVVM recommendation: View subscribes to data state without managing streams.
 final StreamProvider<List<Agenda>> agendasStreamProvider =
     StreamProvider<List<Agenda>>((ref) {
-  final repository = ref.watch(agendaRepositoryProvider);
-  return repository.watchAgendas();
-});
+      final repository = ref.watch(agendaRepositoryProvider);
+      return repository.watchAgendas();
+    });
 
 /// Controller providing actions for the home page.
 final Provider<HomeController> homeControllerProvider =
     Provider<HomeController>((ref) {
-  final repository = ref.watch(agendaRepositoryProvider);
-  return HomeController(repository);
-});
+      final repository = ref.watch(agendaRepositoryProvider);
+      return HomeController(repository);
+    });
 
 /// ViewModel/Controller managing business logic and user actions for the home dashboard.
 ///

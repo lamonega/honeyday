@@ -255,11 +255,7 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: colorScheme.outline),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2)),
         ],
       ),
       padding: const EdgeInsets.all(12),

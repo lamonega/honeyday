@@ -68,10 +68,10 @@ class InkPainter extends CustomPainter {
     this.activeTool = InkToolType.pen,
     this.activeColor = const Color(0xFF1E293B),
     this.activeStrokeWidth = 3,
-  })  : _eraserPaint = Paint()
-          ..color = const Color(0xFF64748B).withValues(alpha: 0.4)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.5;
+  }) : _eraserPaint = Paint()
+         ..color = const Color(0xFF64748B).withValues(alpha: 0.4)
+         ..style = PaintingStyle.stroke
+         ..strokeWidth = 1.5;
 
   /// Completed strokes on this page.
   final List<InkStroke> strokes;
@@ -185,9 +185,9 @@ class _ActiveStrokePainter extends CustomPainter {
     required this.activeColor,
     required this.activeStrokeWidth,
   }) : _eraserPaint = Paint()
-          ..color = const Color(0xFF64748B).withValues(alpha: 0.4)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.5;
+         ..color = const Color(0xFF64748B).withValues(alpha: 0.4)
+         ..style = PaintingStyle.stroke
+         ..strokeWidth = 1.5;
 
   final List<PointVector>? activePoints;
   final InkToolType activeTool;

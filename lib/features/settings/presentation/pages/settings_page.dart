@@ -9,9 +9,7 @@ class SettingsPage extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ajustes'),
-      ),
+      appBar: AppBar(title: const Text('Ajustes')),
       body: ListView(
         children: [
           _SectionHeader(label: 'General', colorScheme: colorScheme),
@@ -64,10 +62,8 @@ class SettingsPage extends ConsumerWidget {
               'Revisar licencias de código abierto',
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
-            onTap: () => showLicensePage(
-              context: context,
-              applicationName: 'Honeyday',
-            ),
+            onTap: () =>
+                showLicensePage(context: context, applicationName: 'Honeyday'),
           ),
         ],
       ),

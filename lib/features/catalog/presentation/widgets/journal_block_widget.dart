@@ -270,11 +270,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: colorScheme.outline),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2)),
         ],
       ),
       padding: const EdgeInsets.all(12),
@@ -301,9 +297,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                           ),
                           border: InputBorder.none,
                           focusedBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                              color: colorScheme.primary,
-                            ),
+                            borderSide: BorderSide(color: colorScheme.primary),
                           ),
                         ),
                         onFieldSubmitted: _updateDate,

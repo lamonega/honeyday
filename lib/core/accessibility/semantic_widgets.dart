@@ -6,11 +6,7 @@ import 'package:flutter/material.dart';
 /// Why: WCAG 2.2 compliance and inclusive design.
 class SemanticLabel extends StatelessWidget {
   /// Wraps [child] with a semantic [label] for screen readers.
-  const SemanticLabel({
-    required this.label,
-    required this.child,
-    super.key,
-  });
+  const SemanticLabel({required this.label, required this.child, super.key});
 
   /// The accessibility label read by screen readers.
   final String label;
@@ -20,10 +16,7 @@ class SemanticLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      label: label,
-      child: child,
-    );
+    return Semantics(label: label, child: child);
   }
 }
 
@@ -48,12 +41,7 @@ class SemanticButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      onTap: onTap,
-      child: child,
-    );
+    return Semantics(button: true, label: label, onTap: onTap, child: child);
   }
 }
 

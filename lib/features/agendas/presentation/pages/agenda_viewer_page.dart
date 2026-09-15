@@ -6,8 +6,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:haptic_feedback/haptic_feedback.dart';
-import 'package:honeyday/core/database/app_database.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/agenda_viewer_controller.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/new_page_dialog.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/page_manager_sheet.dart';
@@ -73,9 +73,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   }
 
   void _hapticLight() {
-    unawaited(
-      Haptics.vibrate(HapticsType.light).onError((_, _) {}),
-    );
+    unawaited(Haptics.vibrate(HapticsType.light).onError((_, _) {}));
   }
 
   @override
@@ -223,9 +221,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                 width: 48,
                 decoration: BoxDecoration(
                   color: colorScheme.surface,
-                  border: Border(
-                    left: BorderSide(color: colorScheme.outline),
-                  ),
+                  border: Border(left: BorderSide(color: colorScheme.outline)),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -383,8 +379,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                 },
                 itemBuilder: (context, index) {
                   final page = pagesList[index];
-                  final isAdjacent =
-                      (index - _currentPageIndex).abs() <= 1;
+                  final isAdjacent = (index - _currentPageIndex).abs() <= 1;
 
                   if (!isAdjacent || currentMode != CanvasMode.reading) {
                     return _PageContentLoader(
@@ -503,8 +498,9 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                                   decoration: BoxDecoration(
                                     color: isActive
                                         ? colorScheme.primary
-                                        : colorScheme.primary
-                                            .withValues(alpha: 0.25),
+                                        : colorScheme.primary.withValues(
+                                            alpha: 0.25,
+                                          ),
                                     borderRadius: BorderRadius.circular(3),
                                   ),
                                 );
@@ -535,45 +531,53 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                 right: 0,
                 bottom: totalPages > 1 ? 72 : 16,
                 child: Center(
-                  child: Material(
-                    elevation: 4,
-                    borderRadius: BorderRadius.circular(28),
-                    color: colorScheme.surface,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          _ModePillButton(
-                            icon: Icons.menu_book_rounded,
-                            label: 'Lectura',
-                            isActive: !isWriting,
-                            onTap: () {
-                              ref.read(canvasModeProvider.notifier).setReading();
-                              _hapticLight();
-                            },
+                  child:
+                      Material(
+                            elevation: 4,
+                            borderRadius: BorderRadius.circular(28),
+                            color: colorScheme.surface,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(28),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _ModePillButton(
+                                    icon: Icons.menu_book_rounded,
+                                    label: 'Lectura',
+                                    isActive: !isWriting,
+                                    onTap: () {
+                                      ref
+                                          .read(canvasModeProvider.notifier)
+                                          .setReading();
+                                      _hapticLight();
+                                    },
+                                  ),
+                                  _ModePillButton(
+                                    icon: Icons.edit_rounded,
+                                    label: 'Escritura',
+                                    isActive: isWriting,
+                                    onTap: () {
+                                      ref
+                                          .read(canvasModeProvider.notifier)
+                                          .setWriting();
+                                      _hapticLight();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                          .animate()
+                          .fadeIn(duration: 350.ms)
+                          .slideY(
+                            begin: 0.15,
+                            end: 0,
+                            duration: 350.ms,
+                            curve: Curves.easeOutCubic,
                           ),
-                          _ModePillButton(
-                            icon: Icons.edit_rounded,
-                            label: 'Escritura',
-                            isActive: isWriting,
-                            onTap: () {
-                              ref.read(canvasModeProvider.notifier).setWriting();
-                              _hapticLight();
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ).animate().fadeIn(duration: 350.ms).slideY(
-                        begin: 0.15,
-                        end: 0,
-                        duration: 350.ms,
-                        curve: Curves.easeOutCubic,
-                      ),
                 ),
               ),
             ],
@@ -660,9 +664,7 @@ class _ModePillButton extends StatelessWidget {
         curve: Curves.easeInOut,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive
-              ? colorScheme.primary
-              : Colors.transparent,
+          color: isActive ? colorScheme.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(

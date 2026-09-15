@@ -1,8 +1,13 @@
-import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:honeyday/core/database/app_database.dart';
+import 'package:honeyday/core/database/app_database.dart'
+    hide Agenda, AgendaPage;
 import 'package:honeyday/features/agendas/data/repositories/agenda_repository.dart';
+import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
+import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
+import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
+import 'package:perfect_freehand/perfect_freehand.dart';
 
 void main() {
   late AppDatabase db;
@@ -68,37 +73,35 @@ void main() {
 
         const elementId = 'elem-uuid-1';
         await repository.upsertCanvasElement(
-          CanvasElementsCompanion.insert(
+          CanvasWidgetData(
             id: elementId,
             pageId: pageId,
             widgetType: 'budget_calc',
-            posX: const Value(50),
-            posY: const Value(100),
-            width: const Value(300),
-            height: const Value(200),
-            configJson: const Value('{"total": 500}'),
+            position: const Offset(50, 100),
+            size: const Size(300, 200),
+            configJson: '{"total": 500}',
           ),
         );
 
         var elements = await repository.watchCanvasElements(pageId).first;
         expect(elements.length, 1);
         expect(elements.first.widgetType, 'budget_calc');
-        expect(elements.first.posX, 50.0);
+        expect(elements.first.position.dx, 50);
 
         // Update position
         await repository.upsertCanvasElement(
-          CanvasElementsCompanion(
-            id: const Value(elementId),
-            pageId: Value(pageId),
-            widgetType: const Value('budget_calc'),
-            posX: const Value(120),
-            posY: const Value(180),
+          CanvasWidgetData(
+            id: elementId,
+            pageId: pageId,
+            widgetType: 'budget_calc',
+            position: const Offset(120, 180),
+            size: const Size(300, 200),
           ),
         );
 
         elements = await repository.watchCanvasElements(pageId).first;
-        expect(elements.first.posX, 120.0);
-        expect(elements.first.posY, 180.0);
+        expect(elements.first.position.dx, 120);
+        expect(elements.first.position.dy, 180);
       },
     );
 
@@ -109,19 +112,20 @@ void main() {
 
       const strokeId = 'stroke-uuid-1';
       await repository.insertStroke(
-        StrokesCompanion.insert(
+        InkStroke(
           id: strokeId,
           pageId: pageId,
-          brushType: const Value('highlighter'),
-          colorHex: const Value('#FFD97706'),
-          strokeWidth: const Value(12),
-          pointsJson: const Value('[{"x":1,"y":1,"p":0.5}]'),
+          tool: InkToolType.highlighter,
+          color: const Color(0xFFD97706),
+          strokeWidth: 12,
+          points: [const PointVector(1, 1, 0.5)],
+          createdAt: DateTime.now().toUtc(),
         ),
       );
 
       var strokes = await repository.watchStrokes(pageId).first;
       expect(strokes.length, 1);
-      expect(strokes.first.brushType, 'highlighter');
+      expect(strokes.first.tool, InkToolType.highlighter);
 
       await repository.deleteStroke(strokeId);
       strokes = await repository.watchStrokes(pageId).first;

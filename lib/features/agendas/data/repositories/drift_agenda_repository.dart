@@ -1,6 +1,15 @@
+import 'dart:ui';
+
 import 'package:drift/drift.dart';
-import 'package:honeyday/core/database/app_database.dart';
+import 'package:honeyday/core/database/app_database.dart'
+    hide Agenda, AgendaPage;
+import 'package:honeyday/features/agendas/data/models/agenda_dto.dart';
+import 'package:honeyday/features/agendas/data/models/agenda_page_dto.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.dart';
+import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
+import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:uuid/uuid.dart';
 
 /// Drift SQLite implementation of [AgendaRepository].
@@ -21,14 +30,19 @@ class DriftAgendaRepository implements AgendaRepository {
             (t) =>
                 OrderingTerm(expression: t.updatedAt, mode: OrderingMode.desc),
           ]))
-        .watch();
+        .watch()
+        .map(
+          (rows) => rows.map((r) => AgendaDto.fromDrift(r).toEntity()).toList(),
+        );
   }
 
   @override
-  Future<Agenda?> getAgenda(String id) {
-    return (_db.select(_db.agendas)
-          ..where((tbl) => tbl.id.equals(id) & tbl.isDeleted.equals(false)))
-        .getSingleOrNull();
+  Future<Agenda?> getAgenda(String id) async {
+    final row =
+        await (_db.select(_db.agendas)
+              ..where((tbl) => tbl.id.equals(id) & tbl.isDeleted.equals(false)))
+            .getSingleOrNull();
+    return row == null ? null : AgendaDto.fromDrift(row).toEntity();
   }
 
   @override
@@ -68,7 +82,7 @@ class DriftAgendaRepository implements AgendaRepository {
       final created = await (_db.select(
         _db.agendas,
       )..where((tbl) => tbl.id.equals(agendaId))).getSingle();
-      return created;
+      return AgendaDto.fromDrift(created).toEntity();
     });
   }
 
@@ -100,7 +114,11 @@ class DriftAgendaRepository implements AgendaRepository {
                 tbl.agendaId.equals(agendaId) & tbl.isDeleted.equals(false),
           )
           ..orderBy([(t) => OrderingTerm.asc(t.pageNumber)]))
-        .watch();
+        .watch()
+        .map(
+          (rows) =>
+              rows.map((r) => AgendaPageDto.fromDrift(r).toEntity()).toList(),
+        );
   }
 
   @override
@@ -131,9 +149,10 @@ class DriftAgendaRepository implements AgendaRepository {
         [now.millisecondsSinceEpoch, agendaId],
       );
 
-      return await (_db.select(
+      final created = await (_db.select(
         _db.pages,
       )..where((tbl) => tbl.id.equals(pageId))).getSingle();
+      return AgendaPageDto.fromDrift(created).toEntity();
     });
   }
 
@@ -177,18 +196,45 @@ class DriftAgendaRepository implements AgendaRepository {
   }
 
   @override
-  Stream<List<CanvasElement>> watchCanvasElements(String pageId) {
+  Stream<List<CanvasWidgetData>> watchCanvasElements(String pageId) {
     return (_db.select(_db.canvasElements)
           ..where(
             (tbl) => tbl.pageId.equals(pageId) & tbl.isDeleted.equals(false),
           )
           ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
-        .watch();
+        .watch()
+        .map(
+          (rows) => rows
+              .map(
+                (e) => CanvasWidgetData(
+                  id: e.id,
+                  pageId: e.pageId,
+                  widgetType: e.widgetType,
+                  position: Offset(e.posX, e.posY),
+                  size: Size(e.width, e.height),
+                  rotation: e.rotation,
+                  configJson: e.configJson,
+                ),
+              )
+              .toList(),
+        );
   }
 
   @override
-  Future<void> upsertCanvasElement(CanvasElementsCompanion element) async {
-    await _db.into(_db.canvasElements).insertOnConflictUpdate(element);
+  Future<void> upsertCanvasElement(CanvasWidgetData element) async {
+    final companion = CanvasElementsCompanion(
+      id: Value(element.id),
+      pageId: Value(element.pageId),
+      widgetType: Value(element.widgetType),
+      posX: Value(element.position.dx),
+      posY: Value(element.position.dy),
+      width: Value(element.size.width),
+      height: Value(element.size.height),
+      rotation: Value(element.rotation),
+      configJson: Value(element.configJson),
+      updatedAt: Value(DateTime.now().toUtc()),
+    );
+    await _db.into(_db.canvasElements).insertOnConflictUpdate(companion);
   }
 
   @override
@@ -204,25 +250,53 @@ class DriftAgendaRepository implements AgendaRepository {
   }
 
   @override
-  Stream<List<Stroke>> watchStrokes(String pageId) {
+  Stream<List<InkStroke>> watchStrokes(String pageId) {
     return (_db.select(_db.strokes)
           ..where(
             (tbl) => tbl.pageId.equals(pageId) & tbl.isDeleted.equals(false),
           )
           ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
-        .watch();
+        .watch()
+        .map(
+          (rows) => rows
+              .map(
+                (s) => InkStroke.fromDb(
+                  id: s.id,
+                  pageId: s.pageId,
+                  brushType: s.brushType,
+                  colorHex: s.colorHex,
+                  strokeWidth: s.strokeWidth,
+                  pointsJson: s.pointsJson,
+                  createdAt: s.createdAt,
+                ),
+              )
+              .toList(),
+        );
+  }
+
+  StrokesCompanion _strokeToCompanion(InkStroke stroke) {
+    return StrokesCompanion.insert(
+      id: stroke.id,
+      pageId: stroke.pageId,
+      brushType: Value(stroke.tool.name),
+      colorHex: Value(stroke.toHexColor()),
+      strokeWidth: Value(stroke.strokeWidth),
+      pointsJson: Value(stroke.toJsonPoints()),
+      createdAt: Value(stroke.createdAt),
+      updatedAt: Value(DateTime.now().toUtc()),
+    );
   }
 
   @override
-  Future<void> insertStroke(StrokesCompanion stroke) async {
-    await _db.into(_db.strokes).insert(stroke);
+  Future<void> insertStroke(InkStroke stroke) async {
+    await _db.into(_db.strokes).insert(_strokeToCompanion(stroke));
   }
 
   @override
-  Future<void> insertStrokesBatch(List<StrokesCompanion> strokes) async {
+  Future<void> insertStrokesBatch(List<InkStroke> strokes) async {
     await _db.transaction(() async {
       await _db.batch((batch) {
-        batch.insertAll(_db.strokes, strokes);
+        batch.insertAll(_db.strokes, strokes.map(_strokeToCompanion).toList());
       });
     });
   }

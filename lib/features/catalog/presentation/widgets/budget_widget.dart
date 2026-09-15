@@ -314,11 +314,19 @@ class _BudgetWidgetState extends State<BudgetWidget> {
         children: [
           Row(
             children: [
-              Icon(Icons.account_balance_wallet_outlined, size: 18, color: cs.primary),
+              Icon(
+                Icons.account_balance_wallet_outlined,
+                size: 18,
+                color: cs.primary,
+              ),
               const SizedBox(width: 6),
               Text(
                 _config.title,
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: cs.onSurface),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                ),
               ),
             ],
           ),
@@ -335,19 +343,22 @@ class _BudgetWidgetState extends State<BudgetWidget> {
               children: [
                 _SummaryTile(
                   label: 'Ingresos',
-                  value: '+${_config.currency}${_formatNumber(_config.totalIncome)}',
+                  value:
+                      '+${_config.currency}${_formatNumber(_config.totalIncome)}',
                   color: AppColors.incomeGreen,
                 ),
                 Container(width: 1, height: 24, color: cs.outline),
                 _SummaryTile(
                   label: 'Gastos',
-                  value: '-${_config.currency}${_formatNumber(_config.totalExpenses)}',
+                  value:
+                      '-${_config.currency}${_formatNumber(_config.totalExpenses)}',
                   color: AppColors.expenseRed,
                 ),
                 Container(width: 1, height: 24, color: cs.outline),
                 _SummaryTile(
                   label: 'Balance',
-                  value: '${isPositive ? '+' : ''}${_config.currency}${_formatNumber(netBalance)}',
+                  value:
+                      '${isPositive ? '+' : ''}${_config.currency}${_formatNumber(netBalance)}',
                   color: isPositive ? cs.primary : AppColors.expenseRed,
                   isBold: true,
                 ),
@@ -362,27 +373,37 @@ class _BudgetWidgetState extends State<BudgetWidget> {
               itemBuilder: (context, index) {
                 final entry = _config.entries[index];
                 final isIncome = entry.type == BudgetEntryType.income;
-                final entryColor = isIncome ? AppColors.incomeGreen : AppColors.expenseRed;
+                final entryColor = isIncome
+                    ? AppColors.incomeGreen
+                    : AppColors.expenseRed;
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 3),
                   child: Row(
                     children: [
                       InkWell(
-                        onTap: widget.isInteractive ? () => _toggleType(index) : null,
+                        onTap: widget.isInteractive
+                            ? () => _toggleType(index)
+                            : null,
                         borderRadius: BorderRadius.circular(6),
                         child: Container(
                           width: 22,
                           height: 22,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: isIncome ? AppColors.incomeGreenLight : AppColors.expenseRedLight,
+                            color: isIncome
+                                ? AppColors.incomeGreenLight
+                                : AppColors.expenseRedLight,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Icon(
-                            isIncome ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                            isIncome
+                                ? Icons.arrow_upward_rounded
+                                : Icons.arrow_downward_rounded,
                             size: 14,
-                            color: isIncome ? AppColors.incomeGreenDark : AppColors.expenseRedDark,
+                            color: isIncome
+                                ? AppColors.incomeGreenDark
+                                : AppColors.expenseRedDark,
                           ),
                         ),
                       ),
@@ -392,20 +413,30 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                             ? TextFormField(
                                 initialValue: entry.description,
                                 key: ValueKey('desc_${entry.id}'),
-                                style: TextStyle(fontSize: 12, color: cs.onSurface),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: cs.onSurface,
+                                ),
                                 decoration: InputDecoration(
                                   isDense: true,
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 4,
+                                  ),
                                   border: InputBorder.none,
                                   focusedBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(color: cs.primary),
                                   ),
                                 ),
-                                onFieldSubmitted: (val) => _updateDescription(index, val),
+                                onFieldSubmitted: (val) =>
+                                    _updateDescription(index, val),
                               )
                             : Text(
                                 entry.description,
-                                style: TextStyle(fontSize: 12, color: cs.onSurface),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: cs.onSurface,
+                                ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
@@ -417,25 +448,43 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                             ? TextFormField(
                                 initialValue: _formatNumber(entry.amount),
                                 key: ValueKey('amt_${entry.id}'),
-                                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                                keyboardType:
+                                    const TextInputType.numberWithOptions(
+                                      decimal: true,
+                                    ),
                                 textAlign: TextAlign.right,
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: entryColor),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: entryColor,
+                                ),
                                 decoration: InputDecoration(
                                   isDense: true,
                                   prefixText: _config.currency,
-                                  prefixStyle: TextStyle(fontSize: 11, color: cs.onSurface),
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                  prefixStyle: TextStyle(
+                                    fontSize: 11,
+                                    color: cs.onSurface,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 4,
+                                  ),
                                   border: InputBorder.none,
                                   focusedBorder: UnderlineInputBorder(
                                     borderSide: BorderSide(color: cs.primary),
                                   ),
                                 ),
-                                onFieldSubmitted: (val) => _updateAmount(index, val),
+                                onFieldSubmitted: (val) =>
+                                    _updateAmount(index, val),
                               )
                             : Text(
                                 '${isIncome ? '+' : '-'}${_config.currency}${_formatNumber(entry.amount)}',
                                 textAlign: TextAlign.right,
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: entryColor),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: entryColor,
+                                ),
                               ),
                       ),
                       if (widget.isInteractive)
@@ -444,7 +493,11 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                           borderRadius: BorderRadius.circular(10),
                           child: Padding(
                             padding: const EdgeInsets.only(left: 4),
-                            child: Icon(Icons.close_rounded, size: 16, color: cs.onSurfaceVariant),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 16,
+                              color: cs.onSurfaceVariant,
+                            ),
                           ),
                         ),
                     ],
@@ -461,10 +514,16 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                 child: TextButton.icon(
                   onPressed: _addEntry,
                   icon: const Icon(Icons.add_rounded, size: 16),
-                  label: const Text('Nueva entrada', style: TextStyle(fontSize: 12)),
+                  label: const Text(
+                    'Nueva entrada',
+                    style: TextStyle(fontSize: 12),
+                  ),
                   style: TextButton.styleFrom(
                     foregroundColor: cs.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     minimumSize: Size.zero,
                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
@@ -498,12 +557,20 @@ class _SummaryTile extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant, fontWeight: FontWeight.w500),
+          style: TextStyle(
+            fontSize: 10,
+            color: cs.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+          ),
         ),
         const SizedBox(height: 2),
         Text(
           value,
-          style: TextStyle(fontSize: 12, fontWeight: isBold ? FontWeight.w800 : FontWeight.w600, color: color),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isBold ? FontWeight.w800 : FontWeight.w600,
+            color: color,
+          ),
         ),
       ],
     );

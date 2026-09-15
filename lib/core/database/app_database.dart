@@ -155,16 +155,16 @@ class AppDatabase extends _$AppDatabase {
   ///
   /// Can accept an explicit [QueryExecutor] for in-memory testing.
   AppDatabase([QueryExecutor? executor])
-      : super(
-          executor ??
-              driftDatabase(
-                name: 'honeyday_db',
-                web: DriftWebOptions(
-                  sqlite3Wasm: Uri.parse('sqlite3.wasm'),
-                  driftWorker: Uri.parse('drift_worker.js'),
-                ),
+    : super(
+        executor ??
+            driftDatabase(
+              name: 'honeyday_db',
+              web: DriftWebOptions(
+                sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+                driftWorker: Uri.parse('drift_worker.js'),
               ),
-        );
+            ),
+      );
 
   @override
   int get schemaVersion => 1;

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -88,7 +90,8 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
 
   @override
   Widget build(BuildContext context) {
-    final activeGradient = _coverGradients[_selectedCover] ?? _coverGradients['honey']!;
+    final activeGradient =
+        _coverGradients[_selectedCover] ?? _coverGradients['honey']!;
     final previewTitle = _titleController.text.trim().isEmpty
         ? 'Nueva Agenda'
         : _titleController.text.trim();
@@ -113,112 +116,13 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Live notebook cover preview
                 Center(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                    width: 170,
-                    height: 110,
-                    margin: const EdgeInsets.only(bottom: 20),
-                    decoration: BoxDecoration(
-                      gradient: activeGradient,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _coverColors[_selectedCover]!.withValues(alpha: 0.35),
-                          blurRadius: 14,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          left: 0,
-                          top: 0,
-                          bottom: 0,
-                          width: 16,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.black.withValues(alpha: 0.3),
-                                  Colors.transparent,
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 6,
-                          top: 0,
-                          bottom: 0,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: List.generate(
-                              4,
-                              (i) => Container(
-                                width: 3,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.5),
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 0,
-                          right: 28,
-                          child: Container(
-                            width: 8,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              borderRadius: const BorderRadius.vertical(
-                                bottom: Radius.circular(2),
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          top: 0,
-                          bottom: 0,
-                          right: 0,
-                          width: 4,
-                          child: Container(color: const Color(0xFFFBF8EE)),
-                        ),
-                        Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Text(
-                              previewTitle,
-                              maxLines: 2,
-                              textAlign: TextAlign.center,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.fraunces(
-                                color: Colors.white,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black.withValues(alpha: 0.3),
-                                    blurRadius: 2,
-                                    offset: const Offset(0, 1),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                  child: _LiveCoverPreview(
+                    title: previewTitle,
+                    gradient: activeGradient,
+                    shadowColor: _coverColors[_selectedCover]!,
                   ),
                 ),
-
-                // Title input
                 TextField(
                   controller: _titleController,
                   autofocus: true,
@@ -230,8 +134,6 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                // Cover color picker
                 Text(
                   'Color de portada:',
                   style: TextStyle(
@@ -241,46 +143,13 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
                   ),
                 ),
                 const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: _coverColors.entries.map((entry) {
-                    final isSelected = _selectedCover == entry.key;
-                    return GestureDetector(
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        setState(() => _selectedCover = entry.key);
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: entry.value,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isSelected ? colorScheme.onSurface : Colors.transparent,
-                            width: isSelected ? 3 : 0,
-                          ),
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: entry.value.withValues(alpha: 0.4),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: isSelected
-                            ? const Icon(Icons.check, color: Colors.white, size: 20)
-                            : null,
-                      ),
-                    );
-                  }).toList(),
+                _CoverColorPicker(
+                  colors: _coverColors,
+                  selectedCover: _selectedCover,
+                  onColorSelected: (key) =>
+                      setState(() => _selectedCover = key),
                 ),
                 const SizedBox(height: 20),
-
-                // Paper style selector
                 Text(
                   'Estilo de hoja inicial:',
                   style: TextStyle(
@@ -290,18 +159,11 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
                   ),
                 ),
                 const SizedBox(height: 10),
-                SegmentedButton<String>(
-                  segments: _paperStyles.entries.map((entry) {
-                    return ButtonSegment(
-                      value: entry.key,
-                      label: Text(entry.value),
-                    );
-                  }).toList(),
-                  selected: {_selectedPaper},
-                  onSelectionChanged: (newSelection) {
-                    HapticFeedback.selectionClick();
-                    setState(() => _selectedPaper = newSelection.first);
-                  },
+                _PaperStyleSelector(
+                  styles: _paperStyles,
+                  selectedPaper: _selectedPaper,
+                  onPaperSelected: (key) =>
+                      setState(() => _selectedPaper = key),
                 ),
               ],
             ),
@@ -324,7 +186,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
             onPressed: () {
               final title = _titleController.text.trim();
               if (title.isEmpty) return;
-              HapticFeedback.lightImpact();
+              unawaited(HapticFeedback.lightImpact());
               Navigator.of(context).pop({
                 'title': title,
                 'coverStyle': _selectedCover,
@@ -338,6 +200,204 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
           ),
         ],
       ),
+    );
+  }
+}
+
+class _LiveCoverPreview extends StatelessWidget {
+  const _LiveCoverPreview({
+    required this.title,
+    required this.gradient,
+    required this.shadowColor,
+  });
+
+  final String title;
+  final LinearGradient gradient;
+  final Color shadowColor;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      width: 170,
+      height: 110,
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: shadowColor.withValues(alpha: 0.35),
+            blurRadius: 14,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 16,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withValues(alpha: 0.3),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 6,
+            top: 0,
+            bottom: 0,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(
+                4,
+                (i) => Container(
+                  width: 3,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 28,
+            child: Container(
+              width: 8,
+              height: 20,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.85),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(2),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            bottom: 0,
+            right: 0,
+            width: 4,
+            child: Container(color: const Color(0xFFFBF8EE)),
+          ),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                title,
+                maxLines: 2,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.fraunces(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 2,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CoverColorPicker extends StatelessWidget {
+  const _CoverColorPicker({
+    required this.colors,
+    required this.selectedCover,
+    required this.onColorSelected,
+  });
+
+  final Map<String, Color> colors;
+  final String selectedCover;
+  final ValueChanged<String> onColorSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: colors.entries.map((entry) {
+        final isSelected = selectedCover == entry.key;
+        return GestureDetector(
+          onTap: () {
+            unawaited(HapticFeedback.selectionClick());
+            onColorSelected(entry.key);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: entry.value,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected ? colorScheme.onSurface : Colors.transparent,
+                width: isSelected ? 3 : 0,
+              ),
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: entry.value.withValues(alpha: 0.4),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : null,
+            ),
+            child: isSelected
+                ? const Icon(Icons.check, color: Colors.white, size: 20)
+                : null,
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _PaperStyleSelector extends StatelessWidget {
+  const _PaperStyleSelector({
+    required this.styles,
+    required this.selectedPaper,
+    required this.onPaperSelected,
+  });
+
+  final Map<String, String> styles;
+  final String selectedPaper;
+  final ValueChanged<String> onPaperSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return SegmentedButton<String>(
+      segments: styles.entries.map((entry) {
+        return ButtonSegment(value: entry.key, label: Text(entry.value));
+      }).toList(),
+      selected: {selectedPaper},
+      onSelectionChanged: (newSelection) {
+        unawaited(HapticFeedback.selectionClick());
+        onPaperSelected(newSelection.first);
+      },
     );
   }
 }

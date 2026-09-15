@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:honeyday/features/catalog/domain/element_config.dart';
@@ -30,9 +31,8 @@ class ShapeBoxDefinition extends AgendaWidgetDefinition {
   Size get defaultSize => const Size(260, 180);
 
   @override
-  String get initialConfigJson => const ElementConfig(
-        cornerRadius: 16,
-      ).toJsonString();
+  String get initialConfigJson =>
+      const ElementConfig(cornerRadius: 16).toJsonString();
 
   @override
   Widget build(
@@ -87,9 +87,9 @@ class ShapeCircleDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#EDE9FE',
-        borderColorHex: '#7C3AED',
-      ).toJsonString();
+    colorHex: '#EDE9FE',
+    borderColorHex: '#7C3AED',
+  ).toJsonString();
 
   @override
   Widget build(
@@ -144,9 +144,9 @@ class ShapeDividerDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: 'transparent',
-        borderWidth: 2,
-      ).toJsonString();
+    colorHex: 'transparent',
+    borderWidth: 2,
+  ).toJsonString();
 
   @override
   Widget build(
@@ -295,7 +295,8 @@ class ShapeFrameDefinition extends AgendaWidgetDefinition {
   String get name => 'Marco Decorativo';
 
   @override
-  String get description => 'Marco perimetral elegante adaptable a toda la página';
+  String get description =>
+      'Marco perimetral elegante adaptable a toda la página';
 
   @override
   ElementCategory get category => ElementCategory.shapes;
@@ -308,9 +309,9 @@ class ShapeFrameDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: 'transparent',
-        borderWidth: 2,
-      ).toJsonString();
+    colorHex: 'transparent',
+    borderWidth: 2,
+  ).toJsonString();
 
   @override
   Widget build(
@@ -334,9 +335,7 @@ class ShapeFrameDefinition extends AgendaWidgetDefinition {
       child: Container(
         margin: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          border: Border.all(
-            color: config.borderColor.withValues(alpha: 0.4),
-          ),
+          border: Border.all(color: config.borderColor.withValues(alpha: 0.4)),
           borderRadius: BorderRadius.circular(10),
         ),
       ),
@@ -465,9 +464,9 @@ class ShapePillDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#D1FAE5',
-        borderColorHex: '#059669',
-      ).toJsonString();
+    colorHex: '#D1FAE5',
+    borderColorHex: '#059669',
+  ).toJsonString();
 
   @override
   Widget build(
@@ -506,7 +505,8 @@ class PlannerStickyNoteDefinition extends AgendaWidgetDefinition {
   String get name => 'Nota Adhesiva (Post-It)';
 
   @override
-  String get description => 'Nota de papel estática con chincheta y líneas para escribir';
+  String get description =>
+      'Nota de papel estática con chincheta y líneas para escribir';
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -518,9 +518,8 @@ class PlannerStickyNoteDefinition extends AgendaWidgetDefinition {
   Size get defaultSize => const Size(220, 200);
 
   @override
-  String get initialConfigJson => const ElementConfig(
-        borderWidth: 1,
-      ).toJsonString();
+  String get initialConfigJson =>
+      const ElementConfig(borderWidth: 1).toJsonString();
 
   @override
   Widget build(
@@ -548,7 +547,12 @@ class PlannerStickyNoteDefinition extends AgendaWidgetDefinition {
         children: [
           // Subtle horizontal writing lines
           Padding(
-            padding: const EdgeInsets.only(top: 36, left: 16, right: 16, bottom: 12),
+            padding: const EdgeInsets.only(
+              top: 36,
+              left: 16,
+              right: 16,
+              bottom: 12,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(
@@ -605,10 +609,10 @@ class PlannerWashiTapeDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#FFEDD5', // Orange 100
-        borderColorHex: '#EA580C',
-        borderWidth: 1,
-      ).toJsonString();
+    colorHex: '#FFEDD5', // Orange 100
+    borderColorHex: '#EA580C',
+    borderWidth: 1,
+  ).toJsonString();
 
   @override
   Widget build(
@@ -632,10 +636,7 @@ class PlannerWashiTapeDefinition extends AgendaWidgetDefinition {
 }
 
 class _WashiTapePainter extends CustomPainter {
-  const _WashiTapePainter({
-    required this.color,
-    required this.accentColor,
-  });
+  const _WashiTapePainter({required this.color, required this.accentColor});
 
   final Color color;
   final Color accentColor;
@@ -697,7 +698,8 @@ class PlannerWeeklyColumnsDefinition extends AgendaWidgetDefinition {
   String get name => 'Columnas Semanales (L-D)';
 
   @override
-  String get description => 'Estructura de 7 días para planificar la semana a mano';
+  String get description =>
+      'Estructura de 7 días para planificar la semana a mano';
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -710,10 +712,10 @@ class PlannerWeeklyColumnsDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#FFFFFF',
-        borderColorHex: '#CBD5E1',
-        borderWidth: 1,
-      ).toJsonString();
+    colorHex: '#FFFFFF',
+    borderColorHex: '#CBD5E1',
+    borderWidth: 1,
+  ).toJsonString();
 
   @override
   Widget build(
@@ -730,7 +732,10 @@ class PlannerWeeklyColumnsDefinition extends AgendaWidgetDefinition {
       decoration: BoxDecoration(
         color: config.fillColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: config.borderColor, width: config.borderWidth),
+        border: Border.all(
+          color: config.borderColor,
+          width: config.borderWidth,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -784,7 +789,10 @@ class PlannerWeeklyColumnsDefinition extends AgendaWidgetDefinition {
                   // Ruled writing lines
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 8,
+                      ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: List.generate(
@@ -818,7 +826,8 @@ class PlannerChecklistDefinition extends AgendaWidgetDefinition {
   String get name => 'Bloque Checklist';
 
   @override
-  String get description => 'Lista con casillas de verificación estéticas para escribir tareas';
+  String get description =>
+      'Lista con casillas de verificación estéticas para escribir tareas';
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -831,10 +840,10 @@ class PlannerChecklistDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#FFFFFF',
-        borderColorHex: '#E2E8F0',
-        borderWidth: 1,
-      ).toJsonString();
+    colorHex: '#FFFFFF',
+    borderColorHex: '#E2E8F0',
+    borderWidth: 1,
+  ).toJsonString();
 
   @override
   Widget build(
@@ -851,7 +860,10 @@ class PlannerChecklistDefinition extends AgendaWidgetDefinition {
       decoration: BoxDecoration(
         color: config.fillColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: config.borderColor, width: config.borderWidth),
+        border: Border.all(
+          color: config.borderColor,
+          width: config.borderWidth,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -938,7 +950,8 @@ class PlannerHabitTrackerDefinition extends AgendaWidgetDefinition {
   String get name => 'Tracker de Hábitos';
 
   @override
-  String get description => 'Matriz de seguimiento semanal para colorear con el lápiz';
+  String get description =>
+      'Matriz de seguimiento semanal para colorear con el lápiz';
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -951,10 +964,10 @@ class PlannerHabitTrackerDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#FFFFFF',
-        borderColorHex: '#E2E8F0',
-        borderWidth: 1,
-      ).toJsonString();
+    colorHex: '#FFFFFF',
+    borderColorHex: '#E2E8F0',
+    borderWidth: 1,
+  ).toJsonString();
 
   @override
   Widget build(
@@ -972,7 +985,10 @@ class PlannerHabitTrackerDefinition extends AgendaWidgetDefinition {
       decoration: BoxDecoration(
         color: config.fillColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: config.borderColor, width: config.borderWidth),
+        border: Border.all(
+          color: config.borderColor,
+          width: config.borderWidth,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.02),
@@ -986,7 +1002,11 @@ class PlannerHabitTrackerDefinition extends AgendaWidgetDefinition {
         children: [
           Row(
             children: [
-              const Icon(Icons.favorite_outline_rounded, size: 14, color: Color(0xFFE11D48)),
+              const Icon(
+                Icons.favorite_outline_rounded,
+                size: 14,
+                color: Color(0xFFE11D48),
+              ),
               const SizedBox(width: 6),
               const Text(
                 'HÁBITOS DE LA SEMANA',
@@ -1096,7 +1116,10 @@ class PlannerPrioritiesDefinition extends AgendaWidgetDefinition {
       decoration: BoxDecoration(
         color: config.fillColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: config.borderColor, width: config.borderWidth),
+        border: Border.all(
+          color: config.borderColor,
+          width: config.borderWidth,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -1177,7 +1200,8 @@ class PlannerNotesLinedDefinition extends AgendaWidgetDefinition {
   String get name => 'Caja de Notas (Rayas)';
 
   @override
-  String get description => 'Área de notas con renglones para escribir con precisión';
+  String get description =>
+      'Área de notas con renglones para escribir con precisión';
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -1190,10 +1214,10 @@ class PlannerNotesLinedDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#FFFFFF',
-        borderColorHex: '#CBD5E1',
-        borderWidth: 1,
-      ).toJsonString();
+    colorHex: '#FFFFFF',
+    borderColorHex: '#CBD5E1',
+    borderWidth: 1,
+  ).toJsonString();
 
   @override
   Widget build(
@@ -1210,16 +1234,16 @@ class PlannerNotesLinedDefinition extends AgendaWidgetDefinition {
       decoration: BoxDecoration(
         color: config.fillColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: config.borderColor, width: config.borderWidth),
+        border: Border.all(
+          color: config.borderColor,
+          width: config.borderWidth,
+        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(
           8,
-          (_) => Container(
-            height: 1,
-            color: const Color(0xFFE2E8F0),
-          ),
+          (_) => Container(height: 1, color: const Color(0xFFE2E8F0)),
         ),
       ),
     );
@@ -1237,7 +1261,8 @@ class PlannerNotesGridDefinition extends AgendaWidgetDefinition {
   String get name => 'Caja de Notas (Cuadrícula)';
 
   @override
-  String get description => 'Área de notas con papel milimetrado o cuadrícula sutil';
+  String get description =>
+      'Área de notas con papel milimetrado o cuadrícula sutil';
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -1250,10 +1275,10 @@ class PlannerNotesGridDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#FFFFFF',
-        borderColorHex: '#CBD5E1',
-        borderWidth: 1,
-      ).toJsonString();
+    colorHex: '#FFFFFF',
+    borderColorHex: '#CBD5E1',
+    borderWidth: 1,
+  ).toJsonString();
 
   @override
   Widget build(
@@ -1269,7 +1294,10 @@ class PlannerNotesGridDefinition extends AgendaWidgetDefinition {
       decoration: BoxDecoration(
         color: config.fillColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: config.borderColor, width: config.borderWidth),
+        border: Border.all(
+          color: config.borderColor,
+          width: config.borderWidth,
+        ),
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(15),
@@ -1332,9 +1360,9 @@ class StickerHeartDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#FFE4E6', // Rose 100
-        borderColorHex: '#E11D48',
-      ).toJsonString();
+    colorHex: '#FFE4E6', // Rose 100
+    borderColorHex: '#E11D48',
+  ).toJsonString();
 
   @override
   Widget build(
@@ -1423,9 +1451,9 @@ class StickerCoffeeDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#FFEDD5',
-        borderColorHex: '#9A3412',
-      ).toJsonString();
+    colorHex: '#FFEDD5',
+    borderColorHex: '#9A3412',
+  ).toJsonString();
 
   @override
   Widget build(
@@ -1470,9 +1498,9 @@ class StickerPinDefinition extends AgendaWidgetDefinition {
 
   @override
   String get initialConfigJson => const ElementConfig(
-        colorHex: '#EDE9FE',
-        borderColorHex: '#7C3AED',
-      ).toJsonString();
+    colorHex: '#EDE9FE',
+    borderColorHex: '#7C3AED',
+  ).toJsonString();
 
   @override
   Widget build(

@@ -16,24 +16,24 @@ class PaperSurfacePainter extends CustomPainter {
     this.marginColor = const Color(0xFFE2E8F0),
     this.spacing = 24,
     this.margin = 24,
-  })  : _backgroundPaint = Paint()
-          ..color = backgroundColor
-          ..style = PaintingStyle.fill,
-        _dotPaint = Paint()
-          ..color = guidelineColor
-          ..style = PaintingStyle.fill,
-        _linePaint = Paint()
-          ..color = guidelineColor
-          ..strokeWidth = 1
-          ..style = PaintingStyle.stroke,
-        _marginLinePaint = Paint()
-          ..color = marginColor
-          ..strokeWidth = 1.2
-          ..style = PaintingStyle.stroke,
-        _gridPaint = Paint()
-          ..color = guidelineColor
-          ..strokeWidth = 0.8
-          ..style = PaintingStyle.stroke;
+  }) : _backgroundPaint = Paint()
+         ..color = backgroundColor
+         ..style = PaintingStyle.fill,
+       _dotPaint = Paint()
+         ..color = guidelineColor
+         ..style = PaintingStyle.fill,
+       _linePaint = Paint()
+         ..color = guidelineColor
+         ..strokeWidth = 1
+         ..style = PaintingStyle.stroke,
+       _marginLinePaint = Paint()
+         ..color = marginColor
+         ..strokeWidth = 1.2
+         ..style = PaintingStyle.stroke,
+       _gridPaint = Paint()
+         ..color = guidelineColor
+         ..strokeWidth = 0.8
+         ..style = PaintingStyle.stroke;
 
   /// Paper texture pattern.
   final PaperStyle paperStyle;

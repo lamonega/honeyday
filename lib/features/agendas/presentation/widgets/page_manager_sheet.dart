@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:honeyday/core/database/app_database.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 
 /// Bottom sheet allowing users to view page thumbnails, jump between pages,
 /// reorder pages, delete pages, and change page texture.
@@ -177,11 +177,13 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
                                 page.backgroundStyle == 'grid'
                                     ? Icons.grid_4x4_rounded
                                     : page.backgroundStyle == 'lined'
-                                        ? Icons.view_headline_rounded
-                                        : Icons.grain_rounded,
+                                    ? Icons.view_headline_rounded
+                                    : Icons.grain_rounded,
                                 color: isCurrent
                                     ? colorScheme.primary
-                                    : colorScheme.onSurface.withValues(alpha: 0.4),
+                                    : colorScheme.onSurface.withValues(
+                                        alpha: 0.4,
+                                      ),
                                 size: 26,
                               ),
                               const SizedBox(height: 4),
@@ -202,7 +204,9 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
                                     page.backgroundStyle,
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: colorScheme.onSurface.withValues(alpha: 0.5),
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                               ),
                             ],
@@ -242,11 +246,15 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
                             ReorderableDragStartListener(
                               index: index,
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 2),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 2,
+                                ),
                                 child: Icon(
                                   Icons.drag_indicator_rounded,
                                   size: 16,
-                                  color: colorScheme.onSurface.withValues(alpha: 0.4),
+                                  color: colorScheme.onSurface.withValues(
+                                    alpha: 0.4,
+                                  ),
                                 ),
                               ),
                             ),

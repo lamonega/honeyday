@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:alchemist/alchemist.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:honeyday/core/database/app_database.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/agenda_card.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 
@@ -14,7 +14,10 @@ void main() {
         'AgendaCard covers render properly',
         fileName: 'agenda_card_covers',
         builder: () => GoldenTestGroup(
-          scenarioConstraints: const BoxConstraints(maxWidth: 320, maxHeight: 380),
+          scenarioConstraints: const BoxConstraints(
+            maxWidth: 320,
+            maxHeight: 380,
+          ),
           children: [
             GoldenTestScenario(
               name: 'Honey Amber Cover',
@@ -29,7 +32,6 @@ void main() {
                     pageCount: 12,
                     createdAt: DateTime(2026, 9, 11),
                     updatedAt: DateTime(2026, 9, 11),
-                    isDeleted: false,
                   ),
                   onOpenWriting: () {},
                   onOpenReading: () {},
@@ -51,7 +53,6 @@ void main() {
                     pageCount: 5,
                     createdAt: DateTime(2026, 9, 11),
                     updatedAt: DateTime(2026, 9, 11),
-                    isDeleted: false,
                   ),
                   onOpenWriting: () {},
                   onOpenReading: () {},
@@ -70,7 +71,10 @@ void main() {
         'Catalog modular widgets render properly',
         fileName: 'catalog_widgets_group',
         builder: () => GoldenTestGroup(
-          scenarioConstraints: const BoxConstraints(maxWidth: 380, maxHeight: 340),
+          scenarioConstraints: const BoxConstraints(
+            maxWidth: 380,
+            maxHeight: 340,
+          ),
           children: [
             GoldenTestScenario(
               name: 'Calendar Week Grid',

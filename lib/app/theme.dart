@@ -52,7 +52,6 @@ abstract final class HoneydayTheme {
   static ThemeData _buildLightTheme() {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.honeyAmber,
-      brightness: Brightness.light,
       primary: AppColors.honeyAmber,
       onPrimary: AppColors.paperSurface,
       primaryContainer: AppColors.honeyContainer,
@@ -96,7 +95,10 @@ abstract final class HoneydayTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.paperSurface,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.paperBorder),
@@ -174,12 +176,11 @@ abstract final class HoneydayTheme {
       onErrorContainer: AppColors.errorDark,
     );
 
-    final baseSans = GoogleFonts.plusJakartaSansTextTheme(
-      const TextTheme(),
-    ).apply(
-      bodyColor: AppColors.inkPrimaryDark,
-      displayColor: AppColors.inkPrimaryDark,
-    );
+    final baseSans = GoogleFonts.plusJakartaSansTextTheme(const TextTheme())
+        .apply(
+          bodyColor: AppColors.inkPrimaryDark,
+          displayColor: AppColors.inkPrimaryDark,
+        );
 
     return ThemeData(
       useMaterial3: true,
@@ -205,7 +206,10 @@ abstract final class HoneydayTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.surfaceDark,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.paperBorderDark),
@@ -216,7 +220,10 @@ abstract final class HoneydayTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.honeyAmberDark, width: 2),
+          borderSide: const BorderSide(
+            color: AppColors.honeyAmberDark,
+            width: 2,
+          ),
         ),
       ),
       dialogTheme: DialogThemeData(
@@ -245,14 +252,18 @@ abstract final class HoneydayTheme {
           return TextStyle(
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? AppColors.honeyAmberDark : AppColors.inkMutedDark,
+            color: isSelected
+                ? AppColors.honeyAmberDark
+                : AppColors.inkMutedDark,
           );
         }),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final isSelected = states.contains(WidgetState.selected);
           return IconThemeData(
             size: 24,
-            color: isSelected ? AppColors.honeyAmberDark : AppColors.inkMutedDark,
+            color: isSelected
+                ? AppColors.honeyAmberDark
+                : AppColors.inkMutedDark,
           );
         }),
       ),

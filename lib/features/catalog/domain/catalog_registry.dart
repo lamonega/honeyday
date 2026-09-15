@@ -51,9 +51,7 @@ abstract final class CatalogRegistry {
   static List<AgendaWidgetDefinition> getDefinitionsByCategory(
     ElementCategory category,
   ) {
-    return _definitions.values
-        .where((d) => d.category == category)
-        .toList();
+    return _definitions.values.where((d) => d.category == category).toList();
   }
 
   static AgendaWidgetDefinition? getDefinition(String widgetType) {

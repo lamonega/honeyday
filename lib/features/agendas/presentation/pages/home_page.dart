@@ -3,7 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:honeyday/core/database/app_database.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/home_controller.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/agenda_card.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/new_agenda_dialog.dart';
@@ -54,7 +54,8 @@ class HomePage extends ConsumerWidget {
                   'Honeyday',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                    color: Theme.of(context).colorScheme.onSurface
+                        .withValues(alpha: 0.5),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -69,7 +70,10 @@ class HomePage extends ConsumerWidget {
               style: FilledButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
                 foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -108,7 +112,8 @@ class HomePage extends ConsumerWidget {
               Text(
                 '$error',
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                  color: Theme.of(context).colorScheme.onSurface
+                      .withValues(alpha: 0.5),
                   fontSize: 13,
                 ),
               ),
@@ -126,10 +131,10 @@ class HomePage extends ConsumerWidget {
               final crossAxisCount = width < 600
                   ? 1
                   : width < 900
-                      ? 2
-                      : width < 1200
-                          ? 3
-                          : 4;
+                  ? 2
+                  : width < 1200
+                  ? 3
+                  : 4;
 
               return Padding(
                 padding: const EdgeInsets.all(24),
@@ -144,18 +149,19 @@ class HomePage extends ConsumerWidget {
                   itemBuilder: (context, index) {
                     final agenda = agendas[index];
                     return AgendaCard(
-                      agenda: agenda,
-                      onOpenWriting: () {
-                        context.go('/agenda/${agenda.id}?mode=writing');
-                      },
-                      onOpenReading: () {
-                        context.go('/agenda/${agenda.id}?mode=reading');
-                      },
-                      onOpenEdit: () {
-                        context.go('/agenda/${agenda.id}?mode=edit');
-                      },
-                      onDelete: () => _confirmDeleteAgenda(context, ref, agenda),
-                    )
+                          agenda: agenda,
+                          onOpenWriting: () {
+                            context.go('/agenda/${agenda.id}?mode=writing');
+                          },
+                          onOpenReading: () {
+                            context.go('/agenda/${agenda.id}?mode=reading');
+                          },
+                          onOpenEdit: () {
+                            context.go('/agenda/${agenda.id}?mode=edit');
+                          },
+                          onDelete: () =>
+                              _confirmDeleteAgenda(context, ref, agenda),
+                        )
                         .animate()
                         .fadeIn(
                           duration: 400.ms,
@@ -184,7 +190,11 @@ class HomePage extends ConsumerWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
-          final crossAxisCount = width < 600 ? 1 : width < 900 ? 2 : 3;
+          final crossAxisCount = width < 600
+              ? 1
+              : width < 900
+              ? 2
+              : 3;
 
           return GridView.builder(
             physics: const NeverScrollableScrollPhysics(),
@@ -196,9 +206,7 @@ class HomePage extends ConsumerWidget {
             ),
             itemCount: crossAxisCount * 2,
             itemBuilder: (context, index) {
-              return _SkeletonCard(
-                delay: Duration(milliseconds: 100 * index),
-              );
+              return _SkeletonCard(delay: Duration(milliseconds: 100 * index));
             },
           );
         },
@@ -224,20 +232,20 @@ class HomePage extends ConsumerWidget {
                 size: 64,
                 color: Theme.of(context).colorScheme.primary,
               ),
-            ).animate().scale(
-                  duration: 500.ms,
-                  curve: Curves.easeOutBack,
-                ),
+            ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
             const SizedBox(height: 24),
             Text(
-              'Aún no tienes agendas',
-              style: GoogleFonts.fraunces(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
-                letterSpacing: -0.3,
-              ),
-            ).animate().fadeIn(duration: 500.ms, delay: 150.ms).slideY(
+                  'Aún no tienes agendas',
+                  style: GoogleFonts.fraunces(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                    letterSpacing: -0.3,
+                  ),
+                )
+                .animate()
+                .fadeIn(duration: 500.ms, delay: 150.ms)
+                .slideY(
                   begin: 0.2,
                   end: 0,
                   duration: 500.ms,
@@ -246,14 +254,18 @@ class HomePage extends ConsumerWidget {
                 ),
             const SizedBox(height: 8),
             Text(
-              'Crea tu primer cuaderno para organizar tus días,\ndibujar y planificar con estilo.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 15,
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                height: 1.5,
-              ),
-            ).animate().fadeIn(duration: 500.ms, delay: 250.ms).slideY(
+                  'Crea tu primer cuaderno para organizar tus días,\ndibujar y planificar con estilo.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Theme.of(context).colorScheme.onSurface
+                        .withValues(alpha: 0.6),
+                    height: 1.5,
+                  ),
+                )
+                .animate()
+                .fadeIn(duration: 500.ms, delay: 250.ms)
+                .slideY(
                   begin: 0.2,
                   end: 0,
                   duration: 500.ms,
@@ -262,22 +274,25 @@ class HomePage extends ConsumerWidget {
                 ),
             const SizedBox(height: 32),
             FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                elevation: 2,
-              ),
-              icon: const Icon(Icons.add_rounded, size: 22),
-              label: const Text(
-                'Crear Mi Primera Agenda',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              onPressed: () => _showCreateAgendaDialog(context, ref),
-            )
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 2,
+                  ),
+                  icon: const Icon(Icons.add_rounded, size: 22),
+                  label: const Text(
+                    'Crear Mi Primera Agenda',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  onPressed: () => _showCreateAgendaDialog(context, ref),
+                )
                 .animate()
                 .fadeIn(duration: 500.ms, delay: 400.ms)
                 .slideY(
@@ -341,7 +356,8 @@ class HomePage extends ConsumerWidget {
         content: Text(
           'Se eliminará "${agenda.title}" y todas sus páginas asociadas.',
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+            color: Theme.of(context).colorScheme.onSurface
+                .withValues(alpha: 0.7),
           ),
         ),
         actions: [
@@ -376,70 +392,71 @@ class _SkeletonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      clipBehavior: Clip.antiAlias,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            flex: 4,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Theme.of(context).colorScheme.surfaceContainerHighest,
-                    Theme.of(context).colorScheme.surfaceContainerHighest
-                        .withValues(alpha: 0.5),
+          clipBehavior: Clip.antiAlias,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: Theme.of(context).colorScheme.outline
+                  .withValues(alpha: 0.3),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 4,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                        Theme.of(context).colorScheme.surfaceContainerHighest
+                            .withValues(alpha: 0.5),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      width: 28,
+                      height: 28,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                const Spacer(),
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    )
-        .animate(
-          onComplete: (controller) => controller.repeat(reverse: true),
         )
+        .animate(onComplete: (controller) => controller.repeat(reverse: true))
         .fadeIn(duration: 400.ms, delay: delay)
         .shimmer(
           duration: 1500.ms,
           delay: delay,
-          color: Theme.of(context)
-              .colorScheme
-              .surfaceContainerHighest
+          color: Theme.of(context).colorScheme.surfaceContainerHighest
               .withValues(alpha: 0.4),
         );
   }

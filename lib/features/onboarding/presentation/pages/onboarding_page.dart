@@ -28,8 +28,8 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
 /// Provider for onboarding state.
 final onboardingProvider =
     NotifierProvider<OnboardingNotifier, OnboardingState>(
-  OnboardingNotifier.new,
-);
+      OnboardingNotifier.new,
+    );
 
 /// Onboarding screen shown on first launch.
 ///
@@ -51,24 +51,21 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     _OnboardingStep(
       icon: Icons.auto_stories_rounded,
       title: 'Organiza tu vida',
-      description:
-          'Crea agendas personalizadas para cada área de tu vida:\nfinanzas, hábitos, proyectos y más.',
+      description: 'Crea agendas personalizadas para cada área de tu vida:\nfinanzas, hábitos, proyectos y más.',
       color: Color(0xFFF59E0B),
       bgColor: Color(0xFFFEF3C7),
     ),
     _OnboardingStep(
       icon: Icons.draw_rounded,
       title: 'Dibuja libremente',
-      description:
-          'Escribe a mano, dibuja, resalta y usa herramientas\nde tinta con precisión de presión.',
+      description: 'Escribe a mano, dibuja, resalta y usa herramientas\nde tinta con precisión de presión.',
       color: Color(0xFF8B5CF6),
       bgColor: Color(0xFFEDE9FE),
     ),
     _OnboardingStep(
       icon: Icons.dashboard_customize_rounded,
       title: 'Personaliza todo',
-      description:
-          'Agrega plantillas, stickers, formas y elementos\npara crear la agenda perfecta.',
+      description: 'Agrega plantillas, stickers, formas y elementos\npara crear la agenda perfecta.',
       color: Color(0xFF10B981),
       bgColor: Color(0xFFD1FAE5),
     ),
@@ -192,26 +189,26 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: step.bgColor,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(step.icon, size: 72, color: step.color),
-          )
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: step.bgColor,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(step.icon, size: 72, color: step.color),
+              )
               .animate()
               .scale(duration: 500.ms, curve: Curves.easeOutBack)
               .fadeIn(duration: 400.ms),
           const SizedBox(height: 40),
           Text(
-            step.title,
-            style: GoogleFonts.fraunces(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-              letterSpacing: -0.3,
-            ),
-          )
+                step.title,
+                style: GoogleFonts.fraunces(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                  letterSpacing: -0.3,
+                ),
+              )
               .animate()
               .fadeIn(duration: 400.ms, delay: 150.ms)
               .slideY(
@@ -223,14 +220,14 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               ),
           const SizedBox(height: 16),
           Text(
-            step.description,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: colorScheme.onSurface.withValues(alpha: 0.65),
-              height: 1.5,
-            ),
-          )
+                step.description,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: colorScheme.onSurface.withValues(alpha: 0.65),
+                  height: 1.5,
+                ),
+              )
               .animate()
               .fadeIn(duration: 400.ms, delay: 250.ms)
               .slideY(

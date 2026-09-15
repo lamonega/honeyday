@@ -24,7 +24,10 @@ void main() {
         'PageViewCanvas renders in edit mode and writing mode',
         fileName: 'canvas_page_modes',
         builder: () => GoldenTestGroup(
-          scenarioConstraints: const BoxConstraints(maxWidth: 420, maxHeight: 560),
+          scenarioConstraints: const BoxConstraints(
+            maxWidth: 420,
+            maxHeight: 560,
+          ),
           children: [
             GoldenTestScenario(
               name: 'Edit Mode with Transformable Widgets',

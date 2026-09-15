@@ -52,7 +52,11 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
             ),
             Row(
               children: [
-                Icon(Icons.interests_rounded, color: colorScheme.primary, size: 24),
+                Icon(
+                  Icons.interests_rounded,
+                  color: colorScheme.primary,
+                  size: 24,
+                ),
                 const SizedBox(width: 10),
                 Text(
                   'Catálogo de Elementos',
@@ -81,8 +85,9 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
                       label: Text(tab.$1),
                       labelStyle: TextStyle(
                         fontSize: 12,
-                        fontWeight:
-                            isSelected ? FontWeight.bold : FontWeight.w500,
+                        fontWeight: isSelected
+                            ? FontWeight.bold
+                            : FontWeight.w500,
                         color: isSelected
                             ? colorScheme.onPrimaryContainer
                             : colorScheme.onSurface.withValues(alpha: 0.6),

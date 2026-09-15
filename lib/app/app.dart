@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -40,12 +42,11 @@ class HoneydayApp extends ConsumerWidget {
 
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {
-        final lightScheme = lightDynamic?.harmonized() ??
-            ColorScheme.fromSeed(
-              seedColor: AppColors.honeyAmber,
-              brightness: Brightness.light,
-            );
-        final darkScheme = darkDynamic?.harmonized() ??
+        final lightScheme =
+            lightDynamic?.harmonized() ??
+            ColorScheme.fromSeed(seedColor: AppColors.honeyAmber);
+        final darkScheme =
+            darkDynamic?.harmonized() ??
             ColorScheme.fromSeed(
               seedColor: AppColors.honeyAmber,
               brightness: Brightness.dark,
@@ -80,7 +81,6 @@ class HoneydayApp extends ConsumerWidget {
           debugShowCheckedModeBanner: false,
           theme: lightTheme,
           darkTheme: darkTheme,
-          themeMode: ThemeMode.system,
           routerConfig: showOnboarding ? _onboardingRouter : router,
         );
       },
@@ -93,8 +93,7 @@ class _OnboardingWrapper extends ConsumerStatefulWidget {
   const _OnboardingWrapper();
 
   @override
-  ConsumerState<_OnboardingWrapper> createState() =>
-      _OnboardingWrapperState();
+  ConsumerState<_OnboardingWrapper> createState() => _OnboardingWrapperState();
 }
 
 class _OnboardingWrapperState extends ConsumerState<_OnboardingWrapper> {
@@ -106,9 +105,11 @@ class _OnboardingWrapperState extends ConsumerState<_OnboardingWrapper> {
 
     if (onboardingState.completed && !_persisted) {
       _persisted = true;
-      ref.read(sharedPreferencesProvider.future).then((prefs) {
-        prefs.setBool('onboarding_complete', true);
-      });
+      unawaited(
+        ref.read(sharedPreferencesProvider.future).then((prefs) {
+          unawaited(prefs.setBool('onboarding_complete', true));
+        }),
+      );
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.invalidate(onboardingCompleteProvider);
       });

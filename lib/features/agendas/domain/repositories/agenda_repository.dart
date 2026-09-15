@@ -1,4 +1,7 @@
-import 'package:honeyday/core/database/app_database.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
+import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
+import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 
 /// Abstract contract defining persistence and query operations for agendas.
 ///
@@ -43,22 +46,22 @@ abstract interface class AgendaRepository {
   Future<void> reorderPages(List<String> pageIdsInOrder);
 
   /// Watches all modular canvas widgets for a given [pageId].
-  Stream<List<CanvasElement>> watchCanvasElements(String pageId);
+  Stream<List<CanvasWidgetData>> watchCanvasElements(String pageId);
 
   /// Inserts or updates a canvas element.
-  Future<void> upsertCanvasElement(CanvasElementsCompanion element);
+  Future<void> upsertCanvasElement(CanvasWidgetData element);
 
   /// Soft-deletes a canvas element.
   Future<void> deleteCanvasElement(String id);
 
   /// Watches all vector ink strokes for a given [pageId].
-  Stream<List<Stroke>> watchStrokes(String pageId);
+  Stream<List<InkStroke>> watchStrokes(String pageId);
 
   /// Inserts a newly drawn freehand stroke.
-  Future<void> insertStroke(StrokesCompanion stroke);
+  Future<void> insertStroke(InkStroke stroke);
 
   /// Inserts multiple strokes in a single batch operation.
-  Future<void> insertStrokesBatch(List<StrokesCompanion> strokes);
+  Future<void> insertStrokesBatch(List<InkStroke> strokes);
 
   /// Removes a single stroke by its [id].
   Future<void> deleteStroke(String id);

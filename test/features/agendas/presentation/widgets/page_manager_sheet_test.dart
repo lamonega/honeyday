@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:honeyday/core/database/app_database.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/page_manager_sheet.dart';
 
 void main() {
@@ -13,7 +13,6 @@ void main() {
         backgroundStyle: 'dotted',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        isDeleted: false,
       ),
       AgendaPage(
         id: 'page-2',
@@ -22,7 +21,6 @@ void main() {
         backgroundStyle: 'grid',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        isDeleted: false,
       ),
     ];
 

@@ -95,54 +95,55 @@ void main() {
     });
 
     testWidgets(
-        'renders Canva action toolbar (adapt to page, fit width, center, color)',
-        (tester) async {
-      var adaptCalled = false;
-      var fitWidthCalled = false;
-      var centerCalled = false;
+      'renders Canva action toolbar (adapt to page, fit width, center, color)',
+      (tester) async {
+        var adaptCalled = false;
+        var fitWidthCalled = false;
+        var centerCalled = false;
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Stack(
-              children: [
-                TransformableBox(
-                  position: const Offset(100, 100),
-                  size: const Size(200, 150),
-                  canvasMode: CanvasMode.edit,
-                  onAdaptToPage: () => adaptCalled = true,
-                  onFitWidth: () => fitWidthCalled = true,
-                  onCenter: () => centerCalled = true,
-                  child: const Text('Element'),
-                ),
-              ],
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Stack(
+                children: [
+                  TransformableBox(
+                    position: const Offset(100, 100),
+                    size: const Size(200, 150),
+                    canvasMode: CanvasMode.edit,
+                    onAdaptToPage: () => adaptCalled = true,
+                    onFitWidth: () => fitWidthCalled = true,
+                    onCenter: () => centerCalled = true,
+                    child: const Text('Element'),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      // Verify buttons exist
-      expect(find.byIcon(Icons.fit_screen_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.swap_horiz_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.filter_center_focus_rounded), findsOneWidget);
-      expect(find.byIcon(Icons.palette_outlined), findsOneWidget);
+        // Verify buttons exist
+        expect(find.byIcon(Icons.fit_screen_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.swap_horiz_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.filter_center_focus_rounded), findsOneWidget);
+        expect(find.byIcon(Icons.palette_outlined), findsOneWidget);
 
-      // Tap adapt to page
-      await tester.tap(find.byIcon(Icons.fit_screen_rounded));
-      expect(adaptCalled, isTrue);
+        // Tap adapt to page
+        await tester.tap(find.byIcon(Icons.fit_screen_rounded));
+        expect(adaptCalled, isTrue);
 
-      // Tap fit width
-      await tester.tap(find.byIcon(Icons.swap_horiz_rounded));
-      expect(fitWidthCalled, isTrue);
+        // Tap fit width
+        await tester.tap(find.byIcon(Icons.swap_horiz_rounded));
+        expect(fitWidthCalled, isTrue);
 
-      // Tap center
-      await tester.tap(find.byIcon(Icons.filter_center_focus_rounded));
-      expect(centerCalled, isTrue);
+        // Tap center
+        await tester.tap(find.byIcon(Icons.filter_center_focus_rounded));
+        expect(centerCalled, isTrue);
 
-      // Tap color palette icon to toggle palette
-      await tester.tap(find.byIcon(Icons.palette_outlined));
-      await tester.pumpAndSettle();
-      expect(find.byType(GestureDetector), findsWidgets);
-    });
+        // Tap color palette icon to toggle palette
+        await tester.tap(find.byIcon(Icons.palette_outlined));
+        await tester.pumpAndSettle();
+        expect(find.byType(GestureDetector), findsWidgets);
+      },
+    );
   });
 }
