@@ -1,0 +1,8 @@
+# Auto-detect text files and normalize line endings
+* text=auto
+
+# Mark build_runner and drift generated code as linguist-generated
+*.g.dart linguist-generated=true
+*.drift.dart linguist-generated=true
+*.freezed.dart linguist-generated=true
+*.mocks.dart linguist-generated=true
