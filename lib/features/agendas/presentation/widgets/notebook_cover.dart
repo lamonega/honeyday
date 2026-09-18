@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:honeyday/core/utils/color_utils.dart';
 
 /// Tactile notebook-styled cover with spine stitch, page edges, ribbon bookmark,
 /// Fraunces editorial title, and delete button.
@@ -20,8 +21,8 @@ class NotebookCover extends StatelessWidget {
     if (style.startsWith('#') || style.length == 6) {
       final hex = style.startsWith('#') ? style : '#$style';
       try {
-        final color = _hexToColor(hex);
-        final dark = _darken(color);
+        final color = hexToColor(hex);
+        final dark = darken(color);
         return LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -65,17 +66,6 @@ class NotebookCover extends StatelessWidget {
           colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
         );
     }
-  }
-
-  static Color _hexToColor(String hex) {
-    final clean = hex.replaceAll('#', '');
-    return Color(int.parse('FF$clean', radix: 16));
-  }
-
-  static Color _darken(Color color) {
-    final hsl = HSLColor.fromColor(color);
-    final darkened = hsl.withLightness((hsl.lightness - 0.15).clamp(0.0, 1.0));
-    return darkened.toColor();
   }
 
   @override
