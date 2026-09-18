@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/home_controller.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/agenda_card.dart';
@@ -81,22 +82,22 @@ class HomePage extends ConsumerWidget {
           return LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth;
-              final crossAxisCount = width < 600
+              final crossAxisCount = width < kBreakpointMobile
                   ? 1
-                  : width < 900
+                  : width < kBreakpointTablet
                   ? 2
-                  : width < 1200
+                  : width < kBreakpointDesktop
                   ? 3
                   : 4;
 
               return Padding(
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.all(kSpacingExtraLarge),
                 child: GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 20,
-                    mainAxisSpacing: 20,
-                    childAspectRatio: 0.85,
+                    crossAxisSpacing: kHomeGridSpacing,
+                    mainAxisSpacing: kHomeGridSpacing,
+                    childAspectRatio: kHomeCardAspectRatio,
                   ),
                   itemCount: agendas.length,
                   itemBuilder: (context, index) {
@@ -121,7 +122,7 @@ class HomePage extends ConsumerWidget {
                           delay: Duration(milliseconds: 60 * index),
                         )
                         .slideY(
-                          begin: 0.08,
+                          begin: kOnboardingScaleBegin,
                           end: 0,
                           duration: 400.ms,
                           delay: Duration(milliseconds: 60 * index),
@@ -139,13 +140,13 @@ class HomePage extends ConsumerWidget {
 
   Widget _buildSkeletonLoader(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(kSpacingExtraLarge),
       child: LayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.maxWidth;
-          final crossAxisCount = width < 600
+          final crossAxisCount = width < kBreakpointMobile
               ? 1
-              : width < 900
+              : width < kBreakpointTablet
               ? 2
               : 3;
 
@@ -153,9 +154,9 @@ class HomePage extends ConsumerWidget {
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: crossAxisCount,
-              crossAxisSpacing: 20,
-              mainAxisSpacing: 20,
-              childAspectRatio: 0.85,
+              crossAxisSpacing: kHomeGridSpacing,
+              mainAxisSpacing: kHomeGridSpacing,
+              childAspectRatio: kHomeCardAspectRatio,
             ),
             itemCount: crossAxisCount * 2,
             itemBuilder: (context, index) {
