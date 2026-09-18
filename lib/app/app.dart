@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:honeyday/core/constants/preferences_keys.dart';
 import 'package:go_router/go_router.dart';
 import 'package:honeyday/app/router.dart';
 import 'package:honeyday/app/theme.dart';
@@ -16,7 +17,7 @@ final sharedPreferencesProvider = FutureProvider<SharedPreferences>((ref) {
 /// Whether the user has completed onboarding (persisted).
 final onboardingCompleteProvider = FutureProvider<bool>((ref) async {
   final prefs = await ref.watch(sharedPreferencesProvider.future);
-  return prefs.getBool('onboarding_complete') ?? false;
+  return prefs.getBool(PreferencesKeys.onboardingComplete) ?? false;
 });
 
 /// Persisted theme mode (light / dark / system).
@@ -33,7 +34,7 @@ class ThemeModeNotifier extends AsyncNotifier<ThemeMode> {
   @override
   Future<ThemeMode> build() async {
     final prefs = await ref.watch(sharedPreferencesProvider.future);
-    final value = prefs.getString('theme_mode');
+    final value = prefs.getString(PreferencesKeys.themeMode);
     return ThemeMode.values.firstWhere(
       (e) => e.name == value,
       orElse: () => ThemeMode.system,
@@ -42,7 +43,7 @@ class ThemeModeNotifier extends AsyncNotifier<ThemeMode> {
 
   Future<void> set(ThemeMode mode) async {
     final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setString('theme_mode', mode.name);
+    await prefs.setString(PreferencesKeys.themeMode, mode.name);
     ref.invalidateSelf();
   }
 }
@@ -51,7 +52,7 @@ class AccentColorNotifier extends AsyncNotifier<Color> {
   @override
   Future<Color> build() async {
     final prefs = await ref.watch(sharedPreferencesProvider.future);
-    final hex = prefs.getString('accent_color');
+    final hex = prefs.getString(PreferencesKeys.accentColor);
     if (hex != null) {
       try {
         return Color(int.parse('FF$hex', radix: 16));
@@ -65,7 +66,7 @@ class AccentColorNotifier extends AsyncNotifier<Color> {
   Future<void> set(Color color) async {
     final hex = color.toARGB32().toRadixString(16).substring(2).toUpperCase();
     final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setString('accent_color', hex);
+    await prefs.setString(PreferencesKeys.accentColor, hex);
     ref.invalidateSelf();
   }
 }
@@ -134,7 +135,7 @@ class _OnboardingWrapperState extends ConsumerState<_OnboardingWrapper> {
       _persisted = true;
       unawaited(
         ref.read(sharedPreferencesProvider.future).then((prefs) {
-          unawaited(prefs.setBool('onboarding_complete', true));
+          unawaited(prefs.setBool(PreferencesKeys.onboardingComplete, true));
         }),
       );
       WidgetsBinding.instance.addPostFrameCallback((_) {
