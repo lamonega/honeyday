@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:honeyday/features/agendas/data/repositories/agenda_repository_provider.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
@@ -89,7 +90,7 @@ class AgendaViewerController {
       id: _uuid.v4(),
       pageId: pageId,
       widgetType: definition.id,
-      position: const Offset(120, 100),
+      position: const Offset(kNewElementDefaultX, kNewElementDefaultY),
       size: definition.defaultSize,
       configJson: definition.initialConfigJson,
     );
@@ -118,7 +119,7 @@ class AgendaViewerController {
       id: _uuid.v4(),
       pageId: source.pageId,
       widgetType: source.widgetType,
-      position: Offset(source.position.dx + 24, source.position.dy + 24),
+      position: Offset(source.position.dx + kDuplicateOffset, source.position.dy + kDuplicateOffset),
       size: source.size,
       rotation: source.rotation,
       configJson: source.configJson,
