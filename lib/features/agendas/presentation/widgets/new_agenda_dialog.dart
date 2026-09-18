@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:honeyday/core/utils/color_utils.dart';
@@ -245,7 +246,7 @@ class _LiveCoverPreview extends StatelessWidget {
             bottom: 0,
             right: 0,
             width: 4,
-            child: Container(color: const Color(0xFFFBF8EE)),
+            child: Container(color: const AppColors.paperEdge),
           ),
           Center(
             child: Padding(
