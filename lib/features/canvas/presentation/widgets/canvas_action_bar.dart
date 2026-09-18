@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/catalog/domain/element_config.dart';
 
 class CanvasActionBar extends StatelessWidget {
@@ -47,7 +48,7 @@ class CanvasActionBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(kActionBarBorderRadius),
         border: Border.all(color: colorScheme.outline),
         boxShadow: [
           BoxShadow(
@@ -63,8 +64,8 @@ class CanvasActionBar extends StatelessWidget {
           GestureDetector(
             onTap: onTogglePalette,
             child: Container(
-              width: 28,
-              height: 28,
+              width: kPaletteButtonSize,
+              height: kPaletteButtonSize,
               padding: const EdgeInsets.all(3),
               child: Container(
                 decoration: BoxDecoration(
@@ -74,14 +75,14 @@ class CanvasActionBar extends StatelessWidget {
                 ),
                 child: Icon(
                   Icons.palette_outlined,
-                  size: 14,
+                  size: kPaletteToggleIconSize,
                   color: colorScheme.onPrimaryContainer,
                 ),
               ),
             ),
           ),
           Container(
-            height: 16,
+            height: kActionBarDividerHeight,
             width: 1,
             color: colorScheme.outline,
             margin: const EdgeInsets.symmetric(horizontal: 2),
@@ -93,7 +94,7 @@ class CanvasActionBar extends StatelessWidget {
                 padding: const EdgeInsets.all(6),
                 child: Icon(
                   Icons.fit_screen_rounded,
-                  size: 18,
+                  size: kActionBarIconSize,
                   color: colorScheme.onSurface,
                 ),
               ),
@@ -105,7 +106,7 @@ class CanvasActionBar extends StatelessWidget {
                 padding: const EdgeInsets.all(6),
                 child: Icon(
                   Icons.swap_horiz_rounded,
-                  size: 18,
+                  size: kActionBarIconSize,
                   color: colorScheme.onSurface,
                 ),
               ),
@@ -117,7 +118,7 @@ class CanvasActionBar extends StatelessWidget {
                 padding: const EdgeInsets.all(6),
                 child: Icon(
                   Icons.filter_center_focus_rounded,
-                  size: 18,
+                  size: kActionBarIconSize,
                   color: colorScheme.onSurface,
                 ),
               ),
@@ -129,7 +130,7 @@ class CanvasActionBar extends StatelessWidget {
                 padding: const EdgeInsets.all(6),
                 child: Icon(
                   Icons.content_copy_rounded,
-                  size: 18,
+                  size: kActionBarIconSize,
                   color: colorScheme.onSurface,
                 ),
               ),
@@ -141,7 +142,7 @@ class CanvasActionBar extends StatelessWidget {
                 padding: const EdgeInsets.all(6),
                 child: Icon(
                   Icons.delete_outline_rounded,
-                  size: 18,
+                  size: kActionBarIconSize,
                   color: colorScheme.error,
                 ),
               ),
@@ -170,7 +171,7 @@ class _PaletteRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(kPaletteRowBorderRadius),
         border: Border.all(color: colorScheme.outline),
         boxShadow: [
           BoxShadow(
@@ -195,8 +196,8 @@ class _PaletteRow extends StatelessWidget {
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: 22,
-                height: 22,
+                width: kPaletteDotSize,
+                height: kPaletteDotSize,
                 decoration: BoxDecoration(
                   color: preset.fillColor == Colors.transparent
                       ? colorScheme.surface
@@ -220,7 +221,7 @@ class _PaletteRow extends StatelessWidget {
                 child: isSelected
                     ? Icon(
                         Icons.check,
-                        size: 12,
+                        size: kPaletteCheckIconSize,
                         color: colorScheme.onPrimaryContainer,
                       )
                     : null,
