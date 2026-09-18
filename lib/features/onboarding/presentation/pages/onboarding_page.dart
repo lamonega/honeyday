@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -137,7 +138,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: isActive ? 28 : 8,
+                    width: isActive ? kOnboardingActiveDotWidth : kOnboardingInactiveDotWidth,
                     height: 8,
                     decoration: BoxDecoration(
                       color: isActive
@@ -153,13 +154,13 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
               child: SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: kOnboardingButtonHeight,
                 child: FilledButton(
                   style: FilledButton.styleFrom(
                     backgroundColor: colorScheme.primary,
                     foregroundColor: colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(kOnboardingButtonBorderRadius),
                     ),
                     elevation: 2,
                   ),
@@ -169,7 +170,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                         ? 'Comenzar'
                         : 'Siguiente',
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: kOnboardingDescriptionFontSize,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -184,26 +185,26 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   Widget _buildStep(_OnboardingStep step, ColorScheme colorScheme) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.symmetric(horizontal: kOnboardingStepHorizontalPadding),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-                padding: const EdgeInsets.all(32),
+                padding: const EdgeInsets.all(kOnboardingStepIconPadding),
                 decoration: BoxDecoration(
                   color: step.bgColor,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(step.icon, size: 72, color: step.color),
+                child: Icon(step.icon, size: kOnboardingIconSize, color: step.color),
               )
               .animate()
               .scale(duration: 500.ms, curve: Curves.easeOutBack)
               .fadeIn(duration: 400.ms),
-          const SizedBox(height: 40),
+          const SizedBox(height: kSpacingLarge),
           Text(
                 step.title,
                 style: GoogleFonts.fraunces(
-                  fontSize: 28,
+                  fontSize: kOnboardingTitleFontSize,
                   fontWeight: FontWeight.bold,
                   color: colorScheme.onSurface,
                   letterSpacing: -0.3,
@@ -218,14 +219,14 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 delay: 150.ms,
                 curve: Curves.easeOutCubic,
               ),
-          const SizedBox(height: 16),
+          const SizedBox(height: kSpacingMedium),
           Text(
                 step.description,
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: kOnboardingDescriptionFontSize,
                   color: colorScheme.onSurface.withValues(alpha: 0.65),
-                  height: 1.5,
+                  height: kOnboardingLineHeight,
                 ),
               )
               .animate()
