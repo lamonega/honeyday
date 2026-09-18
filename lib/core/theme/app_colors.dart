@@ -42,6 +42,9 @@ abstract final class AppColors {
   /// Light error red container fill for destructive action badges.
   static const Color errorContainer = Color(0xFFFEE2E2);
 
+  /// Subtle cream border color for page edges and decorative borders.
+  static const Color paperEdge = Color(0xFFFBF8EE);
+
   /// Elevated surface for subtle container backgrounds in light mode.
   static const Color surfaceContainerHighestLight = Color(0xFFF8FAFC);
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
 
@@ -12,9 +13,9 @@ class PaperSurfacePainter extends CustomPainter {
   /// Constructs a [PaperSurfacePainter].
   PaperSurfacePainter({
     required this.paperStyle,
-    this.backgroundColor = const Color(0xFFFFFDF7),
-    this.guidelineColor = const Color(0xFFCBD5E1),
-    this.marginColor = const Color(0xFFE2E8F0),
+    this.backgroundColor = AppColors.paperLight,
+    this.guidelineColor = AppColors.paperBorder,
+    this.marginColor = AppColors.paperBorder,
     this.spacing = kPaperSpacing,
     this.margin = kCanvasMargin,
   }) : _backgroundPaint = Paint()
