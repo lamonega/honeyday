@@ -1,3 +1,4 @@
+import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -24,7 +25,7 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
 
-    if (width >= 600) {
+    if (width >= kBreakpointMobile) {
       return Scaffold(
         body: Row(
           children: [
