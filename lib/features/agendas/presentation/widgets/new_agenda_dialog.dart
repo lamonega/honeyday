@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:honeyday/core/utils/color_utils.dart';
+import 'package:honeyday/core/theme/paper_style.dart';
 
 /// Modal dialog for creating a new agenda notebook.
 ///
@@ -35,12 +37,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
     '#7C3AED',
   ];
 
-  static const _paperStyles = <String, String>{
-    'dotted': 'Puntos',
-    'lined': 'Rayas',
-    'grid': 'Cuadrícula',
-    'blank': 'Blanca',
-  };
+  static const _paperStyles = PaperStyle.labels;
 
   @override
   void initState() {
@@ -65,8 +62,8 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = _hexToColor(_selectedCover);
-    final darkColor = _darken(activeColor);
+    final activeColor = hexToColor(_selectedCover);
+    final darkColor = darken(activeColor);
     final previewTitle = _titleController.text.trim().isEmpty
         ? 'Nueva Agenda'
         : _titleController.text.trim();
@@ -160,16 +157,6 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
     );
   }
 
-  static Color _hexToColor(String hex) {
-    final clean = hex.replaceAll('#', '');
-    return Color(int.parse('FF$clean', radix: 16));
-  }
-
-  static Color _darken(Color color) {
-    final hsl = HSLColor.fromColor(color);
-    final darkened = hsl.withLightness((hsl.lightness - 0.15).clamp(0.0, 1.0));
-    return darkened.toColor();
-  }
 }
 
 class _LiveCoverPreview extends StatelessWidget {
@@ -307,7 +294,7 @@ class _CoverColorPicker extends StatelessWidget {
       runSpacing: 10,
       children: colors.map((hex) {
         final isSelected = selectedCover == hex;
-        final color = _hexToColor(hex);
+        final color = hexToColor(hex);
         return GestureDetector(
           onTap: () {
             unawaited(HapticFeedback.selectionClick());
@@ -336,10 +323,6 @@ class _CoverColorPicker extends StatelessWidget {
     );
   }
 
-  static Color _hexToColor(String hex) {
-    final clean = hex.replaceAll('#', '');
-    return Color(int.parse('FF$clean', radix: 16));
-  }
 }
 
 class _PaperStyleSelector extends StatelessWidget {
