@@ -85,3 +85,10 @@ const double kNavIconSize = 24.0;
 const double kInputPaddingHorizontal = 16.0;
 const double kInputPaddingVertical = 14.0;
 const double kViewerNavShadowBlur = 8.0;
+
+/// Internal agenda configuration token defaults.
+const String kDefaultCoverStyle = 'honey';
+const String kDefaultPaperStyle = 'dotted';
+
+/// Application version from pubspec.yaml.
+const String kAppVersion = '0.1.4';
