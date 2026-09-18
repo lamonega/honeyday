@@ -84,3 +84,4 @@ const double kNavTextFontSize = 12.0;
 const double kNavIconSize = 24.0;
 const double kInputPaddingHorizontal = 16.0;
 const double kInputPaddingVertical = 14.0;
+const double kViewerNavShadowBlur = 8.0;

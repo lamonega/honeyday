@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/constants/app_constants.dart';
 
 class ViewerPageNavigator extends StatelessWidget {
   const ViewerPageNavigator({
@@ -22,18 +23,18 @@ class ViewerPageNavigator extends StatelessWidget {
       bottom: 0,
       child: Center(
         child: Container(
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: kViewerNavBottomMargin),
           padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 8,
+            horizontal: kViewerNavHorizontalPadding,
+            vertical: kViewerNavVerticalPadding,
           ),
           decoration: BoxDecoration(
             color: colorScheme.surface.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(kViewerNavBorderRadius),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.08),
-                blurRadius: 8,
+                blurRadius: kViewerNavShadowBlur,
               ),
             ],
           ),
@@ -46,7 +47,7 @@ class ViewerPageNavigator extends StatelessWidget {
                     : null,
                 child: Icon(
                   Icons.chevron_left_rounded,
-                  size: 22,
+                  size: kViewerNavChevronIconSize,
                   color: currentPage > 0
                       ? colorScheme.onSurface
                       : colorScheme.onSurface.withValues(alpha: 0.2),
@@ -56,9 +57,9 @@ class ViewerPageNavigator extends StatelessWidget {
                 final isActive = i == currentPage;
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 250),
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  margin: const EdgeInsets.symmetric(horizontal: kViewerNavDotMargin),
                   width: isActive ? 16 : 5,
-                  height: 5,
+                  height: kViewerNavInactiveDotSize,
                   decoration: BoxDecoration(
                     color: isActive
                         ? colorScheme.primary
@@ -68,15 +69,15 @@ class ViewerPageNavigator extends StatelessWidget {
                 );
               }),
               Container(
-                width: 1,
-                height: 14,
-                margin: const EdgeInsets.symmetric(horizontal: 6),
+                width: kViewerNavDividerWidth,
+                height: kViewerNavDividerHeight,
+                margin: const EdgeInsets.symmetric(horizontal: kViewerNavDividerMargin),
                 color: colorScheme.onSurface.withValues(alpha: 0.15),
               ),
               Text(
                 '${currentPage + 1}/$childCount',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: kViewerNavTextFontSize,
                   fontWeight: FontWeight.w500,
                   color: colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
@@ -88,7 +89,7 @@ class ViewerPageNavigator extends StatelessWidget {
                     : null,
                 child: Icon(
                   Icons.chevron_right_rounded,
-                  size: 22,
+                  size: kViewerNavChevronIconSize,
                   color: currentPage < childCount - 1
                       ? colorScheme.onSurface
                       : colorScheme.onSurface.withValues(alpha: 0.2),
