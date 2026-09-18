@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:honeyday/core/utils/color_utils.dart';
 
@@ -204,7 +205,7 @@ class _PageEdges extends StatelessWidget {
       child: Container(
         width: 6,
         decoration: BoxDecoration(
-          color: const Color(0xFFFBF8EE),
+          color: const AppColors.paperEdge,
           border: Border(
             left: BorderSide(color: Colors.black.withValues(alpha: 0.12)),
           ),
