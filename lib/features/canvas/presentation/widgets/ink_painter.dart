@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:honeyday/core/utils/color_utils.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/canvas/domain/models/stroke_point.dart';
@@ -187,9 +188,9 @@ Path buildPath(
 }) {
   final options = StrokeOptions(
     size: strokeWidth,
-    thinning: tool == InkToolType.pen ? 0.6 : 0,
-    smoothing: 0.5,
-    streamline: 0.5,
+    thinning: tool == InkToolType.pen ? kPenThinning : 0,
+    smoothing: kInkSmoothing,
+    streamline: kInkStreamline,
     simulatePressure: tool == InkToolType.pen,
     isComplete: isComplete,
   );
