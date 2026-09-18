@@ -1,3 +1,4 @@
+import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 
 /// Snapshot-based undo/redo history for element operations on a single page.
@@ -7,7 +8,6 @@ import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 class ElementHistory {
   final List<List<CanvasWidgetData>> _undoStack = [];
   final List<List<CanvasWidgetData>> _redoStack = [];
-  static const int _maxSize = 50;
 
   bool get canUndo => _undoStack.isNotEmpty;
   bool get canRedo => _redoStack.isNotEmpty;
@@ -15,7 +15,7 @@ class ElementHistory {
   /// Captures the current state before a mutation.
   void push(List<CanvasWidgetData> currentElements) {
     _undoStack.add(List.from(currentElements));
-    if (_undoStack.length > _maxSize) {
+    if (_undoStack.length > kMaxUndoSize) {
       _undoStack.removeAt(0);
     }
     _redoStack.clear();

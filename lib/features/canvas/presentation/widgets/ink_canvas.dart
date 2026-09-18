@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/canvas/domain/models/stroke_point.dart';
@@ -52,7 +53,6 @@ class InkCanvas extends StatefulWidget {
 
 class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
   static const _uuid = Uuid();
-  static const _maxUndoSize = 50;
 
   List<InkStroke> _strokes = [];
   final List<List<InkStroke>> _undoStack = [];
@@ -96,7 +96,7 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
 
   void _pushUndoState() {
     _undoStack.add(List.from(_strokes));
-    if (_undoStack.length > _maxUndoSize) {
+    if (_undoStack.length > kMaxUndoSize) {
       _undoStack.removeAt(0);
     }
     _redoStack.clear();
