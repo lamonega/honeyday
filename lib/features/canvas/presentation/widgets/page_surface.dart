@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
 
 export 'package:honeyday/core/theme/paper_style.dart';
@@ -14,8 +15,8 @@ class PaperSurfacePainter extends CustomPainter {
     this.backgroundColor = const Color(0xFFFFFDF7),
     this.guidelineColor = const Color(0xFFCBD5E1),
     this.marginColor = const Color(0xFFE2E8F0),
-    this.spacing = 24,
-    this.margin = 24,
+    this.spacing = kPaperSpacing,
+    this.margin = kCanvasMargin,
   }) : _backgroundPaint = Paint()
          ..color = backgroundColor
          ..style = PaintingStyle.fill,
@@ -147,8 +148,8 @@ class PageSurface extends StatelessWidget {
     this.backgroundColor = const Color(0xFFFFFDF7),
     this.guidelineColor = const Color(0xFFCBD5E1),
     this.marginColor = const Color(0xFFE2E8F0),
-    this.spacing = 24,
-    this.margin = 24,
+    this.spacing = kPaperSpacing,
+    this.margin = kCanvasMargin,
     this.child,
   });
 
