@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/presentation/canvas/snapping.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/canvas_action_bar.dart';
@@ -70,10 +71,6 @@ class TransformableBox extends StatefulWidget {
 }
 
 class _TransformableBoxState extends State<TransformableBox> {
-  static const double _hMargin = 40;
-  static const double _topMargin = 48;
-  static const double _bottomMargin = 76;
-  static const double _handleRadius = 7;
 
   Offset? _globalCenter;
   Offset? _dragPosition;
@@ -86,8 +83,8 @@ class _TransformableBoxState extends State<TransformableBox> {
     if (renderBox != null) {
       _globalCenter = renderBox.localToGlobal(
         Offset(
-          _hMargin + widget.size.width / 2,
-          _topMargin + widget.size.height / 2,
+          kTransformHMargin + widget.size.width / 2,
+          kTransformTopMargin + widget.size.height / 2,
         ),
       );
     }
@@ -108,33 +105,33 @@ class _TransformableBoxState extends State<TransformableBox> {
       );
     }
 
-    final pageHeight = widget.pageSize?.height ?? 1100;
-    final isLarge = widget.size.height > (pageHeight * 0.75);
+    final pageHeight = widget.pageSize?.height ?? kDefaultPageHeight;
+    final isLarge = widget.size.height > (pageHeight * kLargeElementThreshold);
     final isNearBottom =
-        (widget.position.dy + widget.size.height) > (pageHeight - 90);
+        (widget.position.dy + widget.size.height) > (pageHeight - kNearBottomThreshold);
 
     final double barTop;
     if (isLarge) {
-      barTop = _topMargin + 12;
+      barTop = kTransformTopMargin + kBarTopOffsetLarge;
     } else if (isNearBottom) {
-      barTop = _topMargin - 44;
+      barTop = kTransformTopMargin + kBarTopOffsetNearBottom;
     } else {
-      barTop = _topMargin + widget.size.height + 10;
+      barTop = kTransformTopMargin + widget.size.height + kBarTopOffsetDefault;
     }
 
     return Positioned(
-      left: widget.position.dx - _hMargin,
-      top: widget.position.dy - _topMargin,
-      width: widget.size.width + _hMargin * 2,
-      height: widget.size.height + _topMargin + _bottomMargin,
+      left: widget.position.dx - kTransformHMargin,
+      top: widget.position.dy - kTransformTopMargin,
+      width: widget.size.width + kTransformHMargin * 2,
+      height: widget.size.height + kTransformTopMargin + kTransformBottomMargin,
       child: Transform.rotate(
         angle: widget.rotation,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
             Positioned(
-              left: _hMargin,
-              top: _topMargin,
+              left: kTransformHMargin,
+              top: kTransformTopMargin,
               width: widget.size.width,
               height: widget.size.height,
               child: GestureDetector(
@@ -153,10 +150,10 @@ class _TransformableBoxState extends State<TransformableBox> {
                           : colorScheme.primary.withValues(alpha: 0.5),
                       width: 2,
                     ),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(kSelectionBorderRadius),
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(kContentClipRadius),
                     child: widget.child,
                   ),
                 ),
@@ -165,17 +162,17 @@ class _TransformableBoxState extends State<TransformableBox> {
 
             if (widget.isSelected) ...[
               Positioned(
-                left: _hMargin + widget.size.width / 2 - 1,
-                top: _topMargin - 20,
+                left: kTransformHMargin + widget.size.width / 2 - 1,
+                top: kTransformTopMargin - kSelectionStemHeight,
                 width: 2,
-                height: 20,
+                height: kSelectionStemHeight,
                 child: Container(color: colorScheme.primary),
               ),
               Positioned(
-                left: _hMargin + widget.size.width / 2 - 12,
-                top: _topMargin - 36,
-                width: 24,
-                height: 24,
+                left: kTransformHMargin + widget.size.width / 2 - kHandleCircleSize / 2,
+                top: kTransformTopMargin - kRotationHandleTopOffset,
+                width: kHandleCircleSize,
+                height: kHandleCircleSize,
                 child: GestureDetector(
                   onPanStart: (_) {
                     _updateGlobalCenter();
@@ -199,17 +196,17 @@ class _TransformableBoxState extends State<TransformableBox> {
                     ),
                     child: Icon(
                       Icons.refresh_rounded,
-                      size: 14,
+                      size: kHandleIconSize,
                       color: colorScheme.primary,
                     ),
                   ),
                 ),
               ),
               Positioned(
-                left: _hMargin + widget.size.width - 12,
-                top: _topMargin - 30,
-                width: 24,
-                height: 24,
+                left: kTransformHMargin + widget.size.width - kHandleCircleSize / 2,
+                top: kTransformTopMargin - kHandleCircleSize + 6,
+                width: kHandleCircleSize,
+                height: kHandleCircleSize,
                 child: GestureDetector(
                   onTap: widget.onDelete,
                   child: Container(
@@ -226,7 +223,7 @@ class _TransformableBoxState extends State<TransformableBox> {
                     ),
                     child: Icon(
                       Icons.close_rounded,
-                      size: 14,
+                      size: kHandleIconSize,
                       color: colorScheme.onError,
                     ),
                   ),
@@ -235,13 +232,13 @@ class _TransformableBoxState extends State<TransformableBox> {
               Positioned(
                 left: 0,
                 top: 0,
-                width: widget.size.width + _hMargin * 2,
-                height: widget.size.height + _topMargin + _bottomMargin,
+                width: widget.size.width + kTransformHMargin * 2,
+                height: widget.size.height + kTransformTopMargin + kTransformBottomMargin,
                 child: ResizeHandles(
-                  hMargin: _hMargin,
-                  topMargin: _topMargin,
+                  hMargin: kTransformHMargin,
+                  topMargin: kTransformTopMargin,
                   size: widget.size,
-                  handleRadius: _handleRadius,
+                  handleRadius: kResizeHandleRadius,
                   onResizeNW: _handleResizeNW,
                   onResizeNE: _handleResizeNE,
                   onResizeSW: _handleResizeSW,
