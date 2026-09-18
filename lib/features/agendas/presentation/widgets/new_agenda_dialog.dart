@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -23,7 +24,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
     with SingleTickerProviderStateMixin {
   final _titleController = TextEditingController(text: 'Mi Agenda 2026');
   String _selectedCover = '#D97706';
-  String _selectedPaper = 'dotted';
+  String _selectedPaper = kDefaultPaperStyle;
   late final AnimationController _animController;
   late final Animation<double> _scaleAnim;
 
