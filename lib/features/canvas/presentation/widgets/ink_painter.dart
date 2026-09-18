@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/utils/color_utils.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/canvas/domain/models/stroke_point.dart';
@@ -73,7 +74,7 @@ class InkPainter extends CustomPainter {
 
   Paint _buildStrokePaint(InkStroke stroke) {
     final paint = Paint()..isAntiAlias = true;
-    final color = colorFromHex(stroke.colorHex);
+    final color = hexToColor(stroke.colorHex);
     if (stroke.tool == InkToolType.highlighter) {
       paint
         ..color = color.withValues(alpha: 0.4)
@@ -206,15 +207,4 @@ Path buildPath(
   }
   resultPath.close();
   return resultPath;
-}
-
-/// Converts a hex color string (e.g. '#FF1E293B') to a Flutter [Color].
-Color colorFromHex(String hex) {
-  final clean = hex.replaceAll('#', '').trim();
-  if (clean.length == 6) {
-    return Color(int.parse('FF$clean', radix: 16));
-  } else if (clean.length == 8) {
-    return Color(int.parse(clean, radix: 16));
-  }
-  return const Color(0xFF1E293B);
 }
