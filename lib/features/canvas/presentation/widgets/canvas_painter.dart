@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:honeyday/features/canvas/presentation/canvas/snapping.dart';
 
 /// CustomPainter rendering magnetic alignment guidelines during widget drag.
 class SnapGuideOverlayPainter extends CustomPainter {
   const SnapGuideOverlayPainter({
     required this.guides,
-    this.guideColor = const Color(0xFFD97706),
+    this.guideColor = const AppColors.honeyAmber,
   });
 
   final List<SnapGuideLine> guides;
