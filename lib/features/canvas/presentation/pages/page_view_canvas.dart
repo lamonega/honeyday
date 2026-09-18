@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
@@ -23,7 +24,7 @@ class PageViewCanvas extends ConsumerStatefulWidget {
     required this.pageId,
     super.key,
     this.paperStyle = PaperStyle.dotted,
-    this.pageSize = const Size(800, 1100),
+    this.pageSize = const Size(kDefaultPageWidth, kDefaultPageHeight),
     this.initialElements = const [],
     this.initialStrokes = const [],
     this.elementBuilder,
@@ -172,7 +173,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
     setState(() {
       final index = _elements.indexWhere((e) => e.id == elementId);
       if (index != -1) {
-        const margin = 24.0;
+        const margin = kCanvasMargin;
         final current = _elements[index];
         final updated = current.copyWith(
           position: Offset(margin, current.position.dy),
@@ -305,7 +306,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                   child: MediaQuery(
                     data: MediaQuery.of(context).copyWith(
                       gestureSettings:
-                          const DeviceGestureSettings(touchSlop: 4),
+                          const DeviceGestureSettings(touchSlop: kCanvasTouchSlop),
                     ),
                     child: FittedBox(
                       child: Container(
@@ -313,17 +314,17 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                         height: widget.pageSize.height,
                       decoration: BoxDecoration(
                         color: colorScheme.surface,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(kPageBorderRadius),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.12),
-                            blurRadius: 16,
-                            offset: const Offset(0, 6),
+                            color: Colors.black.withValues(alpha: kPageShadowAlpha),
+                            blurRadius: kPageShadowBlur,
+                            offset: const Offset(0, kPageShadowOffsetY),
                           ),
                         ],
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(kPageBorderRadius),
                         child: Stack(
                           children: [
                             Positioned.fill(
@@ -437,7 +438,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                 ),
                 if (widget.showToolbar && mode == CanvasMode.writing)
                   Positioned(
-                    top: 16,
+                    top: kToolbarTopPosition,
                     left: 0,
                     right: 0,
                     child: Center(
