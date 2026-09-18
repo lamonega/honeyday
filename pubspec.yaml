@@ -4,7 +4,7 @@ description: >-
   and a warm paper aesthetic. Built with Flutter for Android, iOS,
   Web, Linux, macOS, and Windows.
 publish_to: 'none'
-version: 0.1.5+1
+version: 0.1.6+1
 
 homepage: https://github.com/lamonega/honeyday
 repository: https://github.com/lamonega/honeyday
