@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:honeyday/app/app.dart';
@@ -25,7 +26,7 @@ class SettingsPage extends ConsumerWidget {
     final themeModeValue = ref.watch(themeModeProvider);
     final themeMode = themeModeValue.hasValue ? themeModeValue.value! : ThemeMode.system;
     final accentColorValue = ref.watch(accentColorProvider);
-    final accentColor = accentColorValue.hasValue ? accentColorValue.value! : const Color(0xFFF59E0B);
+    final accentColor = accentColorValue.hasValue ? accentColorValue.value! : AppColors.honeyAmber;
 
     final accentName = _accentPresets.entries
         .where((e) => e.value.toARGB32() == accentColor.toARGB32())
