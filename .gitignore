@@ -127,3 +127,6 @@ test/**/failures/
 
 # Local agent & automation tools
 .playwright-mcp/
+
+# Flutter Version Management
+.fvm/
