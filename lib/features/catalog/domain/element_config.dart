@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/utils/color_utils.dart';
 
 /// Predefined harmonious color palette for agenda elements (pastel and accent colors).
 class ElementColorPreset {
@@ -142,17 +143,7 @@ class ElementConfig {
   static Color _parseColor(String? hex, {required Color defaultColor}) {
     if (hex == null || hex.isEmpty) return defaultColor;
     if (hex == 'transparent') return Colors.transparent;
-    final cleaned = hex.replaceAll('#', '').trim();
-    try {
-      if (cleaned.length == 6) {
-        return Color(int.parse('0xFF$cleaned'));
-      } else if (cleaned.length == 8) {
-        return Color(int.parse('0x$cleaned'));
-      }
-    } on FormatException catch (_) {
-      return defaultColor;
-    }
-    return defaultColor;
+    return hexToColor(hex, fallback: defaultColor);
   }
 
   /// Converts a [Color] to a hex string representation.
