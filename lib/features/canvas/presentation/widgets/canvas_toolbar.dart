@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas_controller.dart';
 
@@ -23,12 +24,12 @@ class CanvasFloatingToolbar extends ConsumerWidget {
     return Material(
       elevation: 4,
       shadowColor: Colors.black.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(kToolbarBorderRadius),
       color: colorScheme.surface,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(kToolbarBorderRadius),
           border: Border.all(color: colorScheme.outline.withValues(alpha: 0.5)),
         ),
         child: Row(
@@ -67,9 +68,9 @@ class CanvasFloatingToolbar extends ConsumerWidget {
               return GestureDetector(
                 onTap: () => ref.read(inkToolProvider.notifier).setColor(c),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 2),
-                  width: 18,
-                  height: 18,
+                  margin: const EdgeInsets.symmetric(horizontal: kToolbarPaletteDotMargin),
+                  width: kToolbarPaletteDotSize,
+                  height: kToolbarPaletteDotSize,
                   decoration: BoxDecoration(
                     color: c,
                     shape: BoxShape.circle,
@@ -137,10 +138,10 @@ class _ToolBtn extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return IconButton(
-      icon: Icon(icon, size: 18),
+      icon: Icon(icon, size: kToolbarIconSize),
       visualDensity: VisualDensity.compact,
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+      constraints: const BoxConstraints(minWidth: kToolbarButtonMinSize, minHeight: kToolbarButtonMinSize),
       style: isSelected
           ? IconButton.styleFrom(backgroundColor: colorScheme.primaryContainer)
           : null,
@@ -162,7 +163,7 @@ class _Divider extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Container(
-        height: 20,
+        height: kToolbarDividerHeight,
         width: 1,
         color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.4),
       ),
@@ -184,8 +185,8 @@ class _WidthSlider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final min = tool == InkToolType.highlighter ? 8.0 : 1.0;
-    final max = tool == InkToolType.highlighter ? 40.0 : 12.0;
+    final min = tool == InkToolType.highlighter ? kHighlighterWidthMin : kPenWidthMin;
+    final max = tool == InkToolType.highlighter ? kHighlighterWidthMax : kPenWidthMax;
     final clamped = strokeWidth.clamp(min, max);
 
     return GestureDetector(
@@ -198,8 +199,8 @@ class _WidthSlider extends StatelessWidget {
         onChanged(newValue);
       },
       child: SizedBox(
-        width: 60,
-        height: 28,
+        width: kToolbarSliderWidth,
+        height: kToolbarSliderHeight,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -208,7 +209,7 @@ class _WidthSlider extends StatelessWidget {
               left: 0,
               right: 0,
               child: Container(
-                height: 3,
+                height: kToolbarSliderTrackHeight,
                 decoration: BoxDecoration(
                   color: colorScheme.outline.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(2),
@@ -219,8 +220,8 @@ class _WidthSlider extends StatelessWidget {
             Positioned(
               left: 0,
               child: Container(
-                width: 60 * ((clamped - min) / (max - min)),
-                height: 3,
+                width: kToolbarSliderWidth * ((clamped - min) / (max - min)),
+                height: kToolbarSliderTrackHeight,
                 decoration: BoxDecoration(
                   color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(2),
@@ -229,10 +230,10 @@ class _WidthSlider extends StatelessWidget {
             ),
             // Thumb
             Positioned(
-              left: 60 * ((clamped - min) / (max - min)) - 7,
+              left: kToolbarSliderWidth * ((clamped - min) / (max - min)) - kToolbarSliderThumbOffset,
               child: Container(
-                width: 14,
-                height: 14,
+                width: kToolbarSliderThumbSize,
+                height: kToolbarSliderThumbSize,
                 decoration: BoxDecoration(
                   color: colorScheme.primary,
                   shape: BoxShape.circle,
