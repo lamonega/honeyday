@@ -133,7 +133,7 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
   void _handlePointerDown(PointerDownEvent event) {
     final pos = event.localPosition;
     final pressure = event.pressureMin == event.pressureMax
-        ? 0.5
+        ? kDefaultPressure
         : event.pressure;
     final point = StrokePoint(pos.dx, pos.dy, pressure);
 
@@ -151,7 +151,7 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
     if (_activePoints == null) return;
     final pos = event.localPosition;
     final pressure = event.pressureMin == event.pressureMax
-        ? 0.5
+        ? kDefaultPressure
         : event.pressure;
     final point = StrokePoint(pos.dx, pos.dy, pressure);
 
