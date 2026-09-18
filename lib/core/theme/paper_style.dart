@@ -30,4 +30,12 @@ enum PaperStyle {
         return PaperStyle.dotted;
     }
   }
+
+  /// Human-readable Spanish labels for each paper style.
+  static const Map<String, String> labels = <String, String>{
+    'dotted': 'Puntos',
+    'lined': 'Rayas',
+    'grid': 'Cuadrícula',
+    'blank': 'Blanca',
+  };
 }
