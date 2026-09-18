@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:honeyday/core/utils/color_utils.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
@@ -17,10 +18,10 @@ class InkPainter extends CustomPainter {
     required this.strokes,
     this.activePoints,
     this.activeTool = InkToolType.pen,
-    this.activeColor = const Color(0xFF1E293B),
+    this.activeColor = AppColors.inkPrimary,
     this.activeStrokeWidth = 3,
   }) : _eraserPaint = Paint()
-         ..color = const Color(0xFF64748B).withValues(alpha: 0.4)
+         ..color = AppColors.inkMuted.withValues(alpha: 0.4)
          ..style = PaintingStyle.stroke
          ..strokeWidth = 1.5;
 
@@ -127,7 +128,7 @@ class ActiveStrokePainter extends CustomPainter {
     required this.activeColor,
     required this.activeStrokeWidth,
   }) : _eraserPaint = Paint()
-         ..color = const Color(0xFF64748B).withValues(alpha: 0.4)
+         ..color = AppColors.inkMuted.withValues(alpha: 0.4)
          ..style = PaintingStyle.stroke
          ..strokeWidth = 1.5;
 
