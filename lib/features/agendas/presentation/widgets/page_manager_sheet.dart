@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/theme/paper_style.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 
 /// Bottom sheet for managing agenda pages: view thumbnails, navigate,
@@ -31,12 +32,7 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
   late List<AgendaPage> _pages;
   late int _currentPageIndex;
 
-  static const _paperStyles = <String, String>{
-    'dotted': 'Puntos',
-    'lined': 'Rayas',
-    'grid': 'Cuadrícula',
-    'blank': 'Blanca',
-  };
+  static const _paperStyles = PaperStyle.labels;
 
   static const _paperIcons = <String, IconData>{
     'dotted': Icons.grain_rounded,
