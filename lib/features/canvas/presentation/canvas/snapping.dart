@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
 
 /// Orientation of a magnetic alignment guide line.
 ///
@@ -70,15 +71,6 @@ class SnappingResult {
 /// What: Detects alignment with page centers, page margins, and sibling element bounds.
 /// Why: Delivers a Canva-like magnetic snapping experience for modular agenda widgets.
 abstract final class CanvasSnapping {
-  /// Magnetic distance threshold in points for initial snap.
-  static const double defaultThreshold = 4;
-
-  /// Dead zone multiplier: once snapped, require this × threshold to unsnap.
-  static const double deadZoneMultiplier = 2;
-
-  /// Default margin distance from page edges in points.
-  static const double defaultMargin = 24;
-
   /// Calculates magnetic alignment snapping for [candidateRect].
   ///
   /// When [isCurrentlySnapped] is true, uses an expanded threshold (dead zone)
@@ -87,15 +79,15 @@ abstract final class CanvasSnapping {
     required Rect candidateRect,
     required Size pageSize,
     List<Rect> siblingRects = const [],
-    double threshold = defaultThreshold,
-    double margin = defaultMargin,
+    double threshold = kSnapThreshold,
+    double margin = kCanvasMargin,
     bool isCurrentlySnapped = false,
   }) {
     final activeGuides = <SnapGuideLine>{};
 
     // Apply dead zone: once snapped, require more distance to unsnap
     final effectiveThreshold = isCurrentlySnapped
-        ? threshold * deadZoneMultiplier
+        ? threshold * kSnapDeadZoneMultiplier
         : threshold;
 
     // --- Vertical Snapping (X-axis alignment) ---
@@ -143,7 +135,7 @@ abstract final class CanvasSnapping {
 
       for (final targetX in targetXAnchors) {
         for (final snappedX in snappedXAnchors) {
-          if ((targetX - snappedX).abs() < 0.5) {
+          if ((targetX - snappedX).abs() < kSnapGuidePrecision) {
             activeGuides.add(
               SnapGuideLine(
                 start: Offset(targetX, 0),
@@ -200,7 +192,7 @@ abstract final class CanvasSnapping {
 
       for (final targetY in targetYAnchors) {
         for (final snappedY in snappedYAnchors) {
-          if ((targetY - snappedY).abs() < 0.5) {
+          if ((targetY - snappedY).abs() < kSnapGuidePrecision) {
             activeGuides.add(
               SnapGuideLine(
                 start: Offset(0, targetY),
