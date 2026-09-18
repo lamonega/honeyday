@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:honeyday/core/constants/app_constants.dart';
+import 'package:honeyday/l10n/app_localizations.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/home_controller.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/agenda_card.dart';
@@ -216,9 +217,9 @@ class HomePage extends ConsumerWidget {
 
     if (result == null || !context.mounted) return;
 
-    final title = result['title'] ?? 'Nueva Agenda';
-    final coverStyle = result['coverStyle'] ?? 'honey';
-    final paperStyle = result['paperStyle'] ?? 'dotted';
+    final title = result['title'] ?? AppLocalizations.of(context).newAgenda;
+    final coverStyle = result['coverStyle'] ?? kDefaultCoverStyle;
+    final paperStyle = result['paperStyle'] ?? kDefaultPaperStyle;
 
     final controller = ref.read(homeControllerProvider);
     final createdAgenda = await controller.createAgenda(
