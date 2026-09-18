@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
 
 export 'package:honeyday/core/theme/app_colors.dart';
@@ -97,7 +98,7 @@ abstract final class HoneydayTheme {
         color: AppColors.paperSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(kBorderRadiusLarge),
           side: const BorderSide(color: AppColors.paperBorder),
         ),
       ),
@@ -105,19 +106,19 @@ abstract final class HoneydayTheme {
         filled: true,
         fillColor: AppColors.paperSurface,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+          horizontal: kInputPaddingHorizontal,
+          vertical: kInputPaddingVertical,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(kBorderRadiusMedium),
           borderSide: const BorderSide(color: AppColors.paperBorder),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(kBorderRadiusMedium),
           borderSide: const BorderSide(color: AppColors.paperBorder),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(kBorderRadiusMedium),
           borderSide: BorderSide(color: seed, width: 2),
         ),
       ),
@@ -125,7 +126,7 @@ abstract final class HoneydayTheme {
         backgroundColor: AppColors.paperLight,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(kBorderRadiusExtraLarge),
           side: const BorderSide(color: AppColors.paperBorder),
         ),
       ),
@@ -133,7 +134,7 @@ abstract final class HoneydayTheme {
         backgroundColor: AppColors.paperLight,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(kBorderRadiusBottomSheet)),
           side: BorderSide(color: AppColors.paperBorder),
         ),
       ),
@@ -145,7 +146,7 @@ abstract final class HoneydayTheme {
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final isSelected = states.contains(WidgetState.selected);
           return TextStyle(
-            fontSize: 12,
+            fontSize: kNavTextFontSize,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             color: isSelected ? seed : AppColors.inkMuted,
           );
@@ -153,7 +154,7 @@ abstract final class HoneydayTheme {
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final isSelected = states.contains(WidgetState.selected);
           return IconThemeData(
-            size: 24,
+            size: kNavIconSize,
             color: isSelected ? seed : AppColors.inkMuted,
           );
         }),
@@ -211,7 +212,7 @@ abstract final class HoneydayTheme {
         color: AppColors.surfaceDark,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(kBorderRadiusLarge),
           side: const BorderSide(color: AppColors.paperBorderDark),
         ),
       ),
@@ -219,19 +220,19 @@ abstract final class HoneydayTheme {
         filled: true,
         fillColor: AppColors.surfaceDark,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+          horizontal: kInputPaddingHorizontal,
+          vertical: kInputPaddingVertical,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(kBorderRadiusMedium),
           borderSide: const BorderSide(color: AppColors.paperBorderDark),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(kBorderRadiusMedium),
           borderSide: const BorderSide(color: AppColors.paperBorderDark),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(kBorderRadiusMedium),
           borderSide: BorderSide(
             color: seed,
             width: 2,
@@ -242,7 +243,7 @@ abstract final class HoneydayTheme {
         backgroundColor: AppColors.surfaceDark,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(kBorderRadiusExtraLarge),
           side: const BorderSide(color: AppColors.paperBorderDark),
         ),
       ),
@@ -250,7 +251,7 @@ abstract final class HoneydayTheme {
         backgroundColor: AppColors.surfaceDark,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(kBorderRadiusBottomSheet)),
           side: BorderSide(color: AppColors.paperBorderDark),
         ),
       ),
@@ -262,7 +263,7 @@ abstract final class HoneydayTheme {
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final isSelected = states.contains(WidgetState.selected);
           return TextStyle(
-            fontSize: 12,
+            fontSize: kNavTextFontSize,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             color: isSelected
                 ? seed
@@ -272,7 +273,7 @@ abstract final class HoneydayTheme {
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final isSelected = states.contains(WidgetState.selected);
           return IconThemeData(
-            size: 24,
+            size: kNavIconSize,
             color: isSelected
                 ? seed
                 : AppColors.inkMutedDark,
