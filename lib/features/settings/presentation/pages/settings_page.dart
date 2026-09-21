@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,8 +9,21 @@ import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
-// Application version (used only for settings display).
-const String kAppVersion = '0.1.4';
+String _getAppVersion() {
+  try {
+    final file = File('pubspec.yaml');
+    if (file.existsSync()) {
+      final content = file.readAsStringSync();
+      for (final line in content.split('\n')) {
+        final trimmed = line.trim();
+        if (trimmed.startsWith('version:')) {
+          return trimmed.split(':').sublist(1).join(':').trim();
+        }
+      }
+    }
+  } catch (_) {}
+  return 'unknown';
+}
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -87,7 +101,7 @@ class SettingsPage extends ConsumerWidget {
             leading: const Icon(Icons.info_outline),
             title: Text(AppLocalizations.of(context).settingsVersion),
             subtitle: Text(
-              kAppVersion,
+              _getAppVersion(),
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
           ),
