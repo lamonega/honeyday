@@ -46,7 +46,8 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
     '#7C3AED',
   ];
 
-  static const Map<String, String> _paperStyles = PaperStyle.labels;
+  static Map<String, String> _paperStyles(BuildContext context) =>
+      PaperStyle.localizedLabels(context);
 
   @override
   void initState() {
@@ -71,14 +72,16 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     if (!_defaultTitleSet) {
       _defaultTitleSet = true;
-      _titleController.text = AppLocalizations.of(context).agendaNewDefaultTitle;
+      _titleController.text =
+          l10n.agendaNewDefaultTitle;
     }
     final activeColor = hexToColor(_selectedCover);
     final darkColor = darken(activeColor);
     final previewTitle = _titleController.text.trim().isEmpty
-        ? AppLocalizations.of(context).agendaNewTitle
+        ? (l10n.agendaNewTitle)
         : _titleController.text.trim();
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -87,7 +90,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
       child: AlertDialog(
         backgroundColor: colorScheme.surface,
         title: Text(
-          AppLocalizations.of(context).agendaNewTitle,
+          l10n.agendaNewTitle,
           style: GoogleFonts.fraunces(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -117,7 +120,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
                   autofocus: true,
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context).agendaNewHint,
+                    hintText: l10n.agendaNewHint,
                     prefixIcon: const Icon(Icons.book_rounded),
                   ),
                 ),
@@ -130,7 +133,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
                 ),
                 const SizedBox(height: 20),
                 _PaperStyleSelector(
-                  styles: _paperStyles,
+                  styles: _paperStyles(context),
                   selectedPaper: _selectedPaper,
                   onPaperSelected: (key) =>
                       setState(() => _selectedPaper = key),
@@ -142,7 +145,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: Text(AppLocalizations.of(context).commonCancel),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -163,7 +166,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
                 'paperStyle': _selectedPaper,
               });
             },
-            child: Text(AppLocalizations.of(context).commonCreate),
+            child: Text(l10n.commonCreate),
           ),
         ],
       ),

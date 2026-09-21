@@ -7,13 +7,9 @@ import 'package:honeyday/core/utils/color_utils.dart';
 class ElementColorPreset {
   /// Constructs an [ElementColorPreset].
   const ElementColorPreset({
-    required this.name,
     required this.fillColor,
     required this.borderColor,
   });
-
-  /// Name of the color preset.
-  final String name;
 
   /// Background or fill color.
   final Color fillColor;
@@ -31,52 +27,52 @@ class ElementColorPreset {
 /// 10 aesthetic color presets matching digital planner designs.
 const List<ElementColorPreset> kElementColorPresets = [
   ElementColorPreset(
-    name: 'Ámbar Miel',
+    
     fillColor: Color(0xFFFEF3C7), // Amber 100
     borderColor: Color(0xFFD97706), // Amber 600
   ),
   ElementColorPreset(
-    name: 'Rosa Pastel',
+    
     fillColor: Color(0xFFFFE4E6), // Rose 100
     borderColor: Color(0xFFE11D48), // Rose 600
   ),
   ElementColorPreset(
-    name: 'Verde Salvia',
+    
     fillColor: Color(0xFFD1FAE5), // Emerald 100
     borderColor: Color(0xFF059669), // Emerald 600
   ),
   ElementColorPreset(
-    name: 'Lavanda',
+    
     fillColor: Color(0xFFEDE9FE), // Violet 100
     borderColor: Color(0xFF7C3AED), // Violet 600
   ),
   ElementColorPreset(
-    name: 'Azul Cielo',
+    
     fillColor: Color(0xFFE0F2FE), // Sky 100
     borderColor: Color(0xFF0284C7), // Sky 600
   ),
   ElementColorPreset(
-    name: 'Melocotón',
+    
     fillColor: Color(0xFFFFEDD5), // Orange 100
     borderColor: Color(0xFFEA580C), // Orange 600
   ),
   ElementColorPreset(
-    name: 'Blanco Puro',
+    
     fillColor: Color(0xFFFFFFFF),
     borderColor: Color(0xFFCBD5E1), // Slate 300
   ),
   ElementColorPreset(
-    name: 'Crema Papel',
+    
     fillColor: Color(0xFFFFFDF7),
     borderColor: Color(0xFFE2E8F0),
   ),
   ElementColorPreset(
-    name: 'Pizarra',
+    
     fillColor: Color(0xFFF1F5F9), // Slate 100
     borderColor: Color(0xFF475569), // Slate 600
   ),
   ElementColorPreset(
-    name: 'Transparente',
+    
     fillColor: Colors.transparent,
     borderColor: Color(0xFF64748B),
   ),

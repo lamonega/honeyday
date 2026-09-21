@@ -167,5 +167,6 @@
   "paperStyleLines": "Rayas",
   "paperStyleGrid": "Cuadrícula",
   "paperStyleBlank": "Blanca",
-  "catalogErrorUnknownWidget": "Widget no reconocido: {widgetType}"
+  "catalogErrorUnknownWidget": "Widget no reconocido: {widgetType}",
+  "canvasModularWidgetContainer": "Contenedor de widget modular"
 }

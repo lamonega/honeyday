@@ -33,7 +33,8 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
   late List<AgendaPage> _pages;
   late int _currentPageIndex;
 
-  static const Map<String, String> _paperStyles = PaperStyle.labels;
+  static Map<String, String> _paperStyles(BuildContext context) =>
+      PaperStyle.localizedLabels(context);
 
   static const _paperIcons = <String, IconData>{
     'dotted': Icons.grain_rounded,
@@ -83,24 +84,25 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
         : null;
     if (currentPage == null) return;
 
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context).agendaPageDeleteTitle),
+        title: Text(l10n.agendaPageDeleteTitle),
         content: Text(
-          AppLocalizations.of(context).agendaPageDeleteContent(_currentPageIndex + 1),
+          l10n.agendaPageDeleteContent(_currentPageIndex + 1),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context).commonCancel),
+            child: Text(l10n.commonCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(AppLocalizations.of(context).commonDelete),
+            child: Text(l10n.commonDelete),
           ),
         ],
       ),
@@ -159,7 +161,7 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
             ),
             const SizedBox(height: 2),
             Text(
-              _paperStyles[styleKey] ?? styleKey,
+              _paperStyles(context)[styleKey] ?? styleKey,
               style: TextStyle(
                 fontSize: 10,
                 color: colorScheme.onSurface.withValues(alpha: 0.5),
@@ -240,7 +242,7 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
                   value: currentPage.backgroundStyle,
                   underline: const SizedBox.shrink(),
                   isDense: true,
-                  items: _paperStyles.entries.map((entry) {
+                  items: _paperStyles(context).entries.map((entry) {
                     return DropdownMenuItem(
                       value: entry.key,
                       child: Text(entry.value),
@@ -278,7 +280,9 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
                 widget.onAddPage();
               },
               icon: const Icon(Icons.add_rounded, size: 18),
-              label: Text(AppLocalizations.of(context).agendaPageAdd),
+              label: Text(
+                AppLocalizations.of(context).agendaPageAdd,
+              ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: colorScheme.primary,
                 side: BorderSide(color: colorScheme.primary),

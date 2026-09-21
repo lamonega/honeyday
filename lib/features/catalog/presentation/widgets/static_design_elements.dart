@@ -297,7 +297,7 @@ class ShapeFrameDefinition extends AgendaWidgetDefinition {
 
   @override
   String description(BuildContext context) =>
-      'Marco perimetral elegante adaptable a toda la página';
+      AppLocalizations.of(context).catalogShapeFrameDesc;
 
   @override
   ElementCategory get category => ElementCategory.shapes;
@@ -507,7 +507,7 @@ class PlannerStickyNoteDefinition extends AgendaWidgetDefinition {
 
   @override
   String description(BuildContext context) =>
-      'Nota de papel estática con chincheta y líneas para escribir';
+      AppLocalizations.of(context).catalogShapeStickyNoteDesc;
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -700,7 +700,7 @@ class PlannerWeeklyColumnsDefinition extends AgendaWidgetDefinition {
 
   @override
   String description(BuildContext context) =>
-      'Estructura de 7 días para planificar la semana a mano';
+      AppLocalizations.of(context).catalogTemplateWeeklyViewDesc;
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -837,7 +837,7 @@ class PlannerChecklistDefinition extends AgendaWidgetDefinition {
 
   @override
   String description(BuildContext context) =>
-      'Lista con casillas de verificación estéticas para escribir tareas';
+      AppLocalizations.of(context).catalogTemplateChecklistDesc;
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -962,7 +962,7 @@ class PlannerHabitTrackerDefinition extends AgendaWidgetDefinition {
 
   @override
   String description(BuildContext context) =>
-      'Matriz de seguimiento semanal para colorear con el lápiz';
+      AppLocalizations.of(context).catalogTemplateHabitsDesc;
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -1222,7 +1222,7 @@ class PlannerNotesLinedDefinition extends AgendaWidgetDefinition {
 
   @override
   String description(BuildContext context) =>
-      'Área de notas con renglones para escribir con precisión';
+      AppLocalizations.of(context).catalogTemplateLinedNotesDesc;
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -1283,7 +1283,7 @@ class PlannerNotesGridDefinition extends AgendaWidgetDefinition {
 
   @override
   String description(BuildContext context) =>
-      'Área de notas con papel milimetrado o cuadrícula sutil';
+      AppLocalizations.of(context).catalogTemplateGridNotesDesc;
 
   @override
   ElementCategory get category => ElementCategory.planner;

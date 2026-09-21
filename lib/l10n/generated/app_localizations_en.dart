@@ -547,4 +547,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String catalogErrorUnknownWidget(Object widgetType) {
     return 'Unrecognized widget: $widgetType';
   }
+
+  @override
+  String get canvasModularWidgetContainer => 'Modular Widget Container';
 }

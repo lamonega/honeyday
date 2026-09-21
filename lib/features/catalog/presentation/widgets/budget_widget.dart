@@ -83,7 +83,7 @@ class BudgetConfig {
     try {
       final dynamic decoded = jsonDecode(rawJson);
       if (decoded is Map<String, dynamic>) {
-        final title = decoded['title']?.toString() ?? 'Presupuesto'; // Internal default; build() uses l10n
+        final title = decoded['title']?.toString() ?? '';
         final currency = decoded['currency']?.toString() ?? r'$';
         final rawEntries = decoded['entries'] as List<dynamic>? ?? const [];
         final entries = rawEntries
@@ -106,24 +106,24 @@ class BudgetConfig {
   factory BudgetConfig.defaultConfig() {
     // Internal default config data (editable by user via JSON). Build() uses localized strings.
     return const BudgetConfig(
-      title: 'Presupuesto',
+      title: '',
       currency: r'$',
       entries: [
         BudgetEntryItem(
           id: '1',
-          description: 'Ingreso Principal',
+          description: '',
           amount: 2200,
           type: BudgetEntryType.income,
         ),
         BudgetEntryItem(
           id: '2',
-          description: 'Alquiler y Servicios',
+          description: '',
           amount: 750,
           type: BudgetEntryType.expense,
         ),
         BudgetEntryItem(
           id: '3',
-          description: 'Supermercado y Alimentos',
+          description: '',
           amount: 320,
           type: BudgetEntryType.expense,
         ),
@@ -173,7 +173,8 @@ class BudgetWidgetDefinition extends AgendaWidgetDefinition {
   String get id => 'budget_calculator';
 
   @override
-  String name(BuildContext context) => AppLocalizations.of(context).catalogBudgetName;
+  String name(BuildContext context) =>
+      AppLocalizations.of(context).catalogBudgetName;
 
   @override
   IconData get icon => Icons.account_balance_wallet_rounded;
@@ -296,12 +297,28 @@ class _BudgetWidgetState extends State<BudgetWidget> {
     return val.toStringAsFixed(val.truncateToDouble() == val ? 0 : 2);
   }
 
+  String _localizedDescription(String desc, AppLocalizations l10n) {
+    if (desc.isEmpty || desc == l10n.catalogBudgetDefaultIncome) {
+      return l10n.catalogBudgetDefaultIncome;
+    }
+    if (desc == l10n.catalogBudgetDefaultExpense1) {
+      return l10n.catalogBudgetDefaultExpense1;
+    }
+    if (desc == l10n.catalogBudgetDefaultExpense2) {
+      return l10n.catalogBudgetDefaultExpense2;
+    }
+    return desc;
+  }
+
   @override
   Widget build(BuildContext context) {
     final netBalance = _config.netBalance;
     final isPositive = netBalance >= 0;
     final cs = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
+    final isDefaultTitle = _config.title == l10n.catalogBudgetTitle;
+    final displayTitle =
+        isDefaultTitle ? l10n.catalogBudgetTitle : _config.title;
 
     return Container(
       decoration: BoxDecoration(
@@ -325,7 +342,7 @@ class _BudgetWidgetState extends State<BudgetWidget> {
               ),
               const SizedBox(width: 6),
               Text(
-                _config.title,
+                displayTitle,
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
@@ -380,6 +397,7 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                 final entryColor = isIncome
                     ? AppColors.incomeGreen
                     : AppColors.expenseRed;
+                final displayDesc = _localizedDescription(entry.description, l10n);
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 3),
@@ -415,7 +433,7 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                       Expanded(
                         child: widget.isInteractive
                             ? TextFormField(
-                                initialValue: entry.description,
+                                initialValue: displayDesc,
                                 key: ValueKey('desc_${entry.id}'),
                                 style: TextStyle(
                                   fontSize: 12,
@@ -436,7 +454,7 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                                     _updateDescription(index, val),
                               )
                             : Text(
-                                entry.description,
+                                displayDesc,
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: cs.onSurface,

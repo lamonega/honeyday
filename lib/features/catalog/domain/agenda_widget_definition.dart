@@ -3,16 +3,16 @@ import 'package:flutter/widgets.dart';
 /// Categorization for catalog elements and widgets.
 enum ElementCategory {
   /// Basic geometric shapes (rectangles, circles, dividers, banners, frames).
-  shapes('Formas', 'Formas geométricas básicas'),
+  shapes('', ''),
 
   /// Static planner layout templates (weekly columns, checklists, habits, notes).
-  planner('Plantillas', 'Plantillas y estructuras para agendas'),
+  planner('', ''),
 
   /// Decorative aesthetic stickers and icons.
-  stickers('Decoración', 'Stickers y elementos decorativos'),
+  stickers('', ''),
 
   /// Legacy interactive widgets (calendar, budget, etc.).
-  legacy('Otros', 'Otros bloques');
+  legacy('', '');
 
   ElementCategory(this.label, this.description);
 

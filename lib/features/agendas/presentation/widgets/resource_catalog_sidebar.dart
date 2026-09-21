@@ -22,12 +22,15 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
   bool _isCollapsed = false;
   ElementCategory? _selectedCategory;
 
-  static List<(String, ElementCategory?)> _getFilterTabs(BuildContext context) => [
-    (AppLocalizations.of(context).catalogFilterAll, null),
-    (AppLocalizations.of(context).catalogFilterShapes, ElementCategory.shapes),
-    (AppLocalizations.of(context).catalogFilterAgenda, ElementCategory.planner),
-    (AppLocalizations.of(context).catalogFilterStickers, ElementCategory.stickers),
-  ];
+  static List<(String, ElementCategory?)> _getFilterTabs(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return [
+      (l10n.catalogFilterAll, null),
+      (l10n.catalogFilterShapes, ElementCategory.shapes),
+      (l10n.catalogFilterAgenda, ElementCategory.planner),
+      (l10n.catalogFilterStickers, ElementCategory.stickers),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

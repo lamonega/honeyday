@@ -671,5 +671,9 @@
   "catalogErrorUnknownWidget": "Unrecognized widget: {widgetType}",
   "@catalogErrorUnknownWidget": {
     "description": "Unrecognized widget: {widgetType}"
+  },
+  "canvasModularWidgetContainer": "Modular Widget Container",
+  "@canvasModularWidgetContainer": {
+    "description": "Fallback label for unrecognized modular widget containers"
   }
 }

@@ -53,7 +53,7 @@ class JournalBlockConfig {
     try {
       final dynamic decoded = jsonDecode(rawJson);
       if (decoded is Map<String, dynamic>) {
-        final date = decoded['date']?.toString() ?? 'Hoy'; // Internal default; build() uses l10n
+        final date = decoded['date']?.toString() ?? '';
         final mood = decoded['mood']?.toString() ?? '😊';
         final notes = decoded['notes']?.toString() ?? '';
         final rawPriorities =
@@ -79,26 +79,26 @@ class JournalBlockConfig {
   factory JournalBlockConfig.defaultConfig() {
     // Internal default config data (editable by user via JSON). Build() uses localized strings.
     return const JournalBlockConfig(
-      date: 'Viernes, 11 de Septiembre',
+      date: '',
       mood: '😊',
       priorities: [
         JournalPriorityItem(
           id: '1',
-          text: 'Completar objetivos clave del día',
+          text: '',
           isDone: false,
         ),
         JournalPriorityItem(
           id: '2',
-          text: 'Momento de desconexión y lectura',
+          text: '',
           isDone: false,
         ),
         JournalPriorityItem(
           id: '3',
-          text: 'Planificar la semana próxima',
+          text: '',
           isDone: false,
         ),
       ],
-      notes: 'Reflexiones y aprendizajes de hoy...',
+      notes: '',
     );
   }
 
@@ -138,8 +138,8 @@ class JournalBlockDefinition extends AgendaWidgetDefinition {
   String get id => 'journal_block';
 
   @override
-  @override
-  String name(BuildContext context) => AppLocalizations.of(context).catalogJournalName;
+  String name(BuildContext context) =>
+      AppLocalizations.of(context).catalogJournalName;
 
   @override
   IconData get icon => Icons.auto_stories_rounded;
@@ -263,10 +263,42 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
     widget.onConfigChanged(newConfig.toJsonString());
   }
 
+  String _localizedDate(String date, AppLocalizations l10n) {
+    if (date.isEmpty || date == l10n.catalogJournalDefaultDate) {
+      return l10n.catalogJournalDefaultDate;
+    }
+    if (date == l10n.catalogJournalToday) {
+      return l10n.catalogJournalToday;
+    }
+    return date;
+  }
+
+  String _localizedPriorityText(String text, AppLocalizations l10n) {
+    if (text.isEmpty || text == l10n.catalogJournalPriority1) {
+      return l10n.catalogJournalPriority1;
+    }
+    if (text == l10n.catalogJournalPriority2) {
+      return l10n.catalogJournalPriority2;
+    }
+    if (text == l10n.catalogJournalPriority3) {
+      return l10n.catalogJournalPriority3;
+    }
+    return text;
+  }
+
+  String _localizedNotes(String notes, AppLocalizations l10n) {
+    if (notes.isEmpty || notes == l10n.catalogJournalDefaultNotes) {
+      return l10n.catalogJournalDefaultNotes;
+    }
+    return notes;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
+    final displayDate = _localizedDate(_config.date, l10n);
+    final displayNotes = _localizedNotes(_config.notes, l10n);
 
     return Container(
       decoration: BoxDecoration(
@@ -286,8 +318,8 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
               Expanded(
                 child: widget.isInteractive
                     ? TextFormField(
-                        initialValue: _config.date,
-                        key: ValueKey('date_${widget.elementId}'),
+                        initialValue: displayDate,
+                        key: ValueKey('date_${widget.elementId}_$displayDate'),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -307,7 +339,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                         onFieldSubmitted: _updateDate,
                       )
                     : Text(
-                        _config.date,
+                        displayDate,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -382,6 +414,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
           const SizedBox(height: 4),
           ...List.generate(_config.priorities.length, (index) {
             final priority = _config.priorities[index];
+            final displayText = _localizedPriorityText(priority.text, l10n);
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(
@@ -419,8 +452,8 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                   Expanded(
                     child: widget.isInteractive
                         ? TextFormField(
-                            initialValue: priority.text,
-                            key: ValueKey('prio_${priority.id}'),
+                            initialValue: displayText,
+                            key: ValueKey('prio_${priority.id}_$displayText'),
                             style: TextStyle(
                               fontSize: 11,
                               color: priority.isDone
@@ -447,7 +480,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                                 _editPriorityText(index, val),
                           )
                         : Text(
-                            priority.text,
+                            displayText,
                             style: TextStyle(
                               fontSize: 11,
                               color: priority.isDone
@@ -481,8 +514,8 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
           Expanded(
             child: widget.isInteractive
                 ? TextFormField(
-                    initialValue: _config.notes,
-                    key: ValueKey('notes_${widget.elementId}'),
+                    initialValue: displayNotes,
+                    key: ValueKey('notes_${widget.elementId}_$displayNotes'),
                     maxLines: null,
                     expands: true,
                     textAlignVertical: TextAlignVertical.top,
@@ -510,13 +543,13 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(6),
                       child: Text(
-                      _config.notes.isEmpty
-                          ? l10n.catalogJournalNoNotes
-                          : _config.notes,
+                      displayNotes.isEmpty
+                          ? (l10n.catalogJournalNoNotes)
+                          : displayNotes,
                       style: TextStyle(
                         fontSize: 12,
                         height: 1.6,
-                        color: _config.notes.isEmpty
+                        color: displayNotes.isEmpty
                             ? colorScheme.onSurfaceVariant
                             : colorScheme.onSurface,
                       ),

@@ -11,16 +11,31 @@ import 'package:honeyday/l10n/generated/app_localizations.dart';
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
 
-  static const _accentPresets = <String, Color>{
-    'Abeja miel': Color(0xFFF59E0B),
-    'Lavanda': Color(0xFF8B5CF6),
-    'Salvia': Color(0xFF10B981),
-    'Rosa': Color(0xFFEC4899),
-    'Océano': Color(0xFF3B82F6),
-    'Ladrillo': Color(0xFFEF4444),
-    'Gris': Color(0xFF64748B),
-    'Teal': Color(0xFF14B8A6),
-  };
+  static const _accentPresets = <Color>[
+    Color(0xFFF59E0B),
+    Color(0xFF8B5CF6),
+    Color(0xFF10B981),
+    Color(0xFFEC4899),
+    Color(0xFF3B82F6),
+    Color(0xFFEF4444),
+    Color(0xFF64748B),
+    Color(0xFF14B8A6),
+  ];
+
+  static String? _getAccentName(BuildContext context, Color accentColor) {
+    final l10n = AppLocalizations.of(context);
+    final names = <int, String>{
+      const Color(0xFFF59E0B).toARGB32(): l10n.settingsAccentBeeHoney,
+      const Color(0xFF8B5CF6).toARGB32(): l10n.settingsAccentLavender,
+      const Color(0xFF10B981).toARGB32(): l10n.settingsAccentSage,
+      const Color(0xFFEC4899).toARGB32(): l10n.settingsAccentRose,
+      const Color(0xFF3B82F6).toARGB32(): l10n.settingsAccentOcean,
+      const Color(0xFFEF4444).toARGB32(): l10n.settingsAccentBrick,
+      const Color(0xFF64748B).toARGB32(): l10n.settingsAccentGray,
+      const Color(0xFF14B8A6).toARGB32(): l10n.settingsAccentTeal,
+    };
+    return names[accentColor.toARGB32()];
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,10 +45,7 @@ class SettingsPage extends ConsumerWidget {
     final accentColorValue = ref.watch(accentColorProvider);
     final accentColor = accentColorValue.hasValue ? accentColorValue.value! : AppColors.honeyAmber;
 
-    final accentName = _accentPresets.entries
-        .where((e) => e.value.toARGB32() == accentColor.toARGB32())
-        .map((e) => e.key)
-        .firstOrNull;
+    final accentName = _getAccentName(context, accentColor);
 
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context).settingsTitle)),
@@ -95,8 +107,10 @@ class SettingsPage extends ConsumerWidget {
               AppLocalizations.of(context).settingsLicensesSubtitle,
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
-            onTap: () =>
-                showLicensePage(context: context, applicationName: 'Honeyday'),
+            onTap: () => showLicensePage(
+              context: context,
+              applicationName: AppLocalizations.of(context).appTitle,
+            ),
           ),
         ],
       ),
@@ -117,12 +131,12 @@ class SettingsPage extends ConsumerWidget {
         content: Wrap(
           spacing: 10,
           runSpacing: 10,
-          children: _accentPresets.entries.map((entry) {
-            final isSelected = entry.value.toARGB32() == currentColor.toARGB32();
+          children: _accentPresets.map((color) {
+            final isSelected = color.toARGB32() == currentColor.toARGB32();
             return GestureDetector(
               onTap: () async {
                 await HapticFeedback.selectionClick();
-                await ref.read(accentColorProvider.notifier).set(entry.value);
+                await ref.read(accentColorProvider.notifier).set(color);
                 if (context.mounted) Navigator.of(context).pop();
               },
               child: AnimatedContainer(
@@ -130,7 +144,7 @@ class SettingsPage extends ConsumerWidget {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: entry.value,
+                  color: color,
                   shape: BoxShape.circle,
                   border: Border.all(
                     color: isSelected

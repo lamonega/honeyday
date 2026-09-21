@@ -5,15 +5,29 @@ import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 enum TextBoxColor {
-  honey(Color(0xFFFEF3C7), 'Miel'),
-  rose(Color(0xFFFFE4E6), 'Rosa'),
-  sage(Color(0xFFDCFCE7), 'Salvia'),
-  transparent(Colors.transparent, 'Transparente');
+  honey(Color(0xFFFEF3C7)),
+  rose(Color(0xFFFFE4E6)),
+  sage(Color(0xFFDCFCE7)),
+  transparent(Colors.transparent);
 
-  TextBoxColor(this.color, this.label);
+  TextBoxColor(this.color);
 
   final Color color;
-  final String label;
+
+  /// Localized name for the color preset.
+  String localizedLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    switch (this) {
+      case TextBoxColor.honey:
+        return l10n.catalogColorHoney;
+      case TextBoxColor.rose:
+        return l10n.catalogColorPink;
+      case TextBoxColor.sage:
+        return l10n.catalogColorSage;
+      case TextBoxColor.transparent:
+        return l10n.catalogColorTransparent;
+    }
+  }
 
   static TextBoxColor fromString(String? val) {
     return TextBoxColor.values.firstWhere(
@@ -38,12 +52,16 @@ class TextBoxConfig {
     try {
       final dynamic decoded = jsonDecode(rawJson);
       if (decoded is Map<String, dynamic>) {
-        final text = decoded['text']?.toString() ?? 'Nota...'; // Internal default; build() uses l10n
+        final text = decoded['text']?.toString() ?? ''; // Internal default; build() uses l10n
         final color = TextBoxColor.fromString(decoded['color']?.toString());
         final rawSize = decoded['fontSize'];
-        final fontSize = (rawSize is num) ? rawSize.toDouble() : 15.0;
+        final fontSize = (rawSize is num) ? rawSize.toDouble() : 14.0;
 
-        return TextBoxConfig(text: text, color: color, fontSize: fontSize);
+        return TextBoxConfig(
+          text: text,
+          color: color,
+          fontSize: fontSize.clamp(10.0, 24.0),
+        );
       }
     } on Object catch (_) {}
     return TextBoxConfig.defaultConfig();
@@ -52,9 +70,9 @@ class TextBoxConfig {
   factory TextBoxConfig.defaultConfig() {
     // Internal default config data (editable by user via JSON). Build() uses localized strings.
     return const TextBoxConfig(
-      text: '¡Nota importante!\nEscribe aquí tus ideas o recordatorios.',
+      text: '',
       color: TextBoxColor.honey,
-      fontSize: 14,
+      fontSize: 14.0,
     );
   }
 
@@ -90,7 +108,8 @@ class TextBoxDefinition extends AgendaWidgetDefinition {
   String get id => 'text_box';
 
   @override
-  String name(BuildContext context) => AppLocalizations.of(context).catalogTextboxName;
+  String name(BuildContext context) =>
+      AppLocalizations.of(context).catalogTextboxName;
 
   @override
   IconData get icon => Icons.sticky_note_2_rounded;
@@ -194,6 +213,10 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
     final colorScheme = Theme.of(context).colorScheme;
     final isTransparent = _config.color == TextBoxColor.transparent;
     final l10n = AppLocalizations.of(context);
+    final isDefaultContent =
+        _config.text.isEmpty || _config.text == l10n.catalogTextboxDefaultContent;
+    final currentText =
+        isDefaultContent ? l10n.catalogTextboxDefaultContent : _config.text;
 
     return Container(
       decoration: BoxDecoration(
@@ -223,33 +246,36 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
               children: [
                 ...TextBoxColor.values.map((c) {
                   final isSelected = c == _config.color;
-                  return GestureDetector(
-                    onTap: () => _setColor(c),
-                    child: Container(
-                      width: 18,
-                      height: 18,
-                      margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(
-                        color: c.color == Colors.transparent
-                            ? colorScheme.surface
-                            : c.color,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isSelected
-                              ? colorScheme.primary
-                              : colorScheme.outline,
-                          width: isSelected ? 2 : 1,
+                  return Tooltip(
+                    message: c.localizedLabel(context),
+                    child: GestureDetector(
+                      onTap: () => _setColor(c),
+                      child: Container(
+                        width: 18,
+                        height: 18,
+                        margin: const EdgeInsets.only(right: 6),
+                        decoration: BoxDecoration(
+                          color: c.color == Colors.transparent
+                              ? colorScheme.surface
+                              : c.color,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSelected
+                                ? colorScheme.primary
+                                : colorScheme.outline,
+                            width: isSelected ? 2 : 1,
+                          ),
                         ),
+                        child: c == TextBoxColor.transparent
+                            ? Center(
+                                child: Icon(
+                                  Icons.block_rounded,
+                                  size: 10,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              )
+                            : null,
                       ),
-                      child: c == TextBoxColor.transparent
-                          ? Center(
-                              child: Icon(
-                                Icons.block_rounded,
-                                size: 10,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            )
-                          : null,
                     ),
                   );
                 }),
@@ -299,7 +325,7 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
           Expanded(
             child: widget.isInteractive
                 ? TextFormField(
-                    initialValue: _config.text,
+                    initialValue: currentText,
                     key: ValueKey('text_${widget.elementId}'),
                     maxLines: null,
                     expands: true,
@@ -323,7 +349,7 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
                   )
                 : SingleChildScrollView(
                     child: Text(
-                      _config.text,
+                      currentText,
                       style: TextStyle(
                         fontSize: _config.fontSize,
                         height: 1.5,

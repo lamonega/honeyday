@@ -25,12 +25,15 @@ class AddCatalogElementSheet extends StatefulWidget {
 class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
   ElementCategory? _selectedCategory;
 
-  static List<(String, ElementCategory?)> _getFilterTabs(BuildContext context) => [
-    (AppLocalizations.of(context).catalogFilterAll, null),
-    (AppLocalizations.of(context).catalogFilterShapes, ElementCategory.shapes),
-    (AppLocalizations.of(context).catalogFilterTemplates, ElementCategory.planner),
-    (AppLocalizations.of(context).catalogFilterDecoration, ElementCategory.stickers),
-  ];
+  static List<(String, ElementCategory?)> _getFilterTabs(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return [
+      (l10n.catalogFilterAll, null),
+      (l10n.catalogFilterShapes, ElementCategory.shapes),
+      (l10n.catalogFilterTemplates, ElementCategory.planner),
+      (l10n.catalogFilterDecoration, ElementCategory.stickers),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {

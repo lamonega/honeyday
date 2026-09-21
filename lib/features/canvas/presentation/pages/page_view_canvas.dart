@@ -15,6 +15,7 @@ import 'package:honeyday/features/canvas/presentation/widgets/page_canvas_contro
 import 'package:honeyday/features/canvas/presentation/widgets/page_surface.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/transformable_box.dart';
 import 'package:honeyday/features/catalog/domain/element_config.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 export 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 
@@ -520,7 +521,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
             Expanded(
               child: Center(
                 child: Text(
-                  'Modular Widget Container',
+                  AppLocalizations.of(context).canvasModularWidgetContainer,
                   style: TextStyle(
                     fontSize: 10,
                     color: colorScheme.onSurface.withValues(alpha: 0.4),

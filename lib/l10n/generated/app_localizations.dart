@@ -1105,6 +1105,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unrecognized widget: {widgetType}'**
   String catalogErrorUnknownWidget(Object widgetType);
+
+  /// Fallback label for unrecognized modular widget containers
+  ///
+  /// In en, this message translates to:
+  /// **'Modular Widget Container'**
+  String get canvasModularWidgetContainer;
 }
 
 class _AppLocalizationsDelegate

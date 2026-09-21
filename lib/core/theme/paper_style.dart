@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
+
 /// Paper texture style variants supported by the canvas background.
 ///
 /// What: Discriminator for background paper patterns.
@@ -31,11 +34,30 @@ enum PaperStyle {
     }
   }
 
-  /// Human-readable Spanish labels for each paper style.
-  static const Map<String, String> labels = <String, String>{
-    'dotted': 'Puntos',
-    'lined': 'Rayas',
-    'grid': 'Cuadrícula',
-    'blank': 'Blanca',
-  };
+  /// Localized labels map for each paper style key.
+  static Map<String, String> localizedLabels(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return <String, String>{
+      'dotted': l10n.paperStyleDots,
+      'lined': l10n.paperStyleLines,
+      'grid': l10n.paperStyleGrid,
+      'blank': l10n.paperStyleBlank,
+    };
+  }
+
+  /// Localized label for this paper style variant.
+  String localizedLabel(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    switch (this) {
+      case PaperStyle.dotted:
+        return l10n.paperStyleDots;
+      case PaperStyle.lined:
+        return l10n.paperStyleLines;
+      case PaperStyle.grid:
+        return l10n.paperStyleGrid;
+      case PaperStyle.blank:
+        return l10n.paperStyleBlank;
+    }
+  }
+
 }

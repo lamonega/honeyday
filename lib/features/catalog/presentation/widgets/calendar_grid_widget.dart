@@ -56,7 +56,7 @@ class CalendarGridConfig {
     try {
       final dynamic decoded = jsonDecode(rawJson);
       if (decoded is Map<String, dynamic>) {
-        final title = decoded['title']?.toString() ?? 'Hábitos Semanales'; // Internal default; build() uses l10n
+        final title = decoded['title']?.toString() ?? '';
         final rawList = decoded['habits'] as List<dynamic>? ?? const [];
         final habits = rawList
             .whereType<Map<String, dynamic>>()
@@ -77,21 +77,21 @@ class CalendarGridConfig {
   factory CalendarGridConfig.defaultConfig() {
     // Internal default config data (editable by user via JSON). Build() uses localized strings.
     return const CalendarGridConfig(
-      title: 'Hábitos Semanales',
+      title: '',
       habits: [
         HabitRowItem(
           id: '1',
-          title: 'Beber 2L de agua',
+          title: '',
           checks: [true, true, false, true, false, false, false],
         ),
         HabitRowItem(
           id: '2',
-          title: 'Leer 20 minutos',
+          title: '',
           checks: [false, true, true, true, true, false, false],
         ),
         HabitRowItem(
           id: '3',
-          title: 'Ejercicio diario',
+          title: '',
           checks: [true, false, true, false, true, false, false],
         ),
       ],
@@ -123,8 +123,8 @@ class CalendarGridDefinition extends AgendaWidgetDefinition {
   String get id => 'calendar_grid';
 
   @override
-  @override
-  String name(BuildContext context) => AppLocalizations.of(context).catalogHabitsName;
+  String name(BuildContext context) =>
+      AppLocalizations.of(context).catalogHabitsName;
 
   @override
   IconData get icon => Icons.calendar_view_week_rounded;
@@ -172,16 +172,17 @@ class CalendarGridWidget extends StatefulWidget {
 }
 
 class _CalendarGridWidgetState extends State<CalendarGridWidget> {
-  // TODO(l10n): _daysOfWeek was static const; now computed from AppLocalizations in build.
-  List<String> _daysOfWeek(AppLocalizations l10n) => [
-        l10n.catalogHabitsDayMon,
-        l10n.catalogHabitsDayTue,
-        l10n.catalogHabitsDayWed,
-        l10n.catalogHabitsDayThu,
-        l10n.catalogHabitsDayFri,
-        l10n.catalogHabitsDaySat,
-        l10n.catalogHabitsDaySun,
-      ];
+  List<String> _daysOfWeek(AppLocalizations l10n) {
+    return [
+      l10n.catalogHabitsDayMon,
+      l10n.catalogHabitsDayTue,
+      l10n.catalogHabitsDayWed,
+      l10n.catalogHabitsDayThu,
+      l10n.catalogHabitsDayFri,
+      l10n.catalogHabitsDaySat,
+      l10n.catalogHabitsDaySun,
+    ];
+  }
 
   late CalendarGridConfig _config;
 
@@ -258,11 +259,27 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
     widget.onConfigChanged(newConfig.toJsonString());
   }
 
+  String _localizedHabitTitle(String title, AppLocalizations l10n) {
+    if (title.isEmpty || title == l10n.catalogHabitsDefault1) {
+      return l10n.catalogHabitsDefault1;
+    }
+    if (title == l10n.catalogHabitsDefault2) {
+      return l10n.catalogHabitsDefault2;
+    }
+    if (title == l10n.catalogHabitsDefault3) {
+      return l10n.catalogHabitsDefault3;
+    }
+    return title;
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
     final days = _daysOfWeek(l10n);
+    final isDefaultTitle = _config.title.isEmpty || _config.title == l10n.catalogHabitsTitle;
+    final displayTitle =
+        isDefaultTitle ? l10n.catalogHabitsTitle : _config.title;
 
     return Container(
       decoration: BoxDecoration(
@@ -281,7 +298,7 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
             children: [
               Expanded(
                 child: Text(
-                  _config.title,
+                  displayTitle,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -333,6 +350,7 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
               itemBuilder: (context, habitIndex) {
                 final habit = _config.habits[habitIndex];
                 final allCompleted = habit.checks.every((checked) => checked);
+                final displayHabitTitle = _localizedHabitTitle(habit.title, l10n);
 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
@@ -341,7 +359,7 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                       Expanded(
                         child: widget.isInteractive
                             ? TextFormField(
-                                initialValue: habit.title,
+                                initialValue: displayHabitTitle,
                                 key: ValueKey('habit_${habit.id}'),
                                 style: TextStyle(
                                   fontSize: 12,
@@ -370,7 +388,7 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                                     _editHabitTitle(habitIndex, val),
                               )
                             : Text(
-                                habit.title,
+                                displayHabitTitle,
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w500,

@@ -23,28 +23,31 @@ class NewPageDesignDialog extends StatefulWidget {
 class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
   late PaperStyle _selectedStyle;
 
-  static List<_PageDesignOption> _getDesigns(BuildContext context) => [
-    _PageDesignOption(
-      style: PaperStyle.lined,
-      title: AppLocalizations.of(context).agendaPageDesignLines,
-      icon: Icons.view_headline_rounded,
-    ),
-    _PageDesignOption(
-      style: PaperStyle.dotted,
-      title: AppLocalizations.of(context).agendaPageDesignDots,
-      icon: Icons.grain_rounded,
-    ),
-    _PageDesignOption(
-      style: PaperStyle.blank,
-      title: AppLocalizations.of(context).agendaPageDesignBlank,
-      icon: Icons.crop_portrait_rounded,
-    ),
-    _PageDesignOption(
-      style: PaperStyle.grid,
-      title: AppLocalizations.of(context).agendaPageDesignGrid,
-      icon: Icons.grid_4x4_rounded,
-    ),
-  ];
+  static List<_PageDesignOption> _getDesigns(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return [
+      _PageDesignOption(
+        style: PaperStyle.lined,
+        title: l10n.agendaPageDesignLines,
+        icon: Icons.view_headline_rounded,
+      ),
+      _PageDesignOption(
+        style: PaperStyle.dotted,
+        title: l10n.agendaPageDesignDots,
+        icon: Icons.grain_rounded,
+      ),
+      _PageDesignOption(
+        style: PaperStyle.blank,
+        title: l10n.agendaPageDesignBlank,
+        icon: Icons.crop_portrait_rounded,
+      ),
+      _PageDesignOption(
+        style: PaperStyle.grid,
+        title: l10n.agendaPageDesignGrid,
+        icon: Icons.grid_4x4_rounded,
+      ),
+    ];
+  }
 
   @override
   void initState() {
@@ -56,6 +59,7 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final designs = _getDesigns(context);
+    final l10n = AppLocalizations.of(context);
 
     return AlertDialog(
       backgroundColor: colorScheme.surface,
@@ -87,7 +91,7 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(AppLocalizations.of(context).commonCancel),
+          child: Text(l10n.commonCancel),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
@@ -98,7 +102,7 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
             ),
           ),
           onPressed: () => Navigator.of(context).pop(_selectedStyle.name),
-          child: Text(AppLocalizations.of(context).commonCreate),
+          child: Text(l10n.commonCreate),
         ),
       ],
     );
