@@ -9,7 +9,20 @@ import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/core/constants/preferences_keys.dart';
 import 'package:honeyday/features/onboarding/presentation/pages/onboarding_page.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+/// Application version string resolved from platform package metadata.
+final appVersionProvider = FutureProvider<String>((ref) async {
+  try {
+    final info = await PackageInfo.fromPlatform();
+    return info.buildNumber.isNotEmpty && info.buildNumber != '0'
+        ? '${info.version}+${info.buildNumber}'
+        : info.version;
+  } on Object {
+    return '0.1.7+1';
+  }
+});
 
 /// Shared instance of [SharedPreferences] available app-wide.
 final sharedPreferencesProvider = FutureProvider<SharedPreferences>((ref) {
