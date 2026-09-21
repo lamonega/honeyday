@@ -5,29 +5,29 @@ import 'package:flutter/material.dart';
 // ──────────────────────────────────────────────
 
 /// Bottom margin for the page navigator bar.
-const double kViewerNavBottomMargin = 16.0;
+const double kViewerNavBottomMargin = 16;
 /// Horizontal padding inside the navigator bar.
-const double kViewerNavHorizontalPadding = 12.0;
+const double kViewerNavHorizontalPadding = 12;
 /// Vertical padding inside the navigator bar.
-const double kViewerNavVerticalPadding = 8.0;
+const double kViewerNavVerticalPadding = 8;
 /// Border radius of the navigator bar container.
-const double kViewerNavBorderRadius = 20.0;
+const double kViewerNavBorderRadius = 20;
 /// Shadow blur radius for the navigator bar.
-const double kViewerNavShadowBlur = 8.0;
+const double kViewerNavShadowBlur = 8;
 /// Chevron icon size in the navigator.
-const double kViewerNavChevronIconSize = 22.0;
+const double kViewerNavChevronIconSize = 22;
 /// Margin between pagination dots.
-const double kViewerNavDotMargin = 3.0;
+const double kViewerNavDotMargin = 3;
 /// Size of inactive pagination dots.
-const double kViewerNavInactiveDotSize = 5.0;
+const double kViewerNavInactiveDotSize = 5;
 /// Width of the divider line.
-const double kViewerNavDividerWidth = 1.0;
+const double kViewerNavDividerWidth = 1;
 /// Height of the divider line.
-const double kViewerNavDividerHeight = 14.0;
+const double kViewerNavDividerHeight = 14;
 /// Horizontal margin for the divider.
-const double kViewerNavDividerMargin = 6.0;
+const double kViewerNavDividerMargin = 6;
 /// Font size for the page counter text.
-const double kViewerNavTextFontSize = 12.0;
+const double kViewerNavTextFontSize = 12;
 
 class ViewerPageNavigator extends StatelessWidget {
   const ViewerPageNavigator({

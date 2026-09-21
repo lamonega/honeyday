@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 @immutable
 class JournalPriorityItem {
@@ -52,7 +53,7 @@ class JournalBlockConfig {
     try {
       final dynamic decoded = jsonDecode(rawJson);
       if (decoded is Map<String, dynamic>) {
-        final date = decoded['date']?.toString() ?? 'Hoy';
+        final date = decoded['date']?.toString() ?? 'Hoy'; // Internal default; build() uses l10n
         final mood = decoded['mood']?.toString() ?? '😊';
         final notes = decoded['notes']?.toString() ?? '';
         final rawPriorities =
@@ -76,6 +77,7 @@ class JournalBlockConfig {
   }
 
   factory JournalBlockConfig.defaultConfig() {
+    // Internal default config data (editable by user via JSON). Build() uses localized strings.
     return const JournalBlockConfig(
       date: 'Viernes, 11 de Septiembre',
       mood: '😊',
@@ -136,7 +138,8 @@ class JournalBlockDefinition extends AgendaWidgetDefinition {
   String get id => 'journal_block';
 
   @override
-  String get name => 'Entrada Diaria / Semanal';
+  @override
+  String name(BuildContext context) => AppLocalizations.of(context).catalogJournalName;
 
   @override
   IconData get icon => Icons.auto_stories_rounded;
@@ -263,6 +266,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -367,7 +371,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
           Divider(height: 1, color: colorScheme.outline),
           const SizedBox(height: 8),
           Text(
-            'Prioridades del Día',
+            l10n.catalogJournalPrioritiesHeader,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -465,7 +469,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
           Divider(height: 1, color: colorScheme.outline),
           const SizedBox(height: 6),
           Text(
-            'Notas & Reflexión',
+            l10n.catalogJournalNotesHeader,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
@@ -488,7 +492,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                       color: colorScheme.onSurface,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Escribe aquí tus pensamientos del día...',
+                      hintText: l10n.catalogJournalNotesHint,
                       hintStyle: TextStyle(
                         fontSize: 11,
                         color: colorScheme.onSurfaceVariant,
@@ -505,9 +509,9 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                 : Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(6),
-                    child: Text(
+                      child: Text(
                       _config.notes.isEmpty
-                          ? 'Sin notas para este día.'
+                          ? l10n.catalogJournalNoNotes
                           : _config.notes,
                       style: TextStyle(
                         fontSize: 12,

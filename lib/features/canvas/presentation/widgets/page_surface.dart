@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
-import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
 
 export 'package:honeyday/core/theme/paper_style.dart';
 

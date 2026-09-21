@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:honeyday/core/utils/color_utils.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Tactile notebook-styled cover with spine stitch, page edges, ribbon bookmark,
 /// Fraunces editorial title, and delete button.
@@ -272,7 +273,7 @@ class _DeleteButton extends StatelessWidget {
           color: Colors.white70,
           size: 19,
         ),
-        tooltip: 'Eliminar agenda',
+        tooltip: AppLocalizations.of(context).agendaDeleteTooltip,
         visualDensity: VisualDensity.compact,
         onPressed: onDelete,
       ),

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 enum TextBoxColor {
   honey(Color(0xFFFEF3C7), 'Miel'),
@@ -37,7 +38,7 @@ class TextBoxConfig {
     try {
       final dynamic decoded = jsonDecode(rawJson);
       if (decoded is Map<String, dynamic>) {
-        final text = decoded['text']?.toString() ?? 'Nota...';
+        final text = decoded['text']?.toString() ?? 'Nota...'; // Internal default; build() uses l10n
         final color = TextBoxColor.fromString(decoded['color']?.toString());
         final rawSize = decoded['fontSize'];
         final fontSize = (rawSize is num) ? rawSize.toDouble() : 15.0;
@@ -49,6 +50,7 @@ class TextBoxConfig {
   }
 
   factory TextBoxConfig.defaultConfig() {
+    // Internal default config data (editable by user via JSON). Build() uses localized strings.
     return const TextBoxConfig(
       text: '¡Nota importante!\nEscribe aquí tus ideas o recordatorios.',
       color: TextBoxColor.honey,
@@ -88,7 +90,7 @@ class TextBoxDefinition extends AgendaWidgetDefinition {
   String get id => 'text_box';
 
   @override
-  String get name => 'Nota de Texto';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogTextboxName;
 
   @override
   IconData get icon => Icons.sticky_note_2_rounded;
@@ -191,6 +193,7 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isTransparent = _config.color == TextBoxColor.transparent;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -310,7 +313,7 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
                       isDense: true,
                       contentPadding: EdgeInsets.zero,
                       border: InputBorder.none,
-                      hintText: 'Escribe tu nota aquí...',
+                      hintText: l10n.catalogTextboxHint,
                       hintStyle: TextStyle(
                         fontSize: 13,
                         color: colorScheme.onSurfaceVariant,

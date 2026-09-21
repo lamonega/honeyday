@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:honeyday/core/constants/app_constants.dart';
-import 'package:honeyday/core/theme/app_colors.dart';
-import 'package:honeyday/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:honeyday/core/utils/color_utils.dart';
+import 'package:honeyday/core/constants/app_constants.dart';
+import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
+import 'package:honeyday/core/utils/color_utils.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Default cover style for new agendas.
 /// Referenced by: new_agenda_dialog.dart (local definition),
@@ -46,7 +46,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
     '#7C3AED',
   ];
 
-  static const _paperStyles = PaperStyle.labels;
+  static const Map<String, String> _paperStyles = PaperStyle.labels;
 
   @override
   void initState() {
@@ -118,7 +118,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
                   textCapitalization: TextCapitalization.sentences,
                   decoration: InputDecoration(
                     hintText: AppLocalizations.of(context).agendaNewHint,
-                    prefixIcon: Icon(Icons.book_rounded),
+                    prefixIcon: const Icon(Icons.book_rounded),
                   ),
                 ),
                 const SizedBox(height: 20),

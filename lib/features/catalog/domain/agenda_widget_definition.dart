@@ -39,10 +39,10 @@ abstract class AgendaWidgetDefinition {
   String get id;
 
   /// Human-readable title displayed in widget catalog pickers and inspector toolbars.
-  String get name;
+  String name(BuildContext context);
 
   /// Brief description explaining what the element is used for.
-  String get description => '';
+  String description(BuildContext context) => '';
 
   /// Category grouping for sidebar tabs and discovery.
   ElementCategory get category => ElementCategory.legacy;

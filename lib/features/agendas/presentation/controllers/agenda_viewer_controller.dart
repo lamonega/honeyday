@@ -3,6 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:honeyday/features/agendas/data/repositories/agenda_repository_provider.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.dart';
+import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
+import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
+import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
+import 'package:uuid/uuid.dart';
+
 // ──────────────────────────────────────────────
 // Agenda viewer controller constants (used only here)
 // ──────────────────────────────────────────────
@@ -13,11 +18,6 @@ const double kNewElementDefaultX = 120;
 const double kNewElementDefaultY = 100;
 /// Minimum offset when duplicating canvas elements.
 const double kDuplicateOffset = 24;
-
-import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
-import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
-import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
-import 'package:uuid/uuid.dart';
 
 /// Exposes the reactive list of pages for a given agenda ID.
 // ignore: specify_nonobvious_property_types

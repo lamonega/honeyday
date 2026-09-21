@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 @immutable
 class HabitRowItem {
@@ -55,7 +56,7 @@ class CalendarGridConfig {
     try {
       final dynamic decoded = jsonDecode(rawJson);
       if (decoded is Map<String, dynamic>) {
-        final title = decoded['title']?.toString() ?? 'Hábitos Semanales';
+        final title = decoded['title']?.toString() ?? 'Hábitos Semanales'; // Internal default; build() uses l10n
         final rawList = decoded['habits'] as List<dynamic>? ?? const [];
         final habits = rawList
             .whereType<Map<String, dynamic>>()
@@ -74,6 +75,7 @@ class CalendarGridConfig {
   }
 
   factory CalendarGridConfig.defaultConfig() {
+    // Internal default config data (editable by user via JSON). Build() uses localized strings.
     return const CalendarGridConfig(
       title: 'Hábitos Semanales',
       habits: [
@@ -121,7 +123,8 @@ class CalendarGridDefinition extends AgendaWidgetDefinition {
   String get id => 'calendar_grid';
 
   @override
-  String get name => 'Cuadrícula con Días';
+  @override
+  String name(BuildContext context) => AppLocalizations.of(context).catalogHabitsName;
 
   @override
   IconData get icon => Icons.calendar_view_week_rounded;
@@ -169,7 +172,16 @@ class CalendarGridWidget extends StatefulWidget {
 }
 
 class _CalendarGridWidgetState extends State<CalendarGridWidget> {
-  static const List<String> _daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+  // TODO(l10n): _daysOfWeek was static const; now computed from AppLocalizations in build.
+  List<String> _daysOfWeek(AppLocalizations l10n) => [
+        l10n.catalogHabitsDayMon,
+        l10n.catalogHabitsDayTue,
+        l10n.catalogHabitsDayWed,
+        l10n.catalogHabitsDayThu,
+        l10n.catalogHabitsDayFri,
+        l10n.catalogHabitsDaySat,
+        l10n.catalogHabitsDaySun,
+      ];
 
   late CalendarGridConfig _config;
 
@@ -207,9 +219,10 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
   void _addNewHabit() {
     if (!widget.isInteractive) return;
 
+    final l10n = AppLocalizations.of(context);
     final newHabit = HabitRowItem(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: 'Nuevo hábito',
+      title: l10n.catalogHabitsNew,
       checks: List<bool>.filled(7, false),
     );
 
@@ -248,6 +261,8 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final days = _daysOfWeek(l10n);
 
     return Container(
       decoration: BoxDecoration(
@@ -293,7 +308,7 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      _daysOfWeek[index],
+                      days[index],
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -434,9 +449,9 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                 child: TextButton.icon(
                   onPressed: _addNewHabit,
                   icon: const Icon(Icons.add_rounded, size: 16),
-                  label: const Text(
-                    'Añadir hábito',
-                    style: TextStyle(fontSize: 12),
+                  label: Text(
+                    l10n.catalogHabitsAdd,
+                    style: const TextStyle(fontSize: 12),
                   ),
                   style: TextButton.styleFrom(
                     foregroundColor: colorScheme.primary,

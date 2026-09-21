@@ -1,15 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:honeyday/core/constants/app_constants.dart';
-import 'package:honeyday/core/theme/app_colors.dart';
-
-// Application version (used only for settings display).
-const String kAppVersion = '0.1.4';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:honeyday/app/app.dart';
+import 'package:honeyday/core/constants/app_constants.dart';
+import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
+
+// Application version (used only for settings display).
+const String kAppVersion = '0.1.4';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});

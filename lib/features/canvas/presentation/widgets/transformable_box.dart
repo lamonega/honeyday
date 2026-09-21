@@ -4,6 +4,11 @@ import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
+import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
+import 'package:honeyday/features/canvas/presentation/canvas/snapping.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/canvas_action_bar.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/resize_handles.dart';
+
 // ──────────────────────────────────────────────
 // Transform box constants (used only here)
 // ──────────────────────────────────────────────
@@ -38,11 +43,6 @@ const double kHandleIconSize = 14;
 const double kSelectionBorderRadius = 12;
 /// Border radius of element content clip.
 const double kContentClipRadius = 10;
-
-import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
-import 'package:honeyday/features/canvas/presentation/canvas/snapping.dart';
-import 'package:honeyday/features/canvas/presentation/widgets/canvas_action_bar.dart';
-import 'package:honeyday/features/canvas/presentation/widgets/resize_handles.dart';
 
 typedef OnTransformChanged = void Function(
   Offset position,

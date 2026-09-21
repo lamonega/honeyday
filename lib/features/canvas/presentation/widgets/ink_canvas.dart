@@ -1,12 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
-// ──────────────────────────────────────────────
-// Ink canvas constants (used only here)
-// ──────────────────────────────────────────────
-
-/// Default pressure when device doesn't report pressure data.
-const double kDefaultPressure = 0.5;
-
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/canvas/domain/models/stroke_point.dart';
@@ -14,6 +7,13 @@ import 'package:honeyday/features/canvas/presentation/widgets/erase_logic.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas_controller.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/ink_painter.dart';
 import 'package:uuid/uuid.dart';
+
+// ──────────────────────────────────────────────
+// Ink canvas constants (used only here)
+// ──────────────────────────────────────────────
+
+/// Default pressure when device doesn't report pressure data.
+const double kDefaultPressure = 0.5;
 
 /// Interactive vector ink drawing canvas (Layer 3).
 ///

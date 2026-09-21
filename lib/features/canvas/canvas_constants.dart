@@ -2,6 +2,7 @@
 ///
 /// Only constants used across 2+ canvas files are kept here.
 /// All single-use constants live at the top of the file that consumes them.
+library;
 
 // ---------------------------------------------------------------------------
 // Shared canvas constants (used in 2+ files)

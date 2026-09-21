@@ -1,5 +1,8 @@
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
+
 // ──────────────────────────────────────────────
 // Snapping constants (used only here)
 // ──────────────────────────────────────────────
@@ -10,9 +13,6 @@ const double kSnapThreshold = 4;
 const double kSnapDeadZoneMultiplier = 2;
 /// Precision threshold for snap guide alignment.
 const double kSnapGuidePrecision = 0.5;
-
-import 'package:flutter/foundation.dart';
-import 'package:honeyday/features/canvas/canvas_constants.dart';
 
 /// Orientation of a magnetic alignment guide line.
 ///

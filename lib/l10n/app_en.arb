@@ -1,0 +1,675 @@
+{
+  "@@locale": "en",
+  "commonCancel": "Cancel",
+  "@commonCancel": {
+    "description": "Cancel button"
+  },
+  "commonDelete": "Delete",
+  "@commonDelete": {
+    "description": "Delete button"
+  },
+  "commonCreate": "Create",
+  "@commonCreate": {
+    "description": "Create button"
+  },
+  "appTitle": "Honeyday",
+  "@appTitle": {
+    "description": "App title / brand name"
+  },
+  "navHome": "Home",
+  "@navHome": {
+    "description": "Bottom navigation label for home"
+  },
+  "navSettings": "Settings",
+  "@navSettings": {
+    "description": "Bottom navigation label for settings"
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "AppBar title for settings page"
+  },
+  "settingsGeneral": "General",
+  "@settingsGeneral": {
+    "description": "Section header for general settings"
+  },
+  "settingsDarkMode": "Dark mode",
+  "@settingsDarkMode": {
+    "description": "Switch title for dark mode toggle"
+  },
+  "settingsThemeSystem": "Automatic (system)",
+  "@settingsThemeSystem": {
+    "description": "Automatic (system)"
+  },
+  "settingsThemeOn": "On",
+  "@settingsThemeOn": {
+    "description": "On"
+  },
+  "settingsThemeOff": "Off",
+  "@settingsThemeOff": {
+    "description": "Off"
+  },
+  "settingsAccentColor": "Accent color",
+  "@settingsAccentColor": {
+    "description": "List tile title AND dialog title for accent color"
+  },
+  "settingsAccentCustom": "Custom",
+  "@settingsAccentCustom": {
+    "description": "Subtitle when a custom accent color is selected"
+  },
+  "settingsAbout": "About",
+  "@settingsAbout": {
+    "description": "Section header for about settings"
+  },
+  "settingsVersion": "Version",
+  "@settingsVersion": {
+    "description": "List tile title for app version"
+  },
+  "settingsLicenses": "Licenses",
+  "@settingsLicenses": {
+    "description": "List tile title for open source licenses"
+  },
+  "settingsLicensesSubtitle": "Review open source licenses",
+  "@settingsLicensesSubtitle": {
+    "description": "Subtitle for licenses list tile"
+  },
+  "settingsAccentBeeHoney": "Honey bee",
+  "@settingsAccentBeeHoney": {
+    "description": "Honey bee"
+  },
+  "settingsAccentLavender": "Lavender",
+  "@settingsAccentLavender": {
+    "description": "Accent color preset name"
+  },
+  "settingsAccentSage": "Sage",
+  "@settingsAccentSage": {
+    "description": "Accent color preset name"
+  },
+  "settingsAccentRose": "Rose",
+  "@settingsAccentRose": {
+    "description": "Accent color preset name"
+  },
+  "settingsAccentOcean": "Ocean",
+  "@settingsAccentOcean": {
+    "description": "Accent color preset name"
+  },
+  "settingsAccentBrick": "Brick",
+  "@settingsAccentBrick": {
+    "description": "Accent color preset name"
+  },
+  "settingsAccentGray": "Gray",
+  "@settingsAccentGray": {
+    "description": "Accent color preset name"
+  },
+  "settingsAccentTeal": "Teal",
+  "@settingsAccentTeal": {
+    "description": "Accent color preset name"
+  },
+  "homeTitle": "Honeyday",
+  "@homeTitle": {
+    "description": "AppBar title on the home page"
+  },
+  "homeErrorLoading": "Error loading agendas",
+  "@homeErrorLoading": {
+    "description": "Error loading agendas"
+  },
+  "homeEmptyTitle": "No agendas",
+  "@homeEmptyTitle": {
+    "description": "Empty state heading"
+  },
+  "homeEmptyBody": "Tap + to create one.",
+  "@homeEmptyBody": {
+    "description": "Empty state body text"
+  },
+  "agendaDeleteTitle": "Delete agenda?",
+  "@agendaDeleteTitle": {
+    "description": "Delete agenda?"
+  },
+  "agendaDeleteContent": "\"{title}\" and all its associated pages will be deleted.",
+  "@agendaDeleteContent": {
+    "description": "\"{title}\" and all its associated pages will be deleted."
+  },
+  "agendaExitTitle": "Leave without saving?",
+  "@agendaExitTitle": {
+    "description": "Leave without saving?"
+  },
+  "agendaExitContent": "You have unsaved changes. What would you like to do?",
+  "@agendaExitContent": {
+    "description": "You have unsaved changes. What would you like to do?"
+  },
+  "agendaDiscard": "Discard",
+  "@agendaDiscard": {
+    "description": "Discard"
+  },
+  "agendaSave": "Save",
+  "@agendaSave": {
+    "description": "Save"
+  },
+  "agendaPagesError": "Error loading pages: {error}",
+  "@agendaPagesError": {
+    "description": "Error loading pages: {error}"
+  },
+  "agendaNoPages": "No pages available.",
+  "@agendaNoPages": {
+    "description": "No pages available."
+  },
+  "agendaNewDefaultTitle": "My Agenda 2026",
+  "@agendaNewDefaultTitle": {
+    "description": "My Agenda 2026"
+  },
+  "agendaNewTitle": "New Agenda",
+  "@agendaNewTitle": {
+    "description": "New Agenda"
+  },
+  "agendaNewHint": "Title",
+  "@agendaNewHint": {
+    "description": "Title"
+  },
+  "agendaPageDesignLines": "Lines",
+  "@agendaPageDesignLines": {
+    "description": "Lines"
+  },
+  "agendaPageDesignDots": "Dots",
+  "@agendaPageDesignDots": {
+    "description": "Dots"
+  },
+  "agendaPageDesignBlank": "Blank",
+  "@agendaPageDesignBlank": {
+    "description": "Blank"
+  },
+  "agendaPageDesignGrid": "Grid",
+  "@agendaPageDesignGrid": {
+    "description": "Grid"
+  },
+  "agendaPageDeleteTitle": "Delete page?",
+  "@agendaPageDeleteTitle": {
+    "description": "Delete page?"
+  },
+  "agendaPageDeleteContent": "Page {index} will be deleted. This action cannot be undone.",
+  "@agendaPageDeleteContent": {
+    "description": "Page {index} will be deleted. This action cannot be undone."
+  },
+  "agendaPageCount": "Pages ({count})",
+  "@agendaPageCount": {
+    "description": "Pages ({count})"
+  },
+  "agendaPageAdd": "Add page",
+  "@agendaPageAdd": {
+    "description": "Add page"
+  },
+  "agendaModeRead": "Read mode",
+  "@agendaModeRead": {
+    "description": "Read mode"
+  },
+  "agendaModeEdit": "Edit mode",
+  "@agendaModeEdit": {
+    "description": "Edit mode"
+  },
+  "agendaPageBadge": "{count, plural, =1{# page} other{# pages}}",
+  "@agendaPageBadge": {
+    "description": "{count, plural, =1{# page} other{# pages}}"
+  },
+  "agendaDeleteTooltip": "Delete agenda",
+  "@agendaDeleteTooltip": {
+    "description": "Delete agenda"
+  },
+  "catalogFilterAll": "All",
+  "@catalogFilterAll": {
+    "description": "Filter chip to show all items"
+  },
+  "catalogFilterShapes": "Shapes",
+  "@catalogFilterShapes": {
+    "description": "Filter chip for shapes category"
+  },
+  "catalogFilterTemplates": "Templates",
+  "@catalogFilterTemplates": {
+    "description": "Filter chip for templates category"
+  },
+  "catalogFilterDecoration": "Decoration",
+  "@catalogFilterDecoration": {
+    "description": "Filter chip for decoration category"
+  },
+  "catalogElementsHeader": "Elements",
+  "@catalogElementsHeader": {
+    "description": "Section header for elements list"
+  },
+  "catalogFilterAgenda": "Agenda",
+  "@catalogFilterAgenda": {
+    "description": "Filter chip for agenda category in resource catalog sidebar"
+  },
+  "catalogFilterStickers": "Stickers",
+  "@catalogFilterStickers": {
+    "description": "Filter chip for stickers category in resource catalog sidebar"
+  },
+  "onboardingStep1Title": "Organize your life",
+  "@onboardingStep1Title": {
+    "description": "Onboarding step 1 title"
+  },
+  "onboardingStep1Desc": "Create personalized agendas for every area of your life:\\nfinances, habits, projects, and more.",
+  "@onboardingStep1Desc": {
+    "description": "Create personalized agendas for every area of your life:\\nfinances, habits, projects, and more."
+  },
+  "onboardingStep2Title": "Draw freely",
+  "@onboardingStep2Title": {
+    "description": "Onboarding step 2 title"
+  },
+  "onboardingStep2Desc": "Write by hand, draw, highlight, and use ink tools\\nwith pressure precision.",
+  "@onboardingStep2Desc": {
+    "description": "Write by hand, draw, highlight, and use ink tools\\nwith pressure precision."
+  },
+  "onboardingStep3Title": "Customize everything",
+  "@onboardingStep3Title": {
+    "description": "Onboarding step 3 title"
+  },
+  "onboardingStep3Desc": "Add templates, stickers, shapes, and elements\\nto create the perfect agenda.",
+  "@onboardingStep3Desc": {
+    "description": "Add templates, stickers, shapes, and elements\\nto create the perfect agenda."
+  },
+  "onboardingSkip": "Skip",
+  "@onboardingSkip": {
+    "description": "Skip button on onboarding"
+  },
+  "onboardingStart": "Get started",
+  "@onboardingStart": {
+    "description": "Get started button on the last onboarding page"
+  },
+  "onboardingNext": "Next",
+  "@onboardingNext": {
+    "description": "Next button on non-last onboarding pages"
+  },
+  "catalogShapeRectangle": "Rectangle",
+  "@catalogShapeRectangle": {
+    "description": "Rectangle"
+  },
+  "catalogShapeRectangleDesc": "Card or container to structure sections",
+  "@catalogShapeRectangleDesc": {
+    "description": "Card or container to structure sections"
+  },
+  "catalogShapeCircle": "Circle",
+  "@catalogShapeCircle": {
+    "description": "Circle"
+  },
+  "catalogShapeCircleDesc": "Aesthetic circular or elliptical shape",
+  "@catalogShapeCircleDesc": {
+    "description": "Aesthetic circular or elliptical shape"
+  },
+  "catalogShapeDivider": "Divider",
+  "@catalogShapeDivider": {
+    "description": "Divider"
+  },
+  "catalogShapeDividerDesc": "Aesthetic dividing line for the page",
+  "@catalogShapeDividerDesc": {
+    "description": "Aesthetic dividing line for the page"
+  },
+  "catalogShapePennant": "Banner",
+  "@catalogShapePennant": {
+    "description": "Banner"
+  },
+  "catalogShapePennantDesc": "Canva-style header ribbon",
+  "@catalogShapePennantDesc": {
+    "description": "Canva-style header ribbon"
+  },
+  "catalogShapeFrame": "Frame",
+  "@catalogShapeFrame": {
+    "description": "Frame"
+  },
+  "catalogShapeFrameDesc": "Elegant perimeter frame adaptable to the full page",
+  "@catalogShapeFrameDesc": {
+    "description": "Elegant perimeter frame adaptable to the full page"
+  },
+  "catalogShapeStar": "Star",
+  "@catalogShapeStar": {
+    "description": "Star"
+  },
+  "catalogShapeStarDesc": "Decorative geometric star",
+  "@catalogShapeStarDesc": {
+    "description": "Decorative geometric star"
+  },
+  "catalogShapeLabel": "Tag",
+  "@catalogShapeLabel": {
+    "description": "Tag"
+  },
+  "catalogShapeLabelDesc": "Elongated shape with rounded ends",
+  "@catalogShapeLabelDesc": {
+    "description": "Elongated shape with rounded ends"
+  },
+  "catalogShapeStickyNote": "Sticky note",
+  "@catalogShapeStickyNote": {
+    "description": "Sticky note"
+  },
+  "catalogShapeStickyNoteDesc": "Static paper note with pin and lines to write on",
+  "@catalogShapeStickyNoteDesc": {
+    "description": "Static paper note with pin and lines to write on"
+  },
+  "catalogShapeTape": "Decorative tape",
+  "@catalogShapeTape": {
+    "description": "Decorative tape"
+  },
+  "catalogShapeTapeDesc": "Semi-transparent decorative strip with design",
+  "@catalogShapeTapeDesc": {
+    "description": "Semi-transparent decorative strip with design"
+  },
+  "catalogTemplateWeeklyView": "Weekly view",
+  "@catalogTemplateWeeklyView": {
+    "description": "Weekly view"
+  },
+  "catalogTemplateWeeklyViewDesc": "7-day structure for planning the week by hand",
+  "@catalogTemplateWeeklyViewDesc": {
+    "description": "7-day structure for planning the week by hand"
+  },
+  "catalogTemplateChecklist": "Checklist",
+  "@catalogTemplateChecklist": {
+    "description": "Checklist"
+  },
+  "catalogTemplateChecklistDesc": "Aesthetic checkbox list for writing tasks",
+  "@catalogTemplateChecklistDesc": {
+    "description": "Aesthetic checkbox list for writing tasks"
+  },
+  "catalogTemplateChecklistHeader": "CHECKLIST",
+  "@catalogTemplateChecklistHeader": {
+    "description": "CHECKLIST"
+  },
+  "catalogTemplateHabits": "Habits",
+  "@catalogTemplateHabits": {
+    "description": "Habits"
+  },
+  "catalogTemplateHabitsDesc": "Weekly tracking matrix to color with the pencil",
+  "@catalogTemplateHabitsDesc": {
+    "description": "Weekly tracking matrix to color with the pencil"
+  },
+  "catalogTemplateHabitsHeader": "WEEKLY HABITS",
+  "@catalogTemplateHabitsHeader": {
+    "description": "WEEKLY HABITS"
+  },
+  "catalogTemplatePriorities": "Priorities",
+  "@catalogTemplatePriorities": {
+    "description": "Priorities"
+  },
+  "catalogTemplatePrioritiesDesc": "Highlighted structure for the 3 key priorities",
+  "@catalogTemplatePrioritiesDesc": {
+    "description": "Highlighted structure for the 3 key priorities"
+  },
+  "catalogTemplatePrioritiesHeader": "PRIORITIES",
+  "@catalogTemplatePrioritiesHeader": {
+    "description": "PRIORITIES"
+  },
+  "catalogTemplateLinedNotes": "Lined notes",
+  "@catalogTemplateLinedNotes": {
+    "description": "Lined notes"
+  },
+  "catalogTemplateLinedNotesDesc": "Notes area with lines for precise writing",
+  "@catalogTemplateLinedNotesDesc": {
+    "description": "Notes area with lines for precise writing"
+  },
+  "catalogTemplateGridNotes": "Grid notes",
+  "@catalogTemplateGridNotes": {
+    "description": "Grid notes"
+  },
+  "catalogTemplateGridNotesDesc": "Notes area with graph or subtle grid paper",
+  "@catalogTemplateGridNotesDesc": {
+    "description": "Notes area with graph or subtle grid paper"
+  },
+  "catalogStickerHeart": "Heart",
+  "@catalogStickerHeart": {
+    "description": "Heart"
+  },
+  "catalogStickerHeartDesc": "Decorative heart icon",
+  "@catalogStickerHeartDesc": {
+    "description": "Decorative heart icon"
+  },
+  "catalogStickerStar": "Decorative star",
+  "@catalogStickerStar": {
+    "description": "Decorative star"
+  },
+  "catalogStickerStarDesc": "Decorative sparkling star icon",
+  "@catalogStickerStarDesc": {
+    "description": "Decorative sparkling star icon"
+  },
+  "catalogStickerCoffee": "Coffee",
+  "@catalogStickerCoffee": {
+    "description": "Coffee"
+  },
+  "catalogStickerCoffeeDesc": "Rest or coffee icon",
+  "@catalogStickerCoffeeDesc": {
+    "description": "Rest or coffee icon"
+  },
+  "catalogStickerPin": "Push pin",
+  "@catalogStickerPin": {
+    "description": "Push pin"
+  },
+  "catalogStickerPinDesc": "Decorative pin for notes and cards",
+  "@catalogStickerPinDesc": {
+    "description": "Decorative pin for notes and cards"
+  },
+  "catalogDayMon": "MON",
+  "@catalogDayMon": {
+    "description": "MON"
+  },
+  "catalogDayTue": "TUE",
+  "@catalogDayTue": {
+    "description": "TUE"
+  },
+  "catalogDayWed": "WED",
+  "@catalogDayWed": {
+    "description": "WED"
+  },
+  "catalogDayThu": "THU",
+  "@catalogDayThu": {
+    "description": "THU"
+  },
+  "catalogDayFri": "FRI",
+  "@catalogDayFri": {
+    "description": "FRI"
+  },
+  "catalogDaySat": "SAT",
+  "@catalogDaySat": {
+    "description": "SAT"
+  },
+  "catalogDaySun": "SUN",
+  "@catalogDaySun": {
+    "description": "SUN"
+  },
+  "catalogBudgetTitle": "Budget",
+  "@catalogBudgetTitle": {
+    "description": "Budget"
+  },
+  "catalogBudgetDefaultIncome": "Main income",
+  "@catalogBudgetDefaultIncome": {
+    "description": "Main income"
+  },
+  "catalogBudgetDefaultExpense1": "Rent & Utilities",
+  "@catalogBudgetDefaultExpense1": {
+    "description": "Rent & Utilities"
+  },
+  "catalogBudgetDefaultExpense2": "Groceries & Food",
+  "@catalogBudgetDefaultExpense2": {
+    "description": "Groceries & Food"
+  },
+  "catalogBudgetName": "Budget Calculator",
+  "@catalogBudgetName": {
+    "description": "Budget Calculator"
+  },
+  "catalogBudgetNewExpense": "New expense",
+  "@catalogBudgetNewExpense": {
+    "description": "New expense"
+  },
+  "catalogBudgetIncome": "Income",
+  "@catalogBudgetIncome": {
+    "description": "Income"
+  },
+  "catalogBudgetExpenses": "Expenses",
+  "@catalogBudgetExpenses": {
+    "description": "Expenses"
+  },
+  "catalogBudgetBalance": "Balance",
+  "@catalogBudgetBalance": {
+    "description": "Balance"
+  },
+  "catalogBudgetAddEntry": "New entry",
+  "@catalogBudgetAddEntry": {
+    "description": "New entry"
+  },
+  "catalogHabitsTitle": "Weekly Habits",
+  "@catalogHabitsTitle": {
+    "description": "Weekly Habits"
+  },
+  "catalogHabitsDefault1": "Drink 2L of water",
+  "@catalogHabitsDefault1": {
+    "description": "Drink 2L of water"
+  },
+  "catalogHabitsDefault2": "Read 20 minutes",
+  "@catalogHabitsDefault2": {
+    "description": "Read 20 minutes"
+  },
+  "catalogHabitsDefault3": "Daily exercise",
+  "@catalogHabitsDefault3": {
+    "description": "Daily exercise"
+  },
+  "catalogHabitsName": "Grid with Days",
+  "@catalogHabitsName": {
+    "description": "Grid with Days"
+  },
+  "catalogHabitsDayMon": "M",
+  "@catalogHabitsDayMon": {
+    "description": "M"
+  },
+  "catalogHabitsDayTue": "T",
+  "@catalogHabitsDayTue": {
+    "description": "T"
+  },
+  "catalogHabitsDayWed": "W",
+  "@catalogHabitsDayWed": {
+    "description": "W"
+  },
+  "catalogHabitsDayThu": "T",
+  "@catalogHabitsDayThu": {
+    "description": "T"
+  },
+  "catalogHabitsDayFri": "F",
+  "@catalogHabitsDayFri": {
+    "description": "F"
+  },
+  "catalogHabitsDaySat": "S",
+  "@catalogHabitsDaySat": {
+    "description": "S"
+  },
+  "catalogHabitsDaySun": "S",
+  "@catalogHabitsDaySun": {
+    "description": "S"
+  },
+  "catalogHabitsNew": "New habit",
+  "@catalogHabitsNew": {
+    "description": "New habit"
+  },
+  "catalogHabitsAdd": "Add habit",
+  "@catalogHabitsAdd": {
+    "description": "Add habit"
+  },
+  "catalogJournalToday": "Today",
+  "@catalogJournalToday": {
+    "description": "Today"
+  },
+  "catalogJournalDefaultDate": "Friday, September 11",
+  "@catalogJournalDefaultDate": {
+    "description": "Friday, September 11"
+  },
+  "catalogJournalPriority1": "Complete key daily goals",
+  "@catalogJournalPriority1": {
+    "description": "Complete key daily goals"
+  },
+  "catalogJournalPriority2": "Time for disconnecting and reading",
+  "@catalogJournalPriority2": {
+    "description": "Time for disconnecting and reading"
+  },
+  "catalogJournalPriority3": "Plan next week",
+  "@catalogJournalPriority3": {
+    "description": "Plan next week"
+  },
+  "catalogJournalDefaultNotes": "Today''s reflections and learnings...",
+  "@catalogJournalDefaultNotes": {
+    "description": "Today''s reflections and learnings..."
+  },
+  "catalogJournalName": "Daily / Weekly Entry",
+  "@catalogJournalName": {
+    "description": "Daily / Weekly Entry"
+  },
+  "catalogJournalPrioritiesHeader": "Today''s Priorities",
+  "@catalogJournalPrioritiesHeader": {
+    "description": "Today''s Priorities"
+  },
+  "catalogJournalNotesHeader": "Notes & Reflection",
+  "@catalogJournalNotesHeader": {
+    "description": "Notes & Reflection"
+  },
+  "catalogJournalNotesHint": "Write your thoughts for the day here...",
+  "@catalogJournalNotesHint": {
+    "description": "Write your thoughts for the day here..."
+  },
+  "catalogJournalNoNotes": "No notes for this day.",
+  "@catalogJournalNoNotes": {
+    "description": "No notes for this day."
+  },
+  "catalogColorHoney": "Honey",
+  "@catalogColorHoney": {
+    "description": "Honey"
+  },
+  "catalogColorPink": "Pink",
+  "@catalogColorPink": {
+    "description": "Pink"
+  },
+  "catalogColorSage": "Sage",
+  "@catalogColorSage": {
+    "description": "Sage"
+  },
+  "catalogColorTransparent": "Transparent",
+  "@catalogColorTransparent": {
+    "description": "Transparent"
+  },
+  "catalogTextboxDefault": "Note...",
+  "@catalogTextboxDefault": {
+    "description": "Note..."
+  },
+  "catalogTextboxDefaultContent": "Important note!\\nWrite your ideas or reminders here.",
+  "@catalogTextboxDefaultContent": {
+    "description": "Important note!\\nWrite your ideas or reminders here."
+  },
+  "catalogTextboxName": "Text Note",
+  "@catalogTextboxName": {
+    "description": "Text Note"
+  },
+  "catalogTextboxHint": "Write your note here...",
+  "@catalogTextboxHint": {
+    "description": "Write your note here..."
+  },
+  "catalogChecklistHeader": "CHECKLIST",
+  "@catalogChecklistHeader": {
+    "description": "Header for the checklist template"
+  },
+  "catalogHabitsHeader": "WEEKLY HABITS",
+  "@catalogHabitsHeader": {
+    "description": "Header for the habit tracker template"
+  },
+  "catalogPrioritiesHeader": "PRIORITIES",
+  "@catalogPrioritiesHeader": {
+    "description": "Header for the priorities template"
+  },
+  "paperStyleDots": "Dots",
+  "@paperStyleDots": {
+    "description": "Dots"
+  },
+  "paperStyleLines": "Lines",
+  "@paperStyleLines": {
+    "description": "Lines"
+  },
+  "paperStyleGrid": "Grid",
+  "@paperStyleGrid": {
+    "description": "Grid"
+  },
+  "paperStyleBlank": "Blank",
+  "@paperStyleBlank": {
+    "description": "Blank"
+  },
+  "catalogErrorUnknownWidget": "Unrecognized widget: {widgetType}",
+  "@catalogErrorUnknownWidget": {
+    "description": "Unrecognized widget: {widgetType}"
+  }
+}

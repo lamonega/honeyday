@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/page_surface.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Shows a dialog prompting the user to choose the layout/paper design for a new page.
 Future<String?> showNewPageDesignDialog(BuildContext context) {
@@ -22,25 +23,25 @@ class NewPageDesignDialog extends StatefulWidget {
 class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
   late PaperStyle _selectedStyle;
 
-  static const _designs = [
+  static List<_PageDesignOption> _getDesigns(BuildContext context) => [
     _PageDesignOption(
       style: PaperStyle.lined,
-      title: 'Líneas',
+      title: AppLocalizations.of(context).agendaPageDesignLines,
       icon: Icons.view_headline_rounded,
     ),
     _PageDesignOption(
       style: PaperStyle.dotted,
-      title: 'Puntos',
+      title: AppLocalizations.of(context).agendaPageDesignDots,
       icon: Icons.grain_rounded,
     ),
     _PageDesignOption(
       style: PaperStyle.blank,
-      title: 'En blanco',
+      title: AppLocalizations.of(context).agendaPageDesignBlank,
       icon: Icons.crop_portrait_rounded,
     ),
     _PageDesignOption(
       style: PaperStyle.grid,
-      title: 'Cuadrícula',
+      title: AppLocalizations.of(context).agendaPageDesignGrid,
       icon: Icons.grid_4x4_rounded,
     ),
   ];
@@ -54,6 +55,7 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final designs = _getDesigns(context);
 
     return AlertDialog(
       backgroundColor: colorScheme.surface,
@@ -65,17 +67,17 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
           children: [
             Row(
               children: [
-                Expanded(child: _buildOptionCard(_designs[0], colorScheme)),
+                Expanded(child: _buildOptionCard(designs[0], colorScheme)),
                 const SizedBox(width: 10),
-                Expanded(child: _buildOptionCard(_designs[1], colorScheme)),
+                Expanded(child: _buildOptionCard(designs[1], colorScheme)),
               ],
             ),
             const SizedBox(height: 10),
             Row(
               children: [
-                Expanded(child: _buildOptionCard(_designs[2], colorScheme)),
+                Expanded(child: _buildOptionCard(designs[2], colorScheme)),
                 const SizedBox(width: 10),
-                Expanded(child: _buildOptionCard(_designs[3], colorScheme)),
+                Expanded(child: _buildOptionCard(designs[3], colorScheme)),
               ],
             ),
           ],
@@ -85,7 +87,7 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
+          child: Text(AppLocalizations.of(context).commonCancel),
         ),
         FilledButton(
           style: FilledButton.styleFrom(
@@ -96,7 +98,7 @@ class _NewPageDesignDialogState extends State<NewPageDesignDialog> {
             ),
           ),
           onPressed: () => Navigator.of(context).pop(_selectedStyle.name),
-          child: const Text('Crear'),
+          child: Text(AppLocalizations.of(context).commonCreate),
         ),
       ],
     );

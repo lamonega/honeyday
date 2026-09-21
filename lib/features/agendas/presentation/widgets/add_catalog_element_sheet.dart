@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Draggable bottom sheet displaying the catalog of design elements.
 class AddCatalogElementSheet extends StatefulWidget {
@@ -24,11 +25,11 @@ class AddCatalogElementSheet extends StatefulWidget {
 class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
   ElementCategory? _selectedCategory;
 
-  static const _filterTabs = <(String, ElementCategory?)>[
-    ('Todas', null),
-    ('Formas', ElementCategory.shapes),
-    ('Plantillas', ElementCategory.planner),
-    ('Decoración', ElementCategory.stickers),
+  static List<(String, ElementCategory?)> _getFilterTabs(BuildContext context) => [
+    (AppLocalizations.of(context).catalogFilterAll, null),
+    (AppLocalizations.of(context).catalogFilterShapes, ElementCategory.shapes),
+    (AppLocalizations.of(context).catalogFilterTemplates, ElementCategory.planner),
+    (AppLocalizations.of(context).catalogFilterDecoration, ElementCategory.stickers),
   ];
 
   @override
@@ -38,6 +39,7 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
         ? allDefs.where((d) => d.category != ElementCategory.legacy).toList()
         : allDefs.where((d) => d.category == _selectedCategory).toList();
     final colorScheme = Theme.of(context).colorScheme;
+    final filterTabs = _getFilterTabs(context);
 
     return DraggableScrollableSheet(
       minChildSize: 0.3,
@@ -68,7 +70,7 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
                 child: Row(
                   children: [
                     Text(
-                      'Elementos',
+                      AppLocalizations.of(context).catalogElementsHeader,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -93,10 +95,10 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: _filterTabs.length,
+                  itemCount: filterTabs.length,
                   separatorBuilder: (_, _) => const SizedBox(width: 6),
                   itemBuilder: (context, index) {
-                    final tab = _filterTabs[index];
+                    final tab = filterTabs[index];
                     final isSelected = _selectedCategory == tab.$2;
                     return ChoiceChip(
                       label: Text(tab.$1),
@@ -158,16 +160,16 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      def.name,
+                                      def.name(context),
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
                                         color: colorScheme.onSurface,
                                       ),
                                     ),
-                                    if (def.description.isNotEmpty)
+                                    if (def.description(context).isNotEmpty)
                                       Text(
-                                        def.description,
+                                        def.description(context),
                                         style: TextStyle(
                                           fontSize: 11,
                                           color: colorScheme.onSurface

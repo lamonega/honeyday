@@ -17,6 +17,7 @@ import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/presentation/pages/page_view_canvas.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/page_canvas_controller.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 import 'package:uuid/uuid.dart';
 
 class AgendaViewerPage extends ConsumerStatefulWidget {
@@ -135,20 +136,20 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('¿Salir sin guardar?'),
-        content: const Text('Tenés cambios sin guardar. ¿Qué querés hacer?'),
+        title: Text(AppLocalizations.of(context).agendaExitTitle),
+        content: Text(AppLocalizations.of(context).agendaExitContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop('cancel'),
-            child: const Text('Cancelar'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop('discard'),
-            child: const Text('Descartar'),
+            child: Text(AppLocalizations.of(context).agendaDiscard),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop('save'),
-            child: const Text('Guardar'),
+            child: Text(AppLocalizations.of(context).agendaSave),
           ),
         ],
       ),
@@ -180,7 +181,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
       ),
       error: (error, _) => Center(
         child: Text(
-          'Error al cargar páginas: $error',
+          AppLocalizations.of(context).agendaPagesError(error.toString()),
           style: TextStyle(color: colorScheme.onSurfaceVariant),
         ),
       ),
@@ -188,7 +189,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         if (pagesList.isEmpty) {
           return Center(
             child: Text(
-              'No hay páginas disponibles.',
+              AppLocalizations.of(context).agendaNoPages,
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
           );

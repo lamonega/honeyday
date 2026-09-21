@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/features/catalog/domain/element_config.dart';
+
 // ──────────────────────────────────────────────
 // Action bar constants (used only here)
 // ──────────────────────────────────────────────
@@ -19,8 +21,6 @@ const double kPaletteRowBorderRadius = 20;
 const double kPaletteDotSize = 22;
 /// Check icon size inside selected palette dot.
 const double kPaletteCheckIconSize = 12;
-
-import 'package:honeyday/features/catalog/domain/element_config.dart';
 
 class CanvasActionBar extends StatelessWidget {
   const CanvasActionBar({

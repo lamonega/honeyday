@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Entry type discriminator for budget calculations.
 enum BudgetEntryType {
@@ -82,7 +83,7 @@ class BudgetConfig {
     try {
       final dynamic decoded = jsonDecode(rawJson);
       if (decoded is Map<String, dynamic>) {
-        final title = decoded['title']?.toString() ?? 'Presupuesto';
+        final title = decoded['title']?.toString() ?? 'Presupuesto'; // Internal default; build() uses l10n
         final currency = decoded['currency']?.toString() ?? r'$';
         final rawEntries = decoded['entries'] as List<dynamic>? ?? const [];
         final entries = rawEntries
@@ -103,6 +104,7 @@ class BudgetConfig {
   }
 
   factory BudgetConfig.defaultConfig() {
+    // Internal default config data (editable by user via JSON). Build() uses localized strings.
     return const BudgetConfig(
       title: 'Presupuesto',
       currency: r'$',
@@ -171,7 +173,7 @@ class BudgetWidgetDefinition extends AgendaWidgetDefinition {
   String get id => 'budget_calculator';
 
   @override
-  String get name => 'Calculadora de Presupuesto';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogBudgetName;
 
   @override
   IconData get icon => Icons.account_balance_wallet_rounded;
@@ -236,9 +238,10 @@ class _BudgetWidgetState extends State<BudgetWidget> {
 
   void _addEntry() {
     if (!widget.isInteractive) return;
+    final l10n = AppLocalizations.of(context);
     final newEntry = BudgetEntryItem(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      description: 'Gasto nuevo',
+      description: l10n.catalogBudgetNewExpense,
       amount: 0,
       type: BudgetEntryType.expense,
     );
@@ -298,6 +301,7 @@ class _BudgetWidgetState extends State<BudgetWidget> {
     final netBalance = _config.netBalance;
     final isPositive = netBalance >= 0;
     final cs = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -342,21 +346,21 @@ class _BudgetWidgetState extends State<BudgetWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _SummaryTile(
-                  label: 'Ingresos',
+                  label: l10n.catalogBudgetIncome,
                   value:
                       '+${_config.currency}${_formatNumber(_config.totalIncome)}',
                   color: AppColors.incomeGreen,
                 ),
                 Container(width: 1, height: 24, color: cs.outline),
                 _SummaryTile(
-                  label: 'Gastos',
+                  label: l10n.catalogBudgetExpenses,
                   value:
                       '-${_config.currency}${_formatNumber(_config.totalExpenses)}',
                   color: AppColors.expenseRed,
                 ),
                 Container(width: 1, height: 24, color: cs.outline),
                 _SummaryTile(
-                  label: 'Balance',
+                  label: l10n.catalogBudgetBalance,
                   value:
                       '${isPositive ? '+' : ''}${_config.currency}${_formatNumber(netBalance)}',
                   color: isPositive ? cs.primary : AppColors.expenseRed,
@@ -514,9 +518,9 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                 child: TextButton.icon(
                   onPressed: _addEntry,
                   icon: const Icon(Icons.add_rounded, size: 16),
-                  label: const Text(
-                    'Nueva entrada',
-                    style: TextStyle(fontSize: 12),
+                  label: Text(
+                    l10n.catalogBudgetAddEntry,
+                    style: const TextStyle(fontSize: 12),
                   ),
                   style: TextButton.styleFrom(
                     foregroundColor: cs.primary,

@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:honeyday/core/constants/preferences_keys.dart';
 import 'package:go_router/go_router.dart';
 import 'package:honeyday/app/router.dart';
 import 'package:honeyday/app/theme.dart';
+import 'package:honeyday/core/constants/preferences_keys.dart';
 import 'package:honeyday/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Shared instance of [SharedPreferences] available app-wide.
@@ -106,8 +108,15 @@ class HoneydayApp extends ConsumerWidget {
     }
 
     return MaterialApp.router(
-      title: 'Honeyday',
+      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       debugShowCheckedModeBanner: false,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: themeMode,

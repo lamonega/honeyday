@@ -6,11 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:honeyday/core/constants/app_constants.dart';
-import 'package:honeyday/l10n/generated/app_localizations.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/home_controller.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/agenda_card.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/new_agenda_dialog.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 // ──────────────────────────────────────────────
 // Home page constants (used only in this file)
@@ -21,9 +21,9 @@ const int kBreakpointTablet = 900;
 /// Breakpoint for desktop layout in responsive grid.
 const int kBreakpointDesktop = 1200;
 /// Extra-large spacing for layout padding.
-const double kSpacingExtraLarge = 24.0;
+const double kSpacingExtraLarge = 24;
 /// Grid spacing between home cards.
-const double kHomeGridSpacing = 20.0;
+const double kHomeGridSpacing = 20;
 /// Aspect ratio for home agenda cards.
 const double kHomeCardAspectRatio = 0.85;
 /// Initial scale for onboarding-style animation begin value.

@@ -9,21 +9,21 @@ export 'package:honeyday/core/theme/app_colors.dart';
 // ──────────────────────────────────────────────
 
 /// Border radius for cards and large containers.
-const double kBorderRadiusMedium = 12.0;
+const double kBorderRadiusMedium = 12;
 /// Border radius for cards and elevated surfaces.
-const double kBorderRadiusLarge = 16.0;
+const double kBorderRadiusLarge = 16;
 /// Border radius for dialog surfaces.
-const double kBorderRadiusExtraLarge = 20.0;
+const double kBorderRadiusExtraLarge = 20;
 /// Border radius for bottom sheet top corners.
-const double kBorderRadiusBottomSheet = 24.0;
+const double kBorderRadiusBottomSheet = 24;
 /// Font size for navigation bar labels.
-const double kNavTextFontSize = 12.0;
+const double kNavTextFontSize = 12;
 /// Size for navigation bar icons.
-const double kNavIconSize = 24.0;
+const double kNavIconSize = 24;
 /// Horizontal padding inside input fields.
-const double kInputPaddingHorizontal = 16.0;
+const double kInputPaddingHorizontal = 16;
 /// Vertical padding inside input fields.
-const double kInputPaddingVertical = 14.0;
+const double kInputPaddingVertical = 14;
 
 /// Provides application-wide Material 3 themes with a warm paper & honey aesthetic.
 abstract final class HoneydayTheme {

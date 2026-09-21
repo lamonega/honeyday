@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:honeyday/l10n/generated/app_localizations.dart';
-import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 import 'package:honeyday/core/constants/app_constants.dart';
+import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Sidebar panel displaying the "Catálogo de Elementos" in Edit Mode.
 class ResourceCatalogSidebar extends StatefulWidget {
@@ -208,7 +208,7 @@ class _CatalogItemCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  definition.name,
+                  definition.name(context),
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w500,

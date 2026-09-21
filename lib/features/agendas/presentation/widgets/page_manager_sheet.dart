@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Bottom sheet for managing agenda pages: view thumbnails, navigate,
 /// reorder via drag, change paper style, add and delete pages.
@@ -32,7 +33,7 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
   late List<AgendaPage> _pages;
   late int _currentPageIndex;
 
-  static const _paperStyles = PaperStyle.labels;
+  static const Map<String, String> _paperStyles = PaperStyle.labels;
 
   static const _paperIcons = <String, IconData>{
     'dotted': Icons.grain_rounded,
@@ -85,22 +86,21 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('¿Eliminar página?'),
+        title: Text(AppLocalizations.of(context).agendaPageDeleteTitle),
         content: Text(
-          'Se eliminará la página ${_currentPageIndex + 1}. '
-          'Esta acción no se puede deshacer.',
+          AppLocalizations.of(context).agendaPageDeleteContent(_currentPageIndex + 1),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.error,
             ),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Eliminar'),
+            child: Text(AppLocalizations.of(context).commonDelete),
           ),
         ],
       ),
@@ -199,7 +199,7 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
             ),
           ),
           Text(
-            'Páginas (${_pages.length})',
+            AppLocalizations.of(context).agendaPageCount(_pages.length),
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -278,7 +278,7 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
                 widget.onAddPage();
               },
               icon: const Icon(Icons.add_rounded, size: 18),
-              label: const Text('Añadir página'),
+              label: Text(AppLocalizations.of(context).agendaPageAdd),
               style: OutlinedButton.styleFrom(
                 foregroundColor: colorScheme.primary,
                 side: BorderSide(color: colorScheme.primary),

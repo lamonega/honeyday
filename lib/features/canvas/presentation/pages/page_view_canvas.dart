@@ -2,6 +2,22 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
+import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
+import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
+import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
+import 'package:honeyday/features/canvas/presentation/canvas/snapping.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/canvas_painter.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/canvas_toolbar.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/element_history.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas_controller.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/page_canvas_controller.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/page_surface.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/transformable_box.dart';
+import 'package:honeyday/features/catalog/domain/element_config.dart';
+
+export 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
+
 // ──────────────────────────────────────────────
 // Page view constants (used only here)
 // ──────────────────────────────────────────────
@@ -20,22 +36,6 @@ const double kPageShadowOffsetY = 6;
 const double kCanvasTouchSlop = 4;
 /// Toolbar vertical position from top.
 const double kToolbarTopPosition = 16;
-
-import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
-import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
-import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
-import 'package:honeyday/features/canvas/presentation/canvas/snapping.dart';
-import 'package:honeyday/features/canvas/presentation/widgets/canvas_painter.dart';
-import 'package:honeyday/features/canvas/presentation/widgets/canvas_toolbar.dart';
-import 'package:honeyday/features/canvas/presentation/widgets/element_history.dart';
-import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas.dart';
-import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas_controller.dart';
-import 'package:honeyday/features/canvas/presentation/widgets/page_canvas_controller.dart';
-import 'package:honeyday/features/canvas/presentation/widgets/page_surface.dart';
-import 'package:honeyday/features/canvas/presentation/widgets/transformable_box.dart';
-import 'package:honeyday/features/catalog/domain/element_config.dart';
-
-export 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 
 /// The multi-layer interactive canvas page for Honeyday planners.
 class PageViewCanvas extends ConsumerStatefulWidget {

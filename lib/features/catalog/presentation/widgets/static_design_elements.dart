@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:honeyday/features/catalog/domain/element_config.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 // =============================================================================
 // SHAPES (Formas Geométricas)
@@ -16,10 +17,10 @@ class ShapeBoxDefinition extends AgendaWidgetDefinition {
   String get id => 'shape_box';
 
   @override
-  String get name => 'Rectángulo';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogShapeRectangle;
 
   @override
-  String get description => 'Tarjeta o contenedor para estructurar secciones';
+  String description(BuildContext context) => AppLocalizations.of(context).catalogShapeRectangleDesc;
 
   @override
   ElementCategory get category => ElementCategory.shapes;
@@ -71,10 +72,10 @@ class ShapeCircleDefinition extends AgendaWidgetDefinition {
   String get id => 'shape_circle';
 
   @override
-  String get name => 'Círculo';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogShapeCircle;
 
   @override
-  String get description => 'Forma circular o elíptica estética';
+  String description(BuildContext context) => AppLocalizations.of(context).catalogShapeCircleDesc;
 
   @override
   ElementCategory get category => ElementCategory.shapes;
@@ -128,10 +129,10 @@ class ShapeDividerDefinition extends AgendaWidgetDefinition {
   String get id => 'shape_divider';
 
   @override
-  String get name => 'Divisor';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogShapeDivider;
 
   @override
-  String get description => 'Línea separadora estética para la página';
+  String description(BuildContext context) => AppLocalizations.of(context).catalogShapeDividerDesc;
 
   @override
   ElementCategory get category => ElementCategory.shapes;
@@ -206,10 +207,10 @@ class ShapeBannerDefinition extends AgendaWidgetDefinition {
   String get id => 'shape_banner';
 
   @override
-  String get name => 'Banderín';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogShapePennant;
 
   @override
-  String get description => 'Cinta de encabezado estilo Canva';
+  String description(BuildContext context) => AppLocalizations.of(context).catalogShapePennantDesc;
 
   @override
   ElementCategory get category => ElementCategory.shapes;
@@ -292,10 +293,10 @@ class ShapeFrameDefinition extends AgendaWidgetDefinition {
   String get id => 'shape_frame';
 
   @override
-  String get name => 'Marco';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogShapeFrame;
 
   @override
-  String get description =>
+  String description(BuildContext context) =>
       'Marco perimetral elegante adaptable a toda la página';
 
   @override
@@ -351,10 +352,10 @@ class ShapeStarDefinition extends AgendaWidgetDefinition {
   String get id => 'shape_star';
 
   @override
-  String get name => 'Estrella';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogShapeStar;
 
   @override
-  String get description => 'Estrella geométrica decorativa';
+  String description(BuildContext context) => AppLocalizations.of(context).catalogShapeStarDesc;
 
   @override
   ElementCategory get category => ElementCategory.shapes;
@@ -448,10 +449,10 @@ class ShapePillDefinition extends AgendaWidgetDefinition {
   String get id => 'shape_pill';
 
   @override
-  String get name => 'Etiqueta';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogShapeLabel;
 
   @override
-  String get description => 'Forma alargada con extremos redondeados';
+  String description(BuildContext context) => AppLocalizations.of(context).catalogShapeLabelDesc;
 
   @override
   ElementCategory get category => ElementCategory.shapes;
@@ -502,10 +503,10 @@ class PlannerStickyNoteDefinition extends AgendaWidgetDefinition {
   String get id => 'planner_sticky_note';
 
   @override
-  String get name => 'Nota adhesiva';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogShapeStickyNote;
 
   @override
-  String get description =>
+  String description(BuildContext context) =>
       'Nota de papel estática con chincheta y líneas para escribir';
 
   @override
@@ -593,10 +594,10 @@ class PlannerWashiTapeDefinition extends AgendaWidgetDefinition {
   String get id => 'planner_washi_tape';
 
   @override
-  String get name => 'Cinta decorativa';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogShapeTape;
 
   @override
-  String get description => 'Tira decorativa semitransparente con diseño';
+  String description(BuildContext context) => AppLocalizations.of(context).catalogShapeTapeDesc;
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -695,10 +696,10 @@ class PlannerWeeklyColumnsDefinition extends AgendaWidgetDefinition {
   String get id => 'planner_weekly_columns';
 
   @override
-  String get name => 'Vista semanal';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogTemplateWeeklyView;
 
   @override
-  String get description =>
+  String description(BuildContext context) =>
       'Estructura de 7 días para planificar la semana a mano';
 
   @override
@@ -726,7 +727,16 @@ class PlannerWeeklyColumnsDefinition extends AgendaWidgetDefinition {
     required ValueChanged<String> onConfigChanged,
   }) {
     final config = ElementConfig.fromJsonString(configJson);
-    const days = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
+    final l10n = AppLocalizations.of(context);
+    final days = [
+      l10n.catalogDayMon,
+      l10n.catalogDayTue,
+      l10n.catalogDayWed,
+      l10n.catalogDayThu,
+      l10n.catalogDayFri,
+      l10n.catalogDaySat,
+      l10n.catalogDaySun,
+    ];
 
     return Container(
       decoration: BoxDecoration(
@@ -823,10 +833,10 @@ class PlannerChecklistDefinition extends AgendaWidgetDefinition {
   String get id => 'planner_checklist';
 
   @override
-  String get name => 'Checklist';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogTemplateChecklist;
 
   @override
-  String get description =>
+  String description(BuildContext context) =>
       'Lista con casillas de verificación estéticas para escribir tareas';
 
   @override
@@ -854,6 +864,7 @@ class PlannerChecklistDefinition extends AgendaWidgetDefinition {
     required ValueChanged<String> onConfigChanged,
   }) {
     final config = ElementConfig.fromJsonString(configJson);
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -891,9 +902,9 @@ class PlannerChecklistDefinition extends AgendaWidgetDefinition {
                 ),
               ),
               const SizedBox(width: 8),
-              const Text(
-                'CHECKLIST',
-                style: TextStyle(
+              Text(
+                l10n.catalogChecklistHeader,
+                style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.8,
@@ -947,10 +958,10 @@ class PlannerHabitTrackerDefinition extends AgendaWidgetDefinition {
   String get id => 'planner_habit_tracker';
 
   @override
-  String get name => 'Hábitos';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogTemplateHabits;
 
   @override
-  String get description =>
+  String description(BuildContext context) =>
       'Matriz de seguimiento semanal para colorear con el lápiz';
 
   @override
@@ -978,7 +989,16 @@ class PlannerHabitTrackerDefinition extends AgendaWidgetDefinition {
     required ValueChanged<String> onConfigChanged,
   }) {
     final config = ElementConfig.fromJsonString(configJson);
-    const dayHeaders = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+    final l10n = AppLocalizations.of(context);
+    final dayHeaders = [
+      l10n.catalogHabitsDayMon,
+      l10n.catalogHabitsDayTue,
+      l10n.catalogHabitsDayWed,
+      l10n.catalogHabitsDayThu,
+      l10n.catalogHabitsDayFri,
+      l10n.catalogHabitsDaySat,
+      l10n.catalogHabitsDaySun,
+    ];
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1008,9 +1028,9 @@ class PlannerHabitTrackerDefinition extends AgendaWidgetDefinition {
                 color: Color(0xFFE11D48),
               ),
               const SizedBox(width: 6),
-              const Text(
-                'HÁBITOS DE LA SEMANA',
-                style: TextStyle(
+              Text(
+                l10n.catalogHabitsHeader,
+                style: const TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.6,
@@ -1084,10 +1104,10 @@ class PlannerPrioritiesDefinition extends AgendaWidgetDefinition {
   String get id => 'planner_priorities';
 
   @override
-  String get name => 'Prioridades';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogTemplatePriorities;
 
   @override
-  String get description => 'Estructura destacada para las 3 prioridades clave';
+  String description(BuildContext context) => AppLocalizations.of(context).catalogTemplatePrioritiesDesc;
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -1110,6 +1130,7 @@ class PlannerPrioritiesDefinition extends AgendaWidgetDefinition {
     required ValueChanged<String> onConfigChanged,
   }) {
     final config = ElementConfig.fromJsonString(configJson);
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -1136,7 +1157,7 @@ class PlannerPrioritiesDefinition extends AgendaWidgetDefinition {
               Icon(Icons.star_rounded, size: 16, color: config.borderColor),
               const SizedBox(width: 6),
               Text(
-                'PRIORIDADES',
+                l10n.catalogPrioritiesHeader,
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -1197,10 +1218,10 @@ class PlannerNotesLinedDefinition extends AgendaWidgetDefinition {
   String get id => 'planner_notes_lined';
 
   @override
-  String get name => 'Notas rayadas';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogTemplateLinedNotes;
 
   @override
-  String get description =>
+  String description(BuildContext context) =>
       'Área de notas con renglones para escribir con precisión';
 
   @override
@@ -1258,10 +1279,10 @@ class PlannerNotesGridDefinition extends AgendaWidgetDefinition {
   String get id => 'planner_notes_grid';
 
   @override
-  String get name => 'Notas cuadriculadas';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogTemplateGridNotes;
 
   @override
-  String get description =>
+  String description(BuildContext context) =>
       'Área de notas con papel milimetrado o cuadrícula sutil';
 
   @override
@@ -1344,10 +1365,10 @@ class StickerHeartDefinition extends AgendaWidgetDefinition {
   String get id => 'sticker_heart';
 
   @override
-  String get name => 'Corazón';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogStickerHeart;
 
   @override
-  String get description => 'Icono decorativo de corazón';
+  String description(BuildContext context) => AppLocalizations.of(context).catalogStickerHeartDesc;
 
   @override
   ElementCategory get category => ElementCategory.stickers;
@@ -1391,10 +1412,10 @@ class StickerStarDefinition extends AgendaWidgetDefinition {
   String get id => 'sticker_star';
 
   @override
-  String get name => 'Estrella decorativa';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogStickerStar;
 
   @override
-  String get description => 'Icono decorativo de estrella brillante';
+  String description(BuildContext context) => AppLocalizations.of(context).catalogStickerStarDesc;
 
   @override
   ElementCategory get category => ElementCategory.stickers;
@@ -1435,10 +1456,10 @@ class StickerCoffeeDefinition extends AgendaWidgetDefinition {
   String get id => 'sticker_coffee';
 
   @override
-  String get name => 'Café';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogStickerCoffee;
 
   @override
-  String get description => 'Icono de descanso o café';
+  String description(BuildContext context) => AppLocalizations.of(context).catalogStickerCoffeeDesc;
 
   @override
   ElementCategory get category => ElementCategory.stickers;
@@ -1482,10 +1503,10 @@ class StickerPinDefinition extends AgendaWidgetDefinition {
   String get id => 'sticker_pin';
 
   @override
-  String get name => 'Chincheta';
+  String name(BuildContext context) => AppLocalizations.of(context).catalogStickerPin;
 
   @override
-  String get description => 'Chincheta decorativa para notas y tarjetas';
+  String description(BuildContext context) => AppLocalizations.of(context).catalogStickerPinDesc;
 
   @override
   ElementCategory get category => ElementCategory.stickers;

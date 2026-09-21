@@ -2,6 +2,7 @@
 ///
 /// Only constants referenced in 2+ files are kept here.
 /// All single-use constants live at the top of the file that consumes them.
+library;
 
 /// Responsive grid breakpoint for mobile layout.
 /// Used by: app/app_shell.dart, features/agendas/presentation/pages/home_page.dart

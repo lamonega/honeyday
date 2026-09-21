@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas_controller.dart';
+
 // ──────────────────────────────────────────────
 // Toolbar constants (used only here)
 // ──────────────────────────────────────────────
@@ -34,9 +37,6 @@ const double kPenWidthMax = 12;
 const double kHighlighterWidthMin = 8;
 /// Max highlighter stroke width.
 const double kHighlighterWidthMax = 40;
-
-import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
-import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas_controller.dart';
 
 /// Minimal floating toolbar for ink tools.
 class CanvasFloatingToolbar extends ConsumerWidget {

@@ -2,6 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:honeyday/core/utils/color_utils.dart';
+import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
+import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
+import 'package:honeyday/features/canvas/domain/models/stroke_point.dart';
+import 'package:perfect_freehand/perfect_freehand.dart' hide StrokePoint;
+
 // ──────────────────────────────────────────────
 // Ink painter constants (used only here)
 // ──────────────────────────────────────────────
@@ -12,11 +17,6 @@ const double kPenThinning = 0.6;
 const double kInkSmoothing = 0.5;
 /// Freehand streamline parameter (shared by pen and highlighter).
 const double kInkStreamline = 0.5;
-
-import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
-import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
-import 'package:honeyday/features/canvas/domain/models/stroke_point.dart';
-import 'package:perfect_freehand/perfect_freehand.dart' hide StrokePoint;
 
 /// CustomPainter rendering freehand vector ink strokes using `perfect_freehand`.
 ///

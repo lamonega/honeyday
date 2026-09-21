@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Bottom bar showing page count and action buttons for reading/editing.
 class BottomDetailsBar extends StatelessWidget {
@@ -30,14 +31,14 @@ class BottomDetailsBar extends StatelessWidget {
           const Spacer(),
           _ActionButton(
             icon: Icons.visibility_outlined,
-            tooltip: 'Modo lectura',
+            tooltip: AppLocalizations.of(context).agendaModeRead,
             color: colorScheme.onSurface.withValues(alpha: 0.6),
             onTap: onOpenReading,
           ),
           const SizedBox(width: 4),
           _ActionButton(
             icon: Icons.edit_outlined,
-            tooltip: 'Modo edición',
+            tooltip: AppLocalizations.of(context).agendaModeEdit,
             color: colorScheme.primary,
             onTap: onOpenEdit,
           ),
@@ -63,7 +64,7 @@ class _PageCountBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
-        '$pageCount ${pageCount == 1 ? 'pág' : 'págs'}',
+        AppLocalizations.of(context).agendaPageBadge(pageCount),
         style: TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,

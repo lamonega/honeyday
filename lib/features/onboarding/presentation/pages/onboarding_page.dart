@@ -9,29 +9,29 @@ import 'package:honeyday/l10n/generated/app_localizations.dart';
 // ──────────────────────────────────────────────
 
 /// Active pagination dot width.
-const double kOnboardingActiveDotWidth = 16.0;
+const double kOnboardingActiveDotWidth = 16;
 /// Inactive pagination dot width.
-const double kOnboardingInactiveDotWidth = 8.0;
+const double kOnboardingInactiveDotWidth = 8;
 /// Large spacing value for onboarding layout.
-const double kSpacingLarge = 24.0;
+const double kSpacingLarge = 24;
 /// Medium spacing value for onboarding layout.
-const double kSpacingMedium = 16.0;
+const double kSpacingMedium = 16;
 /// Onboarding step icon size.
-const double kOnboardingIconSize = 72.0;
+const double kOnboardingIconSize = 72;
 /// Padding around onboarding step icons.
-const double kOnboardingStepIconPadding = 32.0;
+const double kOnboardingStepIconPadding = 32;
 /// Horizontal padding for onboarding step content.
-const double kOnboardingStepHorizontalPadding = 32.0;
+const double kOnboardingStepHorizontalPadding = 32;
 /// Font size for onboarding step titles.
-const double kOnboardingTitleFontSize = 28.0;
+const double kOnboardingTitleFontSize = 28;
 /// Font size for onboarding descriptions and button text.
-const double kOnboardingDescriptionFontSize = 16.0;
+const double kOnboardingDescriptionFontSize = 16;
 /// Line height for onboarding description text.
 const double kOnboardingLineHeight = 1.5;
 /// Height of the onboarding action button.
-const double kOnboardingButtonHeight = 52.0;
+const double kOnboardingButtonHeight = 52;
 /// Border radius for the onboarding action button.
-const double kOnboardingButtonBorderRadius = 14.0;
+const double kOnboardingButtonBorderRadius = 14;
 
 /// Tracks whether the user has completed onboarding.
 class OnboardingState {

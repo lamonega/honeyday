@@ -5,6 +5,7 @@ import 'package:honeyday/features/catalog/presentation/widgets/calendar_grid_wid
 import 'package:honeyday/features/catalog/presentation/widgets/journal_block_widget.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/static_design_elements.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/text_box_widget.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 export 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 export 'package:honeyday/features/catalog/domain/element_config.dart';
@@ -85,6 +86,7 @@ abstract final class CatalogRegistry {
     }
 
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Container(
       decoration: BoxDecoration(
         color: colorScheme.errorContainer,
@@ -103,7 +105,7 @@ abstract final class CatalogRegistry {
             ),
             const SizedBox(height: 4),
             Text(
-              'Widget no reconocido: $widgetType',
+              l10n.catalogErrorUnknownWidget(widgetType),
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
