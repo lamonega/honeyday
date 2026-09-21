@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
+import 'package:honeyday/core/constants/app_constants.dart';
 
 /// Sidebar panel displaying the "Catálogo de Elementos" in Edit Mode.
 class ResourceCatalogSidebar extends StatefulWidget {
@@ -20,11 +22,11 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
   bool _isCollapsed = false;
   ElementCategory? _selectedCategory;
 
-  static const _filterTabs = <(String, ElementCategory?)>[
-    ('Todas', null),
-    ('Formas', ElementCategory.shapes),
-    ('Agenda', ElementCategory.planner),
-    ('Stickers', ElementCategory.stickers),
+  static List<(String, ElementCategory?)> _getFilterTabs(BuildContext context) => [
+    (AppLocalizations.of(context).catalogFilterAll, null),
+    (AppLocalizations.of(context).catalogFilterShapes, ElementCategory.shapes),
+    (AppLocalizations.of(context).catalogFilterAgenda, ElementCategory.planner),
+    (AppLocalizations.of(context).catalogFilterStickers, ElementCategory.stickers),
   ];
 
   @override
@@ -34,9 +36,10 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
         ? allDefs.where((d) => d.category != ElementCategory.legacy).toList()
         : allDefs.where((d) => d.category == _selectedCategory).toList();
     final colorScheme = Theme.of(context).colorScheme;
+    final filterTabs = _getFilterTabs(context);
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+      duration: kAnimationDurationNormal,
       curve: Curves.easeInOut,
       width: _isCollapsed ? 52 : widget.width,
       clipBehavior: Clip.hardEdge,
@@ -46,7 +49,7 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
       ),
       child: _isCollapsed
           ? _buildCollapsedRail(colorScheme)
-          : _buildExpandedSidebar(visibleDefs, colorScheme),
+          : _buildExpandedSidebar(visibleDefs, filterTabs, colorScheme),
     );
   }
 
@@ -76,6 +79,7 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
 
   Widget _buildExpandedSidebar(
     List<AgendaWidgetDefinition> visibleDefs,
+    List<(String, ElementCategory?)> filterTabs,
     ColorScheme colorScheme,
   ) {
     return OverflowBox(
@@ -93,7 +97,7 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
                 children: [
                   Expanded(
                     child: Text(
-                      'Elementos',
+                      AppLocalizations.of(context).catalogElementsHeader,
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -116,7 +120,7 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: Row(
-                children: _filterTabs.map((tab) {
+                children: filterTabs.map((tab) {
                   final isSelected = _selectedCategory == tab.$2;
                   return Padding(
                     padding: const EdgeInsets.only(right: 6),

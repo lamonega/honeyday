@@ -3,9 +3,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
+
+// Application version (used only for settings display).
+const String kAppVersion = '0.1.4';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:honeyday/app/app.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -35,18 +39,18 @@ class SettingsPage extends ConsumerWidget {
         .firstOrNull;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Ajustes')),
+      appBar: AppBar(title: Text(AppLocalizations.of(context).settingsTitle)),
       body: ListView(
         children: [
-          _SectionHeader(label: 'General', colorScheme: colorScheme),
+          _SectionHeader(label: AppLocalizations.of(context).settingsGeneral, colorScheme: colorScheme),
           SwitchListTile(
-            title: const Text('Modo oscuro'),
+            title: Text(AppLocalizations.of(context).settingsDarkMode),
             subtitle: Text(
               themeMode == ThemeMode.system
-                  ? 'Automático (sistema)'
+                  ? AppLocalizations.of(context).settingsThemeSystem
                   : themeMode == ThemeMode.dark
-                      ? 'Activado'
-                      : 'Desactivado',
+                      ? AppLocalizations.of(context).settingsThemeOn
+                      : AppLocalizations.of(context).settingsThemeOff,
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
             secondary: const Icon(Icons.dark_mode_outlined),
@@ -59,9 +63,9 @@ class SettingsPage extends ConsumerWidget {
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.palette_outlined),
-            title: const Text('Color de acento'),
+            title: Text(AppLocalizations.of(context).settingsAccentColor),
             subtitle: Text(
-              accentName ?? 'Personalizado',
+              accentName ?? AppLocalizations.of(context).settingsAccentCustom,
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
             trailing: Container(
@@ -78,10 +82,10 @@ class SettingsPage extends ConsumerWidget {
             ),
           ),
           const Divider(height: 1),
-          _SectionHeader(label: 'Acerca de', colorScheme: colorScheme),
+          _SectionHeader(label: AppLocalizations.of(context).settingsAbout, colorScheme: colorScheme),
           ListTile(
             leading: const Icon(Icons.info_outline),
-            title: const Text('Versión'),
+            title: Text(AppLocalizations.of(context).settingsVersion),
             subtitle: Text(
               kAppVersion,
               style: TextStyle(color: colorScheme.onSurfaceVariant),
@@ -89,9 +93,9 @@ class SettingsPage extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.description_outlined),
-            title: const Text('Licencias'),
+            title: Text(AppLocalizations.of(context).settingsLicenses),
             subtitle: Text(
-              'Revisar licencias de código abierto',
+              AppLocalizations.of(context).settingsLicensesSubtitle,
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
             onTap: () =>
@@ -112,7 +116,7 @@ class SettingsPage extends ConsumerWidget {
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Color de acento'),
+        title: Text(AppLocalizations.of(context).settingsAccentColor),
         content: Wrap(
           spacing: 10,
           runSpacing: 10,
@@ -125,7 +129,7 @@ class SettingsPage extends ConsumerWidget {
                 if (context.mounted) Navigator.of(context).pop();
               },
               child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
+                duration: kAnimationDurationNormal,
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(

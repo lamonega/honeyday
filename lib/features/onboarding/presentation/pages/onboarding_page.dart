@@ -1,8 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
+
+// ──────────────────────────────────────────────
+// Onboarding page constants (used only here)
+// ──────────────────────────────────────────────
+
+/// Active pagination dot width.
+const double kOnboardingActiveDotWidth = 16.0;
+/// Inactive pagination dot width.
+const double kOnboardingInactiveDotWidth = 8.0;
+/// Large spacing value for onboarding layout.
+const double kSpacingLarge = 24.0;
+/// Medium spacing value for onboarding layout.
+const double kSpacingMedium = 16.0;
+/// Onboarding step icon size.
+const double kOnboardingIconSize = 72.0;
+/// Padding around onboarding step icons.
+const double kOnboardingStepIconPadding = 32.0;
+/// Horizontal padding for onboarding step content.
+const double kOnboardingStepHorizontalPadding = 32.0;
+/// Font size for onboarding step titles.
+const double kOnboardingTitleFontSize = 28.0;
+/// Font size for onboarding descriptions and button text.
+const double kOnboardingDescriptionFontSize = 16.0;
+/// Line height for onboarding description text.
+const double kOnboardingLineHeight = 1.5;
+/// Height of the onboarding action button.
+const double kOnboardingButtonHeight = 52.0;
+/// Border radius for the onboarding action button.
+const double kOnboardingButtonBorderRadius = 14.0;
 
 /// Tracks whether the user has completed onboarding.
 class OnboardingState {
@@ -48,27 +77,27 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   final _pageController = PageController();
   int _currentPage = 0;
 
-  static const _pages = [
+  static List<_OnboardingStep> _pages(BuildContext context) => [
     _OnboardingStep(
       icon: Icons.auto_stories_rounded,
-      title: 'Organiza tu vida',
-      description: 'Crea agendas personalizadas para cada área de tu vida:\nfinanzas, hábitos, proyectos y más.',
-      color: Color(0xFFF59E0B),
-      bgColor: Color(0xFFFEF3C7),
+      title: AppLocalizations.of(context).onboardingStep1Title,
+      description: AppLocalizations.of(context).onboardingStep1Desc,
+      color: const Color(0xFFF59E0B),
+      bgColor: const Color(0xFFFEF3C7),
     ),
     _OnboardingStep(
       icon: Icons.draw_rounded,
-      title: 'Dibuja libremente',
-      description: 'Escribe a mano, dibuja, resalta y usa herramientas\nde tinta con precisión de presión.',
-      color: Color(0xFF8B5CF6),
-      bgColor: Color(0xFFEDE9FE),
+      title: AppLocalizations.of(context).onboardingStep2Title,
+      description: AppLocalizations.of(context).onboardingStep2Desc,
+      color: const Color(0xFF8B5CF6),
+      bgColor: const Color(0xFFEDE9FE),
     ),
     _OnboardingStep(
       icon: Icons.dashboard_customize_rounded,
-      title: 'Personaliza todo',
-      description: 'Agrega plantillas, stickers, formas y elementos\npara crear la agenda perfecta.',
-      color: Color(0xFF10B981),
-      bgColor: Color(0xFFD1FAE5),
+      title: AppLocalizations.of(context).onboardingStep3Title,
+      description: AppLocalizations.of(context).onboardingStep3Desc,
+      color: const Color(0xFF10B981),
+      bgColor: const Color(0xFFD1FAE5),
     ),
   ];
 
@@ -79,7 +108,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   }
 
   void _next() {
-    if (_currentPage < _pages.length - 1) {
+    if (_currentPage < _pages(context).length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 350),
         curve: Curves.easeInOutCubic,
@@ -109,7 +138,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                 child: TextButton(
                   onPressed: _skip,
                   child: Text(
-                    'Saltar',
+                    AppLocalizations.of(context).onboardingSkip,
                     style: TextStyle(
                       color: colorScheme.onSurface.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w600,
@@ -121,10 +150,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                itemCount: _pages.length,
+                itemCount: _pages(context).length,
                 onPageChanged: (index) => setState(() => _currentPage = index),
                 itemBuilder: (context, index) {
-                  final step = _pages[index];
+                  final step = _pages(context)[index];
                   return _buildStep(step, colorScheme);
                 },
               ),
@@ -133,7 +162,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(_pages.length, (i) {
+                children: List.generate(_pages(context).length, (i) {
                   final isActive = i == _currentPage;
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
@@ -166,9 +195,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   ),
                   onPressed: _next,
                   child: Text(
-                    _currentPage == _pages.length - 1
-                        ? 'Comenzar'
-                        : 'Siguiente',
+                    _currentPage == _pages(context).length - 1
+                        ? AppLocalizations.of(context).onboardingStart
+                        : AppLocalizations.of(context).onboardingNext,
                     style: const TextStyle(
                       fontSize: kOnboardingDescriptionFontSize,
                       fontWeight: FontWeight.bold,

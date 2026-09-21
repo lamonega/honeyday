@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
+// ──────────────────────────────────────────────
+// Ink canvas constants (used only here)
+// ──────────────────────────────────────────────
+
+/// Default pressure when device doesn't report pressure data.
+const double kDefaultPressure = 0.5;
+
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/canvas/domain/models/stroke_point.dart';

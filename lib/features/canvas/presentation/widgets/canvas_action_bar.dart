@@ -1,5 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:honeyday/features/canvas/canvas_constants.dart';
+// ──────────────────────────────────────────────
+// Action bar constants (used only here)
+// ──────────────────────────────────────────────
+
+/// Border radius of the floating action bar.
+const double kActionBarBorderRadius = 24;
+/// Size of the color palette toggle button.
+const double kPaletteButtonSize = 28;
+/// Icon size inside the palette toggle button.
+const double kPaletteToggleIconSize = 14;
+/// Height of divider between action bar buttons.
+const double kActionBarDividerHeight = 16;
+/// Icon size for action bar buttons.
+const double kActionBarIconSize = 18;
+/// Border radius of expanded palette row.
+const double kPaletteRowBorderRadius = 20;
+/// Diameter of individual palette color dots.
+const double kPaletteDotSize = 22;
+/// Check icon size inside selected palette dot.
+const double kPaletteCheckIconSize = 12;
+
 import 'package:honeyday/features/catalog/domain/element_config.dart';
 
 class CanvasActionBar extends StatelessWidget {

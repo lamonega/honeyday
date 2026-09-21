@@ -5,6 +5,10 @@ import 'package:honeyday/core/theme/paper_style.dart';
 
 export 'package:honeyday/core/theme/paper_style.dart';
 
+/// Default page grid/line spacing in points.
+/// Used only in page_surface.dart for paper texture rendering.
+const double kPaperSpacing = 24;
+
 /// CustomPainter rendering Layer 0 paper texture backgrounds.
 ///
 /// What: Draws a creamy paper surface (#FFFDF7) and subtle grid/dot/line guidelines (#CBD5E1 / #E2E8F0).

@@ -1,5 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:honeyday/core/constants/app_constants.dart';
+
+// ──────────────────────────────────────────────
+// Viewer navigator constants (used only here)
+// ──────────────────────────────────────────────
+
+/// Bottom margin for the page navigator bar.
+const double kViewerNavBottomMargin = 16.0;
+/// Horizontal padding inside the navigator bar.
+const double kViewerNavHorizontalPadding = 12.0;
+/// Vertical padding inside the navigator bar.
+const double kViewerNavVerticalPadding = 8.0;
+/// Border radius of the navigator bar container.
+const double kViewerNavBorderRadius = 20.0;
+/// Shadow blur radius for the navigator bar.
+const double kViewerNavShadowBlur = 8.0;
+/// Chevron icon size in the navigator.
+const double kViewerNavChevronIconSize = 22.0;
+/// Margin between pagination dots.
+const double kViewerNavDotMargin = 3.0;
+/// Size of inactive pagination dots.
+const double kViewerNavInactiveDotSize = 5.0;
+/// Width of the divider line.
+const double kViewerNavDividerWidth = 1.0;
+/// Height of the divider line.
+const double kViewerNavDividerHeight = 14.0;
+/// Horizontal margin for the divider.
+const double kViewerNavDividerMargin = 6.0;
+/// Font size for the page counter text.
+const double kViewerNavTextFontSize = 12.0;
 
 class ViewerPageNavigator extends StatelessWidget {
   const ViewerPageNavigator({

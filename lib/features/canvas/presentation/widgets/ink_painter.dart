@@ -2,7 +2,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:honeyday/core/utils/color_utils.dart';
-import 'package:honeyday/features/canvas/canvas_constants.dart';
+// ──────────────────────────────────────────────
+// Ink painter constants (used only here)
+// ──────────────────────────────────────────────
+
+/// Freehand thinning parameter for pen strokes.
+const double kPenThinning = 0.6;
+/// Freehand smoothing parameter (shared by pen and highlighter).
+const double kInkSmoothing = 0.5;
+/// Freehand streamline parameter (shared by pen and highlighter).
+const double kInkStreamline = 0.5;
+
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/canvas/domain/models/stroke_point.dart';

@@ -6,11 +6,28 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:honeyday/core/constants/app_constants.dart';
-import 'package:honeyday/l10n/app_localizations.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/home_controller.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/agenda_card.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/new_agenda_dialog.dart';
+
+// ──────────────────────────────────────────────
+// Home page constants (used only in this file)
+// ──────────────────────────────────────────────
+
+/// Breakpoint for tablet layout in responsive grid.
+const int kBreakpointTablet = 900;
+/// Breakpoint for desktop layout in responsive grid.
+const int kBreakpointDesktop = 1200;
+/// Extra-large spacing for layout padding.
+const double kSpacingExtraLarge = 24.0;
+/// Grid spacing between home cards.
+const double kHomeGridSpacing = 20.0;
+/// Aspect ratio for home agenda cards.
+const double kHomeCardAspectRatio = 0.85;
+/// Initial scale for onboarding-style animation begin value.
+const double kOnboardingScaleBegin = 0.92;
 
 /// Home dashboard displaying "Tus agendas".
 ///
@@ -28,7 +45,7 @@ class HomePage extends ConsumerWidget {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'Honeyday',
+          AppLocalizations.of(context).homeTitle,
           style: GoogleFonts.fraunces(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -56,7 +73,7 @@ class HomePage extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Error al cargar agendas',
+                AppLocalizations.of(context).homeErrorLoading,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 16,
@@ -183,7 +200,7 @@ class HomePage extends ConsumerWidget {
             ),
             const SizedBox(height: 24),
             Text(
-              'Sin agendas',
+              AppLocalizations.of(context).homeEmptyTitle,
               style: GoogleFonts.fraunces(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
@@ -192,7 +209,7 @@ class HomePage extends ConsumerWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              'Toca + para crear una.',
+              AppLocalizations.of(context).homeEmptyBody,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,
@@ -217,7 +234,7 @@ class HomePage extends ConsumerWidget {
 
     if (result == null || !context.mounted) return;
 
-    final title = result['title'] ?? AppLocalizations.of(context).newAgenda;
+    final title = result['title'] ?? AppLocalizations.of(context).agendaNewDefaultTitle;
     final coverStyle = result['coverStyle'] ?? kDefaultCoverStyle;
     final paperStyle = result['paperStyle'] ?? kDefaultPaperStyle;
 
@@ -242,11 +259,11 @@ class HomePage extends ConsumerWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
-          '¿Eliminar agenda?',
+          AppLocalizations.of(context).agendaDeleteTitle,
           style: GoogleFonts.fraunces(fontWeight: FontWeight.bold),
         ),
         content: Text(
-          'Se eliminará "${agenda.title}" y todas sus páginas asociadas.',
+          AppLocalizations.of(context).agendaDeleteContent(agenda.title),
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurface
                 .withValues(alpha: 0.7),
@@ -255,7 +272,7 @@ class HomePage extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -263,7 +280,7 @@ class HomePage extends ConsumerWidget {
               foregroundColor: Theme.of(context).colorScheme.onError,
             ),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Eliminar'),
+            child: Text(AppLocalizations.of(context).commonDelete),
           ),
         ],
       ),

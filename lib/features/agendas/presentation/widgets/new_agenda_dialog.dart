@@ -3,10 +3,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:honeyday/core/utils/color_utils.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
+
+/// Default cover style for new agendas.
+/// Referenced by: new_agenda_dialog.dart (local definition),
+/// features/agendas/presentation/pages/home_page.dart (imported from this file)
+const String kDefaultCoverStyle = 'honey';
 
 /// Modal dialog for creating a new agenda notebook.
 ///
@@ -22,11 +28,12 @@ class NewAgendaDialog extends StatefulWidget {
 
 class _NewAgendaDialogState extends State<NewAgendaDialog>
     with SingleTickerProviderStateMixin {
-  final _titleController = TextEditingController(text: 'Mi Agenda 2026');
+  final _titleController = TextEditingController();
   String _selectedCover = '#D97706';
   String _selectedPaper = kDefaultPaperStyle;
   late final AnimationController _animController;
   late final Animation<double> _scaleAnim;
+  bool _defaultTitleSet = false;
 
   static const _presetColors = <String>[
     '#D97706',
@@ -47,7 +54,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
     _titleController.addListener(() => setState(() {}));
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+            duration: kAnimationDurationNormal,
     );
     _scaleAnim = Tween<double>(begin: 0.92, end: 1).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
@@ -64,10 +71,14 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
 
   @override
   Widget build(BuildContext context) {
+    if (!_defaultTitleSet) {
+      _defaultTitleSet = true;
+      _titleController.text = AppLocalizations.of(context).agendaNewDefaultTitle;
+    }
     final activeColor = hexToColor(_selectedCover);
     final darkColor = darken(activeColor);
     final previewTitle = _titleController.text.trim().isEmpty
-        ? 'Nueva Agenda'
+        ? AppLocalizations.of(context).agendaNewTitle
         : _titleController.text.trim();
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -76,7 +87,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
       child: AlertDialog(
         backgroundColor: colorScheme.surface,
         title: Text(
-          'Nueva Agenda',
+          AppLocalizations.of(context).agendaNewTitle,
           style: GoogleFonts.fraunces(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -105,8 +116,8 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
                   controller: _titleController,
                   autofocus: true,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: const InputDecoration(
-                    hintText: 'Título',
+                  decoration: InputDecoration(
+                    hintText: AppLocalizations.of(context).agendaNewHint,
                     prefixIcon: Icon(Icons.book_rounded),
                   ),
                 ),
@@ -131,7 +142,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancelar'),
+            child: Text(AppLocalizations.of(context).commonCancel),
           ),
           FilledButton(
             style: FilledButton.styleFrom(
@@ -152,7 +163,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
                 'paperStyle': _selectedPaper,
               });
             },
-            child: const Text('Crear'),
+            child: Text(AppLocalizations.of(context).commonCreate),
           ),
         ],
       ),
@@ -303,7 +314,7 @@ class _CoverColorPicker extends StatelessWidget {
             onColorSelected(hex);
           },
           child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
+      duration: kAnimationDurationNormal,
             width: 36,
             height: 36,
             decoration: BoxDecoration(

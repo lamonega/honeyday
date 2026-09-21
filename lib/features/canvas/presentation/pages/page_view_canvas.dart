@@ -2,6 +2,25 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
+// ──────────────────────────────────────────────
+// Page view constants (used only here)
+// ──────────────────────────────────────────────
+
+/// Default page width in points.
+const double kDefaultPageWidth = 800;
+/// Border radius of page container shadow.
+const double kPageBorderRadius = 16;
+/// Shadow opacity for page container.
+const double kPageShadowAlpha = 0.12;
+/// Shadow blur radius for page container.
+const double kPageShadowBlur = 16;
+/// Shadow Y offset for page container.
+const double kPageShadowOffsetY = 6;
+/// Touch slop for gesture detection.
+const double kCanvasTouchSlop = 4;
+/// Toolbar vertical position from top.
+const double kToolbarTopPosition = 16;
+
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';

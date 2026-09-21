@@ -1,5 +1,16 @@
 import 'dart:ui';
 
+// ──────────────────────────────────────────────
+// Snapping constants (used only here)
+// ──────────────────────────────────────────────
+
+/// Magnetic distance threshold for initial snap.
+const double kSnapThreshold = 4;
+/// Dead zone multiplier for snap persistence.
+const double kSnapDeadZoneMultiplier = 2;
+/// Precision threshold for snap guide alignment.
+const double kSnapGuidePrecision = 0.5;
+
 import 'package:flutter/foundation.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
 

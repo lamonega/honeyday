@@ -1,9 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
 
 export 'package:honeyday/core/theme/app_colors.dart';
+
+// ──────────────────────────────────────────────
+// Theme-level constants (used only in theme.dart)
+// ──────────────────────────────────────────────
+
+/// Border radius for cards and large containers.
+const double kBorderRadiusMedium = 12.0;
+/// Border radius for cards and elevated surfaces.
+const double kBorderRadiusLarge = 16.0;
+/// Border radius for dialog surfaces.
+const double kBorderRadiusExtraLarge = 20.0;
+/// Border radius for bottom sheet top corners.
+const double kBorderRadiusBottomSheet = 24.0;
+/// Font size for navigation bar labels.
+const double kNavTextFontSize = 12.0;
+/// Size for navigation bar icons.
+const double kNavIconSize = 24.0;
+/// Horizontal padding inside input fields.
+const double kInputPaddingHorizontal = 16.0;
+/// Vertical padding inside input fields.
+const double kInputPaddingVertical = 14.0;
 
 /// Provides application-wide Material 3 themes with a warm paper & honey aesthetic.
 abstract final class HoneydayTheme {
