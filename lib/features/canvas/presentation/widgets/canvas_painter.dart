@@ -7,7 +7,7 @@ import 'package:honeyday/features/canvas/presentation/canvas/snapping.dart';
 class SnapGuideOverlayPainter extends CustomPainter {
   const SnapGuideOverlayPainter({
     required this.guides,
-    this.guideColor = const AppColors.honeyAmber,
+    this.guideColor = AppColors.honeyAmber,
   });
 
   final List<SnapGuideLine> guides;

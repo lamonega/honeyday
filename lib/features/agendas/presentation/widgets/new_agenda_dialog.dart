@@ -247,7 +247,7 @@ class _LiveCoverPreview extends StatelessWidget {
             bottom: 0,
             right: 0,
             width: 4,
-            child: Container(color: const AppColors.paperEdge),
+            child: Container(color: AppColors.paperEdge),
           ),
           Center(
             child: Padding(

@@ -205,7 +205,7 @@ class _PageEdges extends StatelessWidget {
       child: Container(
         width: 6,
         decoration: BoxDecoration(
-          color: const AppColors.paperEdge,
+          color: AppColors.paperEdge,
           border: Border(
             left: BorderSide(color: Colors.black.withValues(alpha: 0.12)),
           ),

@@ -1,4 +1,4 @@
-import 'dart:ui';
+import 'package:flutter/material.dart';
 
 /// Converts a hex color string to a Flutter [Color].
 ///

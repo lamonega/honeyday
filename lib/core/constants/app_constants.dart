@@ -64,6 +64,8 @@ const double kOnboardingLineHeight = 1.5;
 const double kOnboardingButtonHeight = 52.0;
 const double kOnboardingButtonFontSize = 16.0;
 const double kOnboardingButtonBorderRadius = 14.0;
+const double kOnboardingActiveDotWidth = 24.0;
+const double kOnboardingInactiveDotWidth = 8.0;
 
 /// Viewer page navigator dimensions.
 const double kViewerNavBottomMargin = 16.0;
