@@ -1,0 +1,105 @@
+import 'package:drift/drift.dart';
+import 'package:honeyday/core/database/app_database.dart' hide Agenda, AgendaPage;
+import 'package:honeyday/features/agendas/data/models/agenda_page_dto.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
+import 'package:uuid/uuid.dart';
+
+/// Data Access Object for agenda page operations.
+///
+/// Handles reading, creating, updating, soft-deleting, and reordering pages
+/// within a parent agenda.
+class PageDao {
+  /// Constructs a [PageDao] backed by the given [AppDatabase].
+  const PageDao(this._db);
+
+  final AppDatabase _db;
+  static const _uuid = Uuid();
+
+  /// Watches all non-deleted pages for [agendaId], ordered by page number.
+  Stream<List<AgendaPage>> watchPages(String agendaId) {
+    return (_db.select(_db.pages)
+          ..where(
+            (tbl) =>
+                tbl.agendaId.equals(agendaId) & tbl.isDeleted.equals(false),
+          )
+          ..orderBy([(t) => OrderingTerm.asc(t.pageNumber)]))
+        .watch()
+        .map(
+          (rows) =>
+              rows.map((r) => AgendaPageDto.fromDrift(r).toEntity()).toList(),
+        );
+  }
+
+  /// Creates a new page and atomically increments the parent agenda's page count.
+  Future<AgendaPage> createPage({
+    required String agendaId,
+    required int pageNumber,
+    String backgroundStyle = 'dotted',
+  }) async {
+    final now = DateTime.now().toUtc();
+    final pageId = _uuid.v4();
+
+    return await _db.transaction(() async {
+      final pageCompanion = PagesCompanion.insert(
+        id: pageId,
+        agendaId: agendaId,
+        pageNumber: pageNumber,
+        backgroundStyle: Value(backgroundStyle),
+        createdAt: Value(now),
+        updatedAt: Value(now),
+        isDeleted: const Value(false),
+      );
+
+      await _db.into(_db.pages).insert(pageCompanion);
+
+      await _db.customStatement(
+        'UPDATE agendas SET page_count = page_count + 1, updated_at = ? WHERE id = ?',
+        [now.millisecondsSinceEpoch, agendaId],
+      );
+
+      final created = await (_db.select(
+        _db.pages,
+      )..where((tbl) => tbl.id.equals(pageId))).getSingle();
+      return AgendaPageDto.fromDrift(created).toEntity();
+    });
+  }
+
+  /// Updates the background style of the page identified by [pageId].
+  Future<void> updatePageBackground(
+    String pageId,
+    String backgroundStyle,
+  ) async {
+    await (_db.update(_db.pages)..where((tbl) => tbl.id.equals(pageId))).write(
+      PagesCompanion(
+        backgroundStyle: Value(backgroundStyle),
+        updatedAt: Value(DateTime.now().toUtc()),
+      ),
+    );
+  }
+
+  /// Soft-deletes the page identified by [pageId].
+  Future<void> deletePage(String pageId) async {
+    await (_db.update(_db.pages)..where((tbl) => tbl.id.equals(pageId))).write(
+      PagesCompanion(
+        isDeleted: const Value(true),
+        updatedAt: Value(DateTime.now().toUtc()),
+      ),
+    );
+  }
+
+  /// Reorders pages by assigning sequential page numbers in a transaction.
+  Future<void> reorderPages(List<String> pageIdsInOrder) async {
+    final now = DateTime.now().toUtc();
+    await _db.transaction(() async {
+      await _db.batch((batch) {
+        for (var i = 0; i < pageIdsInOrder.length; i++) {
+          batch.update(
+            _db.pages,
+            PagesCompanion(pageNumber: Value(i + 1), updatedAt: Value(now)),
+            where: (tbl) => tbl.id.equals(pageIdsInOrder[i]),
+          );
+        }
+      });
+    });
+  }
+}

@@ -1,56 +1,20 @@
-import 'dart:math' as math;
-
 import 'package:flutter/gestures.dart' show DragStartBehavior;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/presentation/canvas/snapping.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/canvas_action_bar.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/resize_handles.dart';
-
-// ──────────────────────────────────────────────
-// Transform box constants (used only here)
-// ──────────────────────────────────────────────
-
-/// Horizontal padding around elements for transform handles.
-const double kTransformHMargin = 40;
-/// Top padding above elements for rotation/delete handles.
-const double kTransformTopMargin = 48;
-/// Bottom padding below elements for the action bar.
-const double kTransformBottomMargin = 76;
-/// Radius of resize handle dots.
-const double kResizeHandleRadius = 7;
-/// Fraction of page height above which element is "large".
-const double kLargeElementThreshold = 0.75;
-/// Pixels from page bottom below which action bar repositions.
-const double kNearBottomThreshold = 90;
-/// Action bar offset from top for large elements.
-const double kBarTopOffsetLarge = 12;
-/// Action bar offset from top for elements near bottom.
-const double kBarTopOffsetNearBottom = -44;
-/// Action bar default offset from top.
-const double kBarTopOffsetDefault = 10;
-/// Connector stem height from element top to rotation handle.
-const double kSelectionStemHeight = 20;
-/// Vertical offset of rotation handle above element top.
-const double kRotationHandleTopOffset = 36;
-/// Size of rotation and delete handle circles.
-const double kHandleCircleSize = 24;
-/// Icon size inside rotation and delete handles.
-const double kHandleIconSize = 14;
-/// Border radius of selected element outline.
-const double kSelectionBorderRadius = 12;
-/// Border radius of element content clip.
-const double kContentClipRadius = 10;
-
-typedef OnTransformChanged = void Function(
-  Offset position,
-  Size size,
-  double rotation,
-);
+import 'package:honeyday/features/canvas/presentation/widgets/transform/transform_constants.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/transform/transform_gestures.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/transform/transform_handles.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/transform/transform_state.dart';
 
 /// Interactive container wrapping modular widgets with Canva-like transforms.
+///
+/// Delegates gesture logic to [TransformGestureMixin], selection chrome to
+/// widgets in `transform_handles.dart`, resize corners to [ResizeHandles],
+/// and the floating toolbar to [CanvasActionBar].
 class TransformableBox extends StatefulWidget {
   const TransformableBox({
     required this.child,
@@ -105,30 +69,54 @@ class TransformableBox extends StatefulWidget {
   State<TransformableBox> createState() => _TransformableBoxState();
 }
 
-class _TransformableBoxState extends State<TransformableBox> {
+class _TransformableBoxState extends State<TransformableBox>
+    with TransformGestureMixin {
+  final _transformState = TransformState();
 
-  Offset? _globalCenter;
-  Offset? _dragPosition;
-  bool _showColorPalette = false;
-  SnappingResult? _lastSnapResult;
-  bool _isSnapEnabled = true;
+  // ── TransformGestureMixin overrides ──
 
-  void _updateGlobalCenter() {
-    final renderBox = context.findRenderObject() as RenderBox?;
-    if (renderBox != null) {
-      _globalCenter = renderBox.localToGlobal(
-        Offset(
-          kTransformHMargin + widget.size.width / 2,
-          kTransformTopMargin + widget.size.height / 2,
-        ),
-      );
-    }
-  }
+  @override
+  TransformState get transformState => _transformState;
+
+  @override
+  Offset get currentPosition => widget.position;
+
+  @override
+  Size get currentSize => widget.size;
+
+  @override
+  double get currentRotation => widget.rotation;
+
+  @override
+  double get minWidth => widget.minWidth;
+
+  @override
+  double get minHeight => widget.minHeight;
+
+  @override
+  Size? get pageSize => widget.pageSize;
+
+  @override
+  List<Rect> get siblingRects => widget.siblingRects;
+
+  @override
+  VoidCallback? get onTransformStarted => widget.onTransformStarted;
+
+  @override
+  OnTransformChanged? get onTransformChanged => widget.onTransformChanged;
+
+  @override
+  VoidCallback? get onTransformEnded => widget.onTransformEnded;
+
+  @override
+  ValueChanged<List<SnapGuideLine>>? get onSnapGuidesChanged =>
+      widget.onSnapGuidesChanged;
+
+  // ── Build ──
 
   @override
   Widget build(BuildContext context) {
     final isEdit = widget.canvasMode == CanvasMode.edit;
-    final colorScheme = Theme.of(context).colorScheme;
 
     if (!isEdit) {
       return Positioned(
@@ -141,9 +129,11 @@ class _TransformableBoxState extends State<TransformableBox> {
     }
 
     final pageHeight = widget.pageSize?.height ?? kDefaultPageHeight;
-    final isLarge = widget.size.height > (pageHeight * kLargeElementThreshold);
+    final isLarge =
+        widget.size.height > (pageHeight * kLargeElementThreshold);
     final isNearBottom =
-        (widget.position.dy + widget.size.height) > (pageHeight - kNearBottomThreshold);
+        (widget.position.dy + widget.size.height) >
+        (pageHeight - kNearBottomThreshold);
 
     final double barTop;
     if (isLarge) {
@@ -151,7 +141,8 @@ class _TransformableBoxState extends State<TransformableBox> {
     } else if (isNearBottom) {
       barTop = kTransformTopMargin + kBarTopOffsetNearBottom;
     } else {
-      barTop = kTransformTopMargin + widget.size.height + kBarTopOffsetDefault;
+      barTop =
+          kTransformTopMargin + widget.size.height + kBarTopOffsetDefault;
     }
 
     return Positioned(
@@ -164,6 +155,7 @@ class _TransformableBoxState extends State<TransformableBox> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
+            // Element body with drag gesture
             Positioned(
               left: kTransformHMargin,
               top: kTransformTopMargin,
@@ -173,115 +165,72 @@ class _TransformableBoxState extends State<TransformableBox> {
                 behavior: HitTestBehavior.opaque,
                 dragStartBehavior: DragStartBehavior.down,
                 onTap: widget.onTap,
-                onPanStart: _handleBodyPanStart,
-                onPanUpdate: _handleBodyPanUpdate,
-                onPanEnd: _handleBodyPanEnd,
-                onPanCancel: _handleBodyPanEnd,
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: widget.isSelected
-                          ? colorScheme.primary
-                          : colorScheme.primary.withValues(alpha: 0.5),
-                      width: 2,
-                    ),
-                    borderRadius: BorderRadius.circular(kSelectionBorderRadius),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(kContentClipRadius),
-                    child: widget.child,
-                  ),
+                onPanStart: handleBodyPanStart,
+                onPanUpdate: handleBodyPanUpdate,
+                onPanEnd: handleBodyPanEnd,
+                onPanCancel: handleBodyPanEnd,
+                child: SelectionOutline(
+                  isSelected: widget.isSelected,
+                  child: widget.child,
                 ),
               ),
             ),
 
             if (widget.isSelected) ...[
+              // Stem + rotation handle
               Positioned(
                 left: kTransformHMargin + widget.size.width / 2 - 1,
                 top: kTransformTopMargin - kSelectionStemHeight,
-                width: 2,
-                height: kSelectionStemHeight,
-                child: Container(color: colorScheme.primary),
+                child: const SelectionStem(),
               ),
               Positioned(
-                left: kTransformHMargin + widget.size.width / 2 - kHandleCircleSize / 2,
+                left: kTransformHMargin +
+                    widget.size.width / 2 -
+                    kHandleCircleSize / 2,
                 top: kTransformTopMargin - kRotationHandleTopOffset,
-                width: kHandleCircleSize,
-                height: kHandleCircleSize,
-                child: GestureDetector(
+                child: RotationHandle(
                   onPanStart: (_) {
-                    _updateGlobalCenter();
+                    updateGlobalCenter(context.findRenderObject() as RenderBox?);
                     widget.onTransformStarted?.call();
                   },
-                  onPanUpdate: _handleRotationPanUpdate,
+                  onPanUpdate: handleRotationPanUpdate,
                   onPanEnd: (_) => widget.onTransformEnded?.call(),
                   onPanCancel: () => widget.onTransformEnded?.call(),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: colorScheme.surface,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: colorScheme.primary, width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.refresh_rounded,
-                      size: kHandleIconSize,
-                      color: colorScheme.primary,
-                    ),
-                  ),
                 ),
               ),
+
+              // Delete handle
               Positioned(
-                left: kTransformHMargin + widget.size.width - kHandleCircleSize / 2,
+                left: kTransformHMargin +
+                    widget.size.width -
+                    kHandleCircleSize / 2,
                 top: kTransformTopMargin - kHandleCircleSize + 6,
-                width: kHandleCircleSize,
-                height: kHandleCircleSize,
-                child: GestureDetector(
-                  onTap: widget.onDelete,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: colorScheme.error,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: kHandleIconSize,
-                      color: colorScheme.onError,
-                    ),
-                  ),
-                ),
+                child: DeleteHandle(onTap: widget.onDelete),
               ),
+
+              // Corner resize handles
               Positioned(
                 left: 0,
                 top: 0,
                 width: widget.size.width + kTransformHMargin * 2,
-                height: widget.size.height + kTransformTopMargin + kTransformBottomMargin,
+                height: widget.size.height +
+                    kTransformTopMargin +
+                    kTransformBottomMargin,
                 child: ResizeHandles(
                   hMargin: kTransformHMargin,
                   topMargin: kTransformTopMargin,
                   size: widget.size,
                   handleRadius: kResizeHandleRadius,
-                  onResizeNW: _handleResizeNW,
-                  onResizeNE: _handleResizeNE,
-                  onResizeSW: _handleResizeSW,
-                  onResizeSE: _handleResizeSE,
+                  onResizeNW: handleResizeNW,
+                  onResizeNE: handleResizeNE,
+                  onResizeSW: handleResizeSW,
+                  onResizeSE: handleResizeSE,
                   onResizeStarted: widget.onTransformStarted,
                   onResizeEnded: widget.onTransformEnded,
                 ),
               ),
+
+              // Floating action bar
               Positioned(
                 left: 0,
                 right: 0,
@@ -290,9 +239,11 @@ class _TransformableBoxState extends State<TransformableBox> {
                   child: Material(
                     color: Colors.transparent,
                     child: CanvasActionBar(
-                      showColorPalette: _showColorPalette,
+                      showColorPalette: _transformState.showColorPalette,
                       onTogglePalette: () {
-                        setState(() => _showColorPalette = !_showColorPalette);
+                        setState(() =>
+                            _transformState.showColorPalette =
+                                !_transformState.showColorPalette);
                       },
                       currentColor: widget.currentColor,
                       onColorChanged: widget.onColorChanged,
@@ -309,141 +260,6 @@ class _TransformableBoxState extends State<TransformableBox> {
           ],
         ),
       ),
-    );
-  }
-
-  void _handleBodyPanStart(DragStartDetails details) {
-    _dragPosition = widget.position;
-    _isSnapEnabled =
-        !HardwareKeyboard.instance.isControlPressed &&
-        !HardwareKeyboard.instance.isMetaPressed;
-    widget.onTransformStarted?.call();
-  }
-
-  void _handleBodyPanUpdate(DragUpdateDetails details) {
-    var delta = details.delta;
-    if (widget.rotation != 0) {
-      final cosTheta = math.cos(widget.rotation);
-      final sinTheta = math.sin(widget.rotation);
-      delta = Offset(
-        delta.dx * cosTheta - delta.dy * sinTheta,
-        delta.dx * sinTheta + delta.dy * cosTheta,
-      );
-    }
-
-    _dragPosition = (_dragPosition ?? widget.position) + delta;
-    final rawCandidate = _dragPosition!;
-
-    if (widget.pageSize != null && _isSnapEnabled) {
-      final snap = CanvasSnapping.calculateSnap(
-        candidateRect: Rect.fromLTWH(
-          rawCandidate.dx,
-          rawCandidate.dy,
-          widget.size.width,
-          widget.size.height,
-        ),
-        pageSize: widget.pageSize!,
-        siblingRects: widget.siblingRects,
-        isCurrentlySnapped: _lastSnapResult?.guides.isNotEmpty == true,
-      );
-      _lastSnapResult = snap.guides.isNotEmpty ? snap : null;
-      widget.onTransformChanged?.call(
-        snap.snappedPosition,
-        widget.size,
-        widget.rotation,
-      );
-      widget.onSnapGuidesChanged?.call(snap.guides);
-    } else {
-      _lastSnapResult = null;
-      widget.onTransformChanged?.call(
-        rawCandidate,
-        widget.size,
-        widget.rotation,
-      );
-      widget.onSnapGuidesChanged?.call(const []);
-    }
-  }
-
-  void _handleBodyPanEnd([dynamic _]) {
-    _dragPosition = null;
-    _lastSnapResult = null;
-    widget.onSnapGuidesChanged?.call(const []);
-    widget.onTransformEnded?.call();
-  }
-
-  void _handleRotationPanUpdate(DragUpdateDetails details) {
-    if (_globalCenter == null) return;
-    final dx = details.globalPosition.dx - _globalCenter!.dx;
-    final dy = details.globalPosition.dy - _globalCenter!.dy;
-    final angle = math.atan2(dy, dx) + (math.pi / 2);
-    widget.onTransformChanged?.call(widget.position, widget.size, angle);
-  }
-
-  void _handleResizeSE(DragUpdateDetails details) {
-    final newWidth = math.max(
-      widget.minWidth,
-      widget.size.width + details.delta.dx,
-    );
-    final newHeight = math.max(
-      widget.minHeight,
-      widget.size.height + details.delta.dy,
-    );
-    widget.onTransformChanged?.call(
-      widget.position,
-      Size(newWidth, newHeight),
-      widget.rotation,
-    );
-  }
-
-  void _handleResizeSW(DragUpdateDetails details) {
-    final newWidth = math.max(
-      widget.minWidth,
-      widget.size.width - details.delta.dx,
-    );
-    final newHeight = math.max(
-      widget.minHeight,
-      widget.size.height + details.delta.dy,
-    );
-    final deltaX = widget.size.width - newWidth;
-    widget.onTransformChanged?.call(
-      widget.position + Offset(deltaX, 0),
-      Size(newWidth, newHeight),
-      widget.rotation,
-    );
-  }
-
-  void _handleResizeNE(DragUpdateDetails details) {
-    final newWidth = math.max(
-      widget.minWidth,
-      widget.size.width + details.delta.dx,
-    );
-    final newHeight = math.max(
-      widget.minHeight,
-      widget.size.height - details.delta.dy,
-    );
-    final deltaY = widget.size.height - newHeight;
-    widget.onTransformChanged?.call(
-      widget.position + Offset(0, deltaY),
-      Size(newWidth, newHeight),
-      widget.rotation,
-    );
-  }
-
-  void _handleResizeNW(DragUpdateDetails details) {
-    final newWidth = math.max(
-      widget.minWidth,
-      widget.size.width - details.delta.dx,
-    );
-    final newHeight = math.max(
-      widget.minHeight,
-      widget.size.height - details.delta.dy,
-    );
-    final deltaX = widget.size.width - newWidth;
-    final deltaY = widget.size.height - newHeight;
-    widget.onTransformChanged?.call(
-      widget.position + Offset(deltaX, deltaY),
-      Size(newWidth, newHeight),
-      widget.rotation,
     );
   }
 }

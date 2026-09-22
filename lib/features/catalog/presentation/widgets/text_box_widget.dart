@@ -1,106 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/catalog_widget_mixin.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/text_box/text_box_color_picker.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/text_box/text_box_config.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/text_box/text_box_toolbar.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
-enum TextBoxColor {
-  honey(Color(0xFFFEF3C7)),
-  rose(Color(0xFFFFE4E6)),
-  sage(Color(0xFFDCFCE7)),
-  transparent(Colors.transparent);
-
-  TextBoxColor(this.color);
-
-  final Color color;
-
-  /// Localized name for the color preset.
-  String localizedLabel(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    switch (this) {
-      case TextBoxColor.honey:
-        return l10n.catalogColorHoney;
-      case TextBoxColor.rose:
-        return l10n.catalogColorPink;
-      case TextBoxColor.sage:
-        return l10n.catalogColorSage;
-      case TextBoxColor.transparent:
-        return l10n.catalogColorTransparent;
-    }
-  }
-
-  static TextBoxColor fromString(String? val) {
-    return TextBoxColor.values.firstWhere(
-      (e) => e.name == val?.toLowerCase(),
-      orElse: () => TextBoxColor.honey,
-    );
-  }
-}
-
-@immutable
-class TextBoxConfig {
-  const TextBoxConfig({
-    required this.text,
-    required this.color,
-    required this.fontSize,
-  });
-
-  factory TextBoxConfig.fromJsonString(String rawJson) {
-    if (rawJson.trim().isEmpty) {
-      return TextBoxConfig.defaultConfig();
-    }
-    try {
-      final dynamic decoded = jsonDecode(rawJson);
-      if (decoded is Map<String, dynamic>) {
-        final text = decoded['text']?.toString() ?? ''; // Internal default; build() uses l10n
-        final color = TextBoxColor.fromString(decoded['color']?.toString());
-        final rawSize = decoded['fontSize'];
-        final fontSize = (rawSize is num) ? rawSize.toDouble() : 14.0;
-
-        return TextBoxConfig(
-          text: text,
-          color: color,
-          fontSize: fontSize.clamp(10.0, 24.0),
-        );
-      }
-    } on Object catch (_) {}
-    return TextBoxConfig.defaultConfig();
-  }
-
-  factory TextBoxConfig.defaultConfig() {
-    // Internal default config data (editable by user via JSON). Build() uses localized strings.
-    return const TextBoxConfig(
-      text: '',
-      color: TextBoxColor.honey,
-      fontSize: 14.0,
-    );
-  }
-
-  final String text;
-  final TextBoxColor color;
-  final double fontSize;
-
-  TextBoxConfig copyWith({
-    String? text,
-    TextBoxColor? color,
-    double? fontSize,
-  }) {
-    return TextBoxConfig(
-      text: text ?? this.text,
-      color: color ?? this.color,
-      fontSize: fontSize ?? this.fontSize,
-    );
-  }
-
-  String toJsonString() {
-    return jsonEncode({
-      'text': text,
-      'color': color.name,
-      'fontSize': fontSize,
-    });
-  }
-}
-
+/// [AgendaWidgetDefinition] for the text-box widget.
+///
+/// Registers the widget metadata and delegates rendering to [TextBoxWidget].
 class TextBoxDefinition extends AgendaWidgetDefinition {
   const TextBoxDefinition();
 
@@ -137,6 +45,13 @@ class TextBoxDefinition extends AgendaWidgetDefinition {
   }
 }
 
+/// A rich-text sticky-note widget with configurable background colour
+/// and font size.
+///
+/// The widget is composed of three extracted sub-components:
+/// - [TextBoxColorPicker] – colour preset selector.
+/// - [TextBoxToolbar] – font-size control.
+/// - A text editing area that adapts to interactive / read-only modes.
 class TextBoxWidget extends StatefulWidget {
   const TextBoxWidget({
     required this.elementId,
@@ -158,19 +73,26 @@ class TextBoxWidget extends StatefulWidget {
 class _TextBoxWidgetState extends State<TextBoxWidget> {
   static const List<double> _fontSizes = [12.0, 14.0, 17.0, 21.0];
 
-  late TextBoxConfig _config;
+  late CatalogConfigHelper<TextBoxConfig> _configHelper;
+
+  TextBoxConfig get _config => _configHelper.config;
 
   @override
   void initState() {
     super.initState();
-    _config = TextBoxConfig.fromJsonString(widget.configJson);
+    _configHelper = CatalogConfigHelper<TextBoxConfig>(
+      parseConfig: TextBoxConfig.fromJsonString,
+      configToJson: (c) => c.toJsonString(),
+      onConfigChanged: widget.onConfigChanged,
+      initialJson: widget.configJson,
+    );
   }
 
   @override
   void didUpdateWidget(TextBoxWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.configJson != widget.configJson) {
-      _config = TextBoxConfig.fromJsonString(widget.configJson);
+      _configHelper.updateFromJson(widget.configJson);
     }
   }
 
@@ -179,9 +101,8 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
 
     final newConfig = _config.copyWith(color: newColor);
     setState(() {
-      _config = newConfig;
+      _configHelper.updateConfig(newConfig);
     });
-    widget.onConfigChanged(newConfig.toJsonString());
   }
 
   void _cycleFontSize() {
@@ -193,9 +114,8 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
 
     final newConfig = _config.copyWith(fontSize: nextSize);
     setState(() {
-      _config = newConfig;
+      _configHelper.updateConfig(newConfig);
     });
-    widget.onConfigChanged(newConfig.toJsonString());
   }
 
   void _updateText(String val) {
@@ -203,9 +123,8 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
 
     final newConfig = _config.copyWith(text: val);
     setState(() {
-      _config = newConfig;
+      _configHelper.updateConfig(newConfig);
     });
-    widget.onConfigChanged(newConfig.toJsonString());
   }
 
   @override
@@ -244,74 +163,16 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
           if (widget.isInteractive) ...[
             Row(
               children: [
-                ...TextBoxColor.values.map((c) {
-                  final isSelected = c == _config.color;
-                  return Tooltip(
-                    message: c.localizedLabel(context),
-                    child: GestureDetector(
-                      onTap: () => _setColor(c),
-                      child: Container(
-                        width: 18,
-                        height: 18,
-                        margin: const EdgeInsets.only(right: 6),
-                        decoration: BoxDecoration(
-                          color: c.color == Colors.transparent
-                              ? colorScheme.surface
-                              : c.color,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isSelected
-                                ? colorScheme.primary
-                                : colorScheme.outline,
-                            width: isSelected ? 2 : 1,
-                          ),
-                        ),
-                        child: c == TextBoxColor.transparent
-                            ? Center(
-                                child: Icon(
-                                  Icons.block_rounded,
-                                  size: 10,
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              )
-                            : null,
-                      ),
-                    ),
-                  );
-                }),
+                TextBoxColorPicker(
+                  selectedColor: _config.color,
+                  isInteractive: widget.isInteractive,
+                  onColorSelected: _setColor,
+                ),
                 const Spacer(),
-                InkWell(
-                  onTap: _cycleFontSize,
-                  borderRadius: BorderRadius.circular(6),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.format_size_rounded,
-                          size: 13,
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          '${_config.fontSize.toInt()}pt',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                TextBoxToolbar(
+                  fontSize: _config.fontSize,
+                  isInteractive: widget.isInteractive,
+                  onCycleFontSize: _cycleFontSize,
                 ),
               ],
             ),

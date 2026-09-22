@@ -58,10 +58,10 @@ final Provider<AgendaViewerController> agendaViewerControllerProvider =
 ///
 /// Encapsulates page management, element lifecycle, and vector stroke synchronization.
 class AgendaViewerController {
-  /// Constructs an [AgendaViewerController] using the provided [AgendaRepository].
+  /// Constructs an [AgendaViewerController] using the provided [FullAgendaRepository].
   const AgendaViewerController(this._repository);
 
-  final AgendaRepository _repository;
+  final FullAgendaRepository _repository;
   static const _uuid = Uuid();
 
   /// Adds a new page to the given [agendaId].

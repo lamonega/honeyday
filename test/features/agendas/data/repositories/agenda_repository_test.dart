@@ -4,15 +4,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/core/database/app_database.dart'
     hide Agenda, AgendaPage;
 import 'package:honeyday/features/agendas/data/repositories/drift_agenda_repository.dart';
-import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.dart';
-import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
+import 'package:honeyday/features/agendas/domain/repositories/repository_interfaces.dart';
+import 'package:honeyday/features/canvas/domain/ink_tool.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/canvas/domain/models/stroke_point.dart';
 
 void main() {
   late AppDatabase db;
-  late AgendaRepository repository;
+  late FullAgendaRepository repository;
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());

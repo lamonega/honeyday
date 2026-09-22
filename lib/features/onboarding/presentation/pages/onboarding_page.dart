@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:honeyday/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 // ──────────────────────────────────────────────
@@ -32,34 +33,6 @@ const double kOnboardingLineHeight = 1.5;
 const double kOnboardingButtonHeight = 52;
 /// Border radius for the onboarding action button.
 const double kOnboardingButtonBorderRadius = 14;
-
-/// Tracks whether the user has completed onboarding.
-class OnboardingState {
-  /// Whether onboarding has been completed.
-  const OnboardingState({this.completed = false});
-
-  /// Whether onboarding has been completed.
-  final bool completed;
-
-  OnboardingState copyWith({bool? completed}) {
-    return OnboardingState(completed: completed ?? this.completed);
-  }
-}
-
-/// Notifier for onboarding state using Riverpod's Notifier.
-class OnboardingNotifier extends Notifier<OnboardingState> {
-  @override
-  OnboardingState build() => const OnboardingState();
-
-  /// Marks onboarding as completed.
-  void complete() => state = state.copyWith(completed: true);
-}
-
-/// Provider for onboarding state.
-final onboardingProvider =
-    NotifierProvider<OnboardingNotifier, OnboardingState>(
-      OnboardingNotifier.new,
-    );
 
 /// Onboarding screen shown on first launch.
 ///

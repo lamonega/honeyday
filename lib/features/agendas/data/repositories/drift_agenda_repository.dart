@@ -1,315 +1,106 @@
-import 'dart:ui';
-
-import 'package:drift/drift.dart';
-import 'package:honeyday/core/database/app_database.dart'
-    hide Agenda, AgendaPage;
-import 'package:honeyday/features/agendas/data/models/agenda_dto.dart';
-import 'package:honeyday/features/agendas/data/models/agenda_page_dto.dart';
+import 'package:honeyday/core/database/app_database.dart' hide Agenda, AgendaPage;
+import 'package:honeyday/features/agendas/data/repositories/agenda_dao.dart';
+import 'package:honeyday/features/agendas/data/repositories/canvas_element_dao.dart';
+import 'package:honeyday/features/agendas/data/repositories/page_dao.dart';
+import 'package:honeyday/features/agendas/data/repositories/stroke_dao.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
-import 'package:uuid/uuid.dart';
 
-/// Drift SQLite implementation of [AgendaRepository].
+/// Drift SQLite implementation of [FullAgendaRepository].
 ///
-/// Encapsulates all relational queries, transactions, and companion operations.
-class DriftAgendaRepository implements AgendaRepository {
+/// Delegates all operations to the corresponding DAO classes,
+/// each of which encapsulates the relational queries and transactions
+/// for a specific domain concept.
+class DriftAgendaRepository implements FullAgendaRepository {
   /// Constructs a [DriftAgendaRepository] using the provided [AppDatabase].
-  const DriftAgendaRepository(this._db);
+  DriftAgendaRepository(AppDatabase db)
+      : _agendaDao = AgendaDao(db),
+        _pageDao = PageDao(db),
+        _canvasElementDao = CanvasElementDao(db),
+        _strokeDao = StrokeDao(db);
 
-  final AppDatabase _db;
-  static const _uuid = Uuid();
-
-  @override
-  Stream<List<Agenda>> watchAgendas() {
-    return (_db.select(_db.agendas)
-          ..where((tbl) => tbl.isDeleted.equals(false))
-          ..orderBy([
-            (t) =>
-                OrderingTerm(expression: t.updatedAt, mode: OrderingMode.desc),
-          ]))
-        .watch()
-        .map(
-          (rows) => rows.map((r) => AgendaDto.fromDrift(r).toEntity()).toList(),
-        );
-  }
+  final AgendaDao _agendaDao;
+  final PageDao _pageDao;
+  final CanvasElementDao _canvasElementDao;
+  final StrokeDao _strokeDao;
 
   @override
-  Future<Agenda?> getAgenda(String id) async {
-    final row =
-        await (_db.select(_db.agendas)
-              ..where((tbl) => tbl.id.equals(id) & tbl.isDeleted.equals(false)))
-            .getSingleOrNull();
-    return row == null ? null : AgendaDto.fromDrift(row).toEntity();
-  }
+  Stream<List<Agenda>> watchAgendas() => _agendaDao.watchAgendas();
+
+  @override
+  Future<Agenda?> getAgenda(String id) => _agendaDao.getAgenda(id);
 
   @override
   Future<Agenda> createAgenda({
     required String title,
     String coverStyle = 'honey',
-  }) async {
-    final now = DateTime.now().toUtc();
-    final agendaId = _uuid.v4();
-    final pageId = _uuid.v4();
-
-    return await _db.transaction(() async {
-      final agendaCompanion = AgendasCompanion.insert(
-        id: agendaId,
-        title: title,
-        coverStyle: Value(coverStyle),
-        pageCount: const Value(1),
-        createdAt: Value(now),
-        updatedAt: Value(now),
-        isDeleted: const Value(false),
-      );
-
-      await _db.into(_db.agendas).insert(agendaCompanion);
-
-      final pageCompanion = PagesCompanion.insert(
-        id: pageId,
-        agendaId: agendaId,
-        pageNumber: 1,
-        backgroundStyle: const Value('dotted'),
-        createdAt: Value(now),
-        updatedAt: Value(now),
-        isDeleted: const Value(false),
-      );
-
-      await _db.into(_db.pages).insert(pageCompanion);
-
-      final created = await (_db.select(
-        _db.agendas,
-      )..where((tbl) => tbl.id.equals(agendaId))).getSingle();
-      return AgendaDto.fromDrift(created).toEntity();
-    });
-  }
+  }) =>
+      _agendaDao.createAgenda(title: title, coverStyle: coverStyle);
 
   @override
-  Future<void> updateAgendaTitle(String id, String newTitle) async {
-    await (_db.update(_db.agendas)..where((tbl) => tbl.id.equals(id))).write(
-      AgendasCompanion(
-        title: Value(newTitle),
-        updatedAt: Value(DateTime.now().toUtc()),
-      ),
-    );
-  }
+  Future<void> updateAgendaTitle(String id, String newTitle) =>
+      _agendaDao.updateAgendaTitle(id, newTitle);
 
   @override
-  Future<void> deleteAgenda(String id) async {
-    await (_db.update(_db.agendas)..where((tbl) => tbl.id.equals(id))).write(
-      AgendasCompanion(
-        isDeleted: const Value(true),
-        updatedAt: Value(DateTime.now().toUtc()),
-      ),
-    );
-  }
+  Future<void> deleteAgenda(String id) => _agendaDao.deleteAgenda(id);
 
   @override
-  Stream<List<AgendaPage>> watchPages(String agendaId) {
-    return (_db.select(_db.pages)
-          ..where(
-            (tbl) =>
-                tbl.agendaId.equals(agendaId) & tbl.isDeleted.equals(false),
-          )
-          ..orderBy([(t) => OrderingTerm.asc(t.pageNumber)]))
-        .watch()
-        .map(
-          (rows) =>
-              rows.map((r) => AgendaPageDto.fromDrift(r).toEntity()).toList(),
-        );
-  }
+  Stream<List<AgendaPage>> watchPages(String agendaId) =>
+      _pageDao.watchPages(agendaId);
 
   @override
   Future<AgendaPage> createPage({
     required String agendaId,
     required int pageNumber,
     String backgroundStyle = 'dotted',
-  }) async {
-    final now = DateTime.now().toUtc();
-    final pageId = _uuid.v4();
-
-    return await _db.transaction(() async {
-      final pageCompanion = PagesCompanion.insert(
-        id: pageId,
+  }) =>
+      _pageDao.createPage(
         agendaId: agendaId,
         pageNumber: pageNumber,
-        backgroundStyle: Value(backgroundStyle),
-        createdAt: Value(now),
-        updatedAt: Value(now),
-        isDeleted: const Value(false),
+        backgroundStyle: backgroundStyle,
       );
 
-      await _db.into(_db.pages).insert(pageCompanion);
-
-      // Atomic increment: avoids an extra SELECT
-      await _db.customStatement(
-        'UPDATE agendas SET page_count = page_count + 1, updated_at = ? WHERE id = ?',
-        [now.millisecondsSinceEpoch, agendaId],
-      );
-
-      final created = await (_db.select(
-        _db.pages,
-      )..where((tbl) => tbl.id.equals(pageId))).getSingle();
-      return AgendaPageDto.fromDrift(created).toEntity();
-    });
-  }
+  @override
+  Future<void> updatePageBackground(String pageId, String backgroundStyle) =>
+      _pageDao.updatePageBackground(pageId, backgroundStyle);
 
   @override
-  Future<void> updatePageBackground(
-    String pageId,
-    String backgroundStyle,
-  ) async {
-    await (_db.update(_db.pages)..where((tbl) => tbl.id.equals(pageId))).write(
-      PagesCompanion(
-        backgroundStyle: Value(backgroundStyle),
-        updatedAt: Value(DateTime.now().toUtc()),
-      ),
-    );
-  }
+  Future<void> deletePage(String pageId) => _pageDao.deletePage(pageId);
 
   @override
-  Future<void> deletePage(String pageId) async {
-    await (_db.update(_db.pages)..where((tbl) => tbl.id.equals(pageId))).write(
-      PagesCompanion(
-        isDeleted: const Value(true),
-        updatedAt: Value(DateTime.now().toUtc()),
-      ),
-    );
-  }
+  Future<void> reorderPages(List<String> pageIdsInOrder) =>
+      _pageDao.reorderPages(pageIdsInOrder);
 
   @override
-  Future<void> reorderPages(List<String> pageIdsInOrder) async {
-    final now = DateTime.now().toUtc();
-    await _db.transaction(() async {
-      await _db.batch((batch) {
-        for (var i = 0; i < pageIdsInOrder.length; i++) {
-          batch.update(
-            _db.pages,
-            PagesCompanion(pageNumber: Value(i + 1), updatedAt: Value(now)),
-            where: (tbl) => tbl.id.equals(pageIdsInOrder[i]),
-          );
-        }
-      });
-    });
-  }
+  Stream<List<CanvasWidgetData>> watchCanvasElements(String pageId) =>
+      _canvasElementDao.watchCanvasElements(pageId);
 
   @override
-  Stream<List<CanvasWidgetData>> watchCanvasElements(String pageId) {
-    return (_db.select(_db.canvasElements)
-          ..where(
-            (tbl) => tbl.pageId.equals(pageId) & tbl.isDeleted.equals(false),
-          )
-          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
-        .watch()
-        .map(
-          (rows) => rows
-              .map(
-                (e) => CanvasWidgetData(
-                  id: e.id,
-                  pageId: e.pageId,
-                  widgetType: e.widgetType,
-                  position: Offset(e.posX, e.posY),
-                  size: Size(e.width, e.height),
-                  rotation: e.rotation,
-                  configJson: e.configJson,
-                ),
-              )
-              .toList(),
-        );
-  }
+  Future<void> upsertCanvasElement(CanvasWidgetData element) =>
+      _canvasElementDao.upsertCanvasElement(element);
 
   @override
-  Future<void> upsertCanvasElement(CanvasWidgetData element) async {
-    final companion = CanvasElementsCompanion(
-      id: Value(element.id),
-      pageId: Value(element.pageId),
-      widgetType: Value(element.widgetType),
-      posX: Value(element.position.dx),
-      posY: Value(element.position.dy),
-      width: Value(element.size.width),
-      height: Value(element.size.height),
-      rotation: Value(element.rotation),
-      configJson: Value(element.configJson),
-      updatedAt: Value(DateTime.now().toUtc()),
-    );
-    await _db.into(_db.canvasElements).insertOnConflictUpdate(companion);
-  }
+  Future<void> deleteCanvasElement(String id) =>
+      _canvasElementDao.deleteCanvasElement(id);
 
   @override
-  Future<void> deleteCanvasElement(String id) async {
-    await (_db.update(
-      _db.canvasElements,
-    )..where((tbl) => tbl.id.equals(id))).write(
-      CanvasElementsCompanion(
-        isDeleted: const Value(true),
-        updatedAt: Value(DateTime.now().toUtc()),
-      ),
-    );
-  }
+  Stream<List<InkStroke>> watchStrokes(String pageId) =>
+      _strokeDao.watchStrokes(pageId);
 
   @override
-  Stream<List<InkStroke>> watchStrokes(String pageId) {
-    return (_db.select(_db.strokes)
-          ..where(
-            (tbl) => tbl.pageId.equals(pageId) & tbl.isDeleted.equals(false),
-          )
-          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
-        .watch()
-        .map(
-          (rows) => rows
-              .map(
-                (s) => InkStroke.fromDb(
-                  id: s.id,
-                  pageId: s.pageId,
-                  brushType: s.brushType,
-                  colorHex: s.colorHex,
-                  strokeWidth: s.strokeWidth,
-                  pointsJson: s.pointsJson,
-                  createdAt: s.createdAt,
-                ),
-              )
-              .toList(),
-        );
-  }
-
-  StrokesCompanion _strokeToCompanion(InkStroke stroke) {
-    return StrokesCompanion.insert(
-      id: stroke.id,
-      pageId: stroke.pageId,
-      brushType: Value(stroke.tool.name),
-      colorHex: Value(stroke.toHexColor()),
-      strokeWidth: Value(stroke.strokeWidth),
-      pointsJson: Value(stroke.toJsonPoints()),
-      createdAt: Value(stroke.createdAt),
-      updatedAt: Value(DateTime.now().toUtc()),
-    );
-  }
+  Future<void> insertStroke(InkStroke stroke) =>
+      _strokeDao.insertStroke(stroke);
 
   @override
-  Future<void> insertStroke(InkStroke stroke) async {
-    await _db.into(_db.strokes).insert(_strokeToCompanion(stroke));
-  }
+  Future<void> insertStrokesBatch(List<InkStroke> strokes) =>
+      _strokeDao.insertStrokesBatch(strokes);
 
   @override
-  Future<void> insertStrokesBatch(List<InkStroke> strokes) async {
-    await _db.transaction(() async {
-      await _db.batch((batch) {
-        batch.insertAll(_db.strokes, strokes.map(_strokeToCompanion).toList());
-      });
-    });
-  }
+  Future<void> deleteStroke(String id) => _strokeDao.deleteStroke(id);
 
   @override
-  Future<void> deleteStroke(String id) async {
-    await (_db.delete(_db.strokes)..where((tbl) => tbl.id.equals(id))).go();
-  }
-
-  @override
-  Future<void> clearStrokes(String pageId) async {
-    await (_db.delete(
-      _db.strokes,
-    )..where((tbl) => tbl.pageId.equals(pageId))).go();
-  }
+  Future<void> clearStrokes(String pageId) => _strokeDao.clearStrokes(pageId);
 }

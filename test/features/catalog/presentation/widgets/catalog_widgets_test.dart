@@ -5,6 +5,7 @@ import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/budget_widget.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/calendar_grid_widget.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/journal_block_widget.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/text_box/text_box_config.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/text_box_widget.dart';
 
 void main() {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/category_filter.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Draggable bottom sheet displaying the catalog of design elements.
@@ -25,16 +26,6 @@ class AddCatalogElementSheet extends StatefulWidget {
 class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
   ElementCategory? _selectedCategory;
 
-  static List<(String, ElementCategory?)> _getFilterTabs(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return [
-      (l10n.catalogFilterAll, null),
-      (l10n.catalogFilterShapes, ElementCategory.shapes),
-      (l10n.catalogFilterTemplates, ElementCategory.planner),
-      (l10n.catalogFilterDecoration, ElementCategory.stickers),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
     final allDefs = CatalogRegistry.getAllDefinitions();
@@ -42,7 +33,6 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
         ? allDefs.where((d) => d.category != ElementCategory.legacy).toList()
         : allDefs.where((d) => d.category == _selectedCategory).toList();
     final colorScheme = Theme.of(context).colorScheme;
-    final filterTabs = _getFilterTabs(context);
 
     return DraggableScrollableSheet(
       minChildSize: 0.3,
@@ -93,39 +83,10 @@ class _AddCatalogElementSheetState extends State<AddCatalogElementSheet> {
                 ),
               ),
               const SizedBox(height: 8),
-              SizedBox(
-                height: 36,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: filterTabs.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: 6),
-                  itemBuilder: (context, index) {
-                    final tab = filterTabs[index];
-                    final isSelected = _selectedCategory == tab.$2;
-                    return ChoiceChip(
-                      label: Text(tab.$1),
-                      labelStyle: TextStyle(
-                        fontSize: 12,
-                        fontWeight:
-                            isSelected ? FontWeight.w600 : FontWeight.w500,
-                        color: isSelected
-                            ? colorScheme.onPrimaryContainer
-                            : colorScheme.onSurface.withValues(alpha: 0.6),
-                      ),
-                      selected: isSelected,
-                      selectedColor: colorScheme.primaryContainer,
-                      side: BorderSide(
-                        color: isSelected
-                            ? colorScheme.primary
-                            : colorScheme.outline,
-                      ),
-                      onSelected: (_) {
-                        setState(() => _selectedCategory = tab.$2);
-                      },
-                    );
-                  },
-                ),
+              CategoryFilter(
+                selectedCategory: _selectedCategory,
+                onCategoryChanged: (cat) =>
+                    setState(() => _selectedCategory = cat),
               ),
               const SizedBox(height: 8),
               Expanded(

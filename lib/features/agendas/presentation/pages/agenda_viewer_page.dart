@@ -4,22 +4,25 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/agenda_viewer_controller.dart';
-import 'package:honeyday/features/agendas/presentation/widgets/add_catalog_element_sheet.dart';
-import 'package:honeyday/features/agendas/presentation/widgets/new_page_dialog.dart';
-import 'package:honeyday/features/agendas/presentation/widgets/page_manager_sheet.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/viewer_app_bar.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/viewer_canvas_mode_toggle.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/viewer_catalog_sheet.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/viewer_page_navigator.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
+import 'package:honeyday/features/canvas/domain/canvas_mode_notifier.dart';
 import 'package:honeyday/features/canvas/presentation/pages/page_view_canvas.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/page_canvas_controller.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 import 'package:uuid/uuid.dart';
 
+/// Page for viewing and interacting with an agenda's pages.
+///
+/// Supports three [CanvasMode]s: reading (swipe to flip), writing (ink),
+/// and edit (move/resize widgets). Mode is determined by [initialMode].
 class AgendaViewerPage extends ConsumerStatefulWidget {
   const AgendaViewerPage({
     required this.agendaId,
@@ -75,12 +78,8 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         duration: const Duration(milliseconds: 350),
         curve: Curves.easeInOutCubic,
       );
-      _hapticLight();
+      unawaited(hapticLight());
     }
-  }
-
-  void _hapticLight() {
-    unawaited(Haptics.vibrate(HapticsType.light).onError((_, _) {}));
   }
 
   void _markDirty() {
@@ -155,6 +154,95 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
       ),
     );
     return result != 'cancel';
+  }
+
+  void _toggleCanvasMode() {
+    final currentMode = ref.read(canvasModeProvider);
+    if (currentMode == CanvasMode.writing) {
+      ref.read(canvasModeProvider.notifier).setReading();
+    } else {
+      ref.read(canvasModeProvider.notifier).setWriting();
+    }
+    unawaited(hapticLight());
+  }
+
+  Future<void> _showPageManager(List<AgendaPage> pages) async {
+    final controller = ref.read(agendaViewerControllerProvider);
+
+    await ViewerCatalogSheet.showPageManager(
+      context: context,
+      pages: pages,
+      currentPageIndex: _currentPageIndex,
+      onSelectPage: (index) => _goToPage(index, pages.length),
+      onDeletePage: (pageId) async {
+        if (pages.length <= 1) return;
+        await controller.deletePage(pageId);
+        _markDirty();
+        if (mounted && _currentPageIndex >= pages.length - 1) {
+          _goToPage(pages.length - 2, pages.length - 1);
+        }
+      },
+      onChangePaperStyle: (style) async {
+        final currentPage = pages[_currentPageIndex];
+        await controller.updatePageBackground(currentPage.id, style);
+        _markDirty();
+      },
+      onReorderPages: (pageIds) async {
+        final currentPageId = _currentPageIndex < pages.length
+            ? pages[_currentPageIndex].id
+            : null;
+        await controller.reorderPages(pageIds);
+        _markDirty();
+        if (currentPageId != null && mounted) {
+          final newIndex = pageIds.indexOf(currentPageId);
+          if (newIndex != -1 && newIndex != _currentPageIndex) {
+            setState(() => _currentPageIndex = newIndex);
+            _pageController.jumpToPage(newIndex);
+          }
+        }
+      },
+      onAddPage: () async {
+        final style = await ViewerCatalogSheet.showNewPageDesign(context);
+        if (style != null && mounted) {
+          await controller.addPage(
+            agendaId: widget.agendaId,
+            pageNumber: pages.length + 1,
+            backgroundStyle: style,
+          );
+          _markDirty();
+          if (mounted) {
+            final newIndex = pages.length;
+            ref.invalidate(agendaPagesProvider(widget.agendaId));
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _goToPage(newIndex, newIndex + 1);
+              }
+            });
+          }
+        }
+      },
+    );
+  }
+
+  static const _uuid = Uuid();
+
+  Future<void> _addCatalogElement(
+    String currentPageId,
+    AgendaWidgetDefinition selectedDef,
+  ) async {
+    final pageController = _pageControllers[currentPageId];
+    if (pageController == null) return;
+
+    final element = CanvasWidgetData(
+      id: _uuid.v4(),
+      pageId: currentPageId,
+      widgetType: selectedDef.id,
+      position: const Offset(120, 100),
+      size: selectedDef.defaultSize,
+      configJson: selectedDef.initialConfigJson,
+    );
+
+    pageController.addElement(element);
   }
 
   @override
@@ -250,7 +338,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
           const SizedBox(width: 8),
           FloatingActionButton.small(
             heroTag: 'page_manager',
-            onPressed: () => _showPageManagerSheet(context, pages),
+            onPressed: () => _showPageManager(pages),
             backgroundColor: colorScheme.secondaryContainer,
             foregroundColor: colorScheme.onSecondaryContainer,
             child: const Icon(Icons.layers_outlined, size: 20),
@@ -259,7 +347,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
           FloatingActionButton(
             heroTag: 'add_element',
             onPressed: () async {
-              final def = await AddCatalogElementSheet.show(context);
+              final def = await ViewerCatalogSheet.showElementPicker(context);
               if (def == null || !mounted) return;
               await _addCatalogElement(
                 pages[_currentPageIndex].id,
@@ -314,11 +402,9 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   ) {
     final pages = pagesAsync.value ?? [];
     final totalPages = pages.length;
-    final isWriting = currentMode == CanvasMode.writing;
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surface,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: ViewerAppBar(
         onBack: () async {
           final shouldPop = await _showExitDialog();
@@ -326,20 +412,9 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         },
         actions: const [],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (isWriting) {
-            ref.read(canvasModeProvider.notifier).setReading();
-          } else {
-            ref.read(canvasModeProvider.notifier).setWriting();
-          }
-          _hapticLight();
-        },
-        backgroundColor: colorScheme.primaryContainer,
-        foregroundColor: colorScheme.onPrimaryContainer,
-        child: Icon(
-          isWriting ? Icons.menu_book_outlined : Icons.edit_outlined,
-        ),
+      floatingActionButton: ViewerCanvasModeToggle(
+        currentMode: currentMode,
+        onToggle: _toggleCanvasMode,
       ),
       body: _buildPagesAsyncBody(
         pagesAsync: pagesAsync,
@@ -356,7 +431,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                 itemCount: pagesList.length,
                 onPageChanged: (index) {
                   setState(() => _currentPageIndex = index);
-                  _hapticLight();
+                  unawaited(hapticLight());
                 },
                 itemBuilder: (context, index) {
                   final page = pagesList[index];
@@ -452,92 +527,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                 ),
             ],
           );
-        },
-      ),
-    );
-  }
-
-  static const _uuid = Uuid();
-
-  Future<void> _addCatalogElement(
-    String currentPageId,
-    AgendaWidgetDefinition selectedDef,
-  ) async {
-    final pageController = _pageControllers[currentPageId];
-    if (pageController == null) return;
-
-    final element = CanvasWidgetData(
-      id: _uuid.v4(),
-      pageId: currentPageId,
-      widgetType: selectedDef.id,
-      position: const Offset(120, 100),
-      size: selectedDef.defaultSize,
-      configJson: selectedDef.initialConfigJson,
-    );
-
-    pageController.addElement(element);
-  }
-
-  Future<void> _showPageManagerSheet(
-    BuildContext context,
-    List<AgendaPage> pages,
-  ) async {
-    final controller = ref.read(agendaViewerControllerProvider);
-
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => PageManagerSheet(
-        pages: pages,
-        currentPageIndex: _currentPageIndex,
-        onSelectPage: (index) => _goToPage(index, pages.length),
-        onDeletePage: (pageId) async {
-          if (pages.length <= 1) return;
-          await controller.deletePage(pageId);
-          _markDirty();
-          if (mounted && _currentPageIndex >= pages.length - 1) {
-            _goToPage(pages.length - 2, pages.length - 1);
-          }
-        },
-        onChangePaperStyle: (style) async {
-          final currentPage = pages[_currentPageIndex];
-          await controller.updatePageBackground(currentPage.id, style);
-          _markDirty();
-        },
-        onReorderPages: (pageIds) async {
-          final currentPageId = _currentPageIndex < pages.length
-              ? pages[_currentPageIndex].id
-              : null;
-          await controller.reorderPages(pageIds);
-          _markDirty();
-          if (currentPageId != null && mounted) {
-            final newIndex = pageIds.indexOf(currentPageId);
-            if (newIndex != -1 && newIndex != _currentPageIndex) {
-              setState(() => _currentPageIndex = newIndex);
-              _pageController.jumpToPage(newIndex);
-            }
-          }
-        },
-        onAddPage: () async {
-          final style = await showNewPageDesignDialog(context);
-          if (style != null && mounted) {
-            await controller.addPage(
-              agendaId: widget.agendaId,
-              pageNumber: pages.length + 1,
-              backgroundStyle: style,
-            );
-            _markDirty();
-            if (mounted) {
-              final newIndex = pages.length;
-              ref.invalidate(agendaPagesProvider(widget.agendaId));
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) {
-                  _goToPage(newIndex, newIndex + 1);
-                }
-              });
-            }
-          }
         },
       ),
     );

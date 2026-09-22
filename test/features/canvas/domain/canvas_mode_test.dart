@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
+import 'package:honeyday/features/canvas/domain/canvas_mode_notifier.dart';
+import 'package:honeyday/features/canvas/domain/ink_tool.dart';
 
 void main() {
   group('CanvasMode and Providers Tests', () {

@@ -1,135 +1,14 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/catalog_widget_mixin.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/journal/journal_config.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/journal/journal_mood_selector.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/journal/journal_notes_section.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/journal/journal_priority_list.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
-@immutable
-class JournalPriorityItem {
-  const JournalPriorityItem({
-    required this.id,
-    required this.text,
-    required this.isDone,
-  });
-
-  factory JournalPriorityItem.fromJson(Map<String, dynamic> json) {
-    return JournalPriorityItem(
-      id: json['id']?.toString() ?? UniqueKey().toString(),
-      text: json['text']?.toString() ?? '',
-      isDone: json['isDone'] == true,
-    );
-  }
-
-  final String id;
-  final String text;
-  final bool isDone;
-
-  JournalPriorityItem copyWith({String? id, String? text, bool? isDone}) {
-    return JournalPriorityItem(
-      id: id ?? this.id,
-      text: text ?? this.text,
-      isDone: isDone ?? this.isDone,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {'id': id, 'text': text, 'isDone': isDone};
-  }
-}
-
-@immutable
-class JournalBlockConfig {
-  const JournalBlockConfig({
-    required this.date,
-    required this.mood,
-    required this.priorities,
-    required this.notes,
-  });
-
-  factory JournalBlockConfig.fromJsonString(String rawJson) {
-    if (rawJson.trim().isEmpty) {
-      return JournalBlockConfig.defaultConfig();
-    }
-    try {
-      final dynamic decoded = jsonDecode(rawJson);
-      if (decoded is Map<String, dynamic>) {
-        final date = decoded['date']?.toString() ?? '';
-        final mood = decoded['mood']?.toString() ?? '😊';
-        final notes = decoded['notes']?.toString() ?? '';
-        final rawPriorities =
-            decoded['priorities'] as List<dynamic>? ?? const [];
-        final priorities = rawPriorities
-            .whereType<Map<String, dynamic>>()
-            .map(JournalPriorityItem.fromJson)
-            .toList();
-
-        return JournalBlockConfig(
-          date: date,
-          mood: mood,
-          priorities: priorities.isNotEmpty
-              ? priorities
-              : JournalBlockConfig.defaultConfig().priorities,
-          notes: notes,
-        );
-      }
-    } on Object catch (_) {}
-    return JournalBlockConfig.defaultConfig();
-  }
-
-  factory JournalBlockConfig.defaultConfig() {
-    // Internal default config data (editable by user via JSON). Build() uses localized strings.
-    return const JournalBlockConfig(
-      date: '',
-      mood: '😊',
-      priorities: [
-        JournalPriorityItem(
-          id: '1',
-          text: '',
-          isDone: false,
-        ),
-        JournalPriorityItem(
-          id: '2',
-          text: '',
-          isDone: false,
-        ),
-        JournalPriorityItem(
-          id: '3',
-          text: '',
-          isDone: false,
-        ),
-      ],
-      notes: '',
-    );
-  }
-
-  final String date;
-  final String mood;
-  final List<JournalPriorityItem> priorities;
-  final String notes;
-
-  JournalBlockConfig copyWith({
-    String? date,
-    String? mood,
-    List<JournalPriorityItem>? priorities,
-    String? notes,
-  }) {
-    return JournalBlockConfig(
-      date: date ?? this.date,
-      mood: mood ?? this.mood,
-      priorities: priorities ?? List<JournalPriorityItem>.from(this.priorities),
-      notes: notes ?? this.notes,
-    );
-  }
-
-  String toJsonString() {
-    return jsonEncode({
-      'date': date,
-      'mood': mood,
-      'priorities': priorities.map((p) => p.toJson()).toList(),
-      'notes': notes,
-    });
-  }
-}
+export 'package:honeyday/features/catalog/presentation/widgets/journal/journal_config.dart'
+    show JournalBlockConfig, JournalPriorityItem;
 
 class JournalBlockDefinition extends AgendaWidgetDefinition {
   const JournalBlockDefinition();
@@ -187,80 +66,64 @@ class JournalBlockWidget extends StatefulWidget {
 }
 
 class _JournalBlockWidgetState extends State<JournalBlockWidget> {
-  static const List<String> _moodEmojis = ['😊', '😌', '🤔', '😴', '⚡'];
+  late CatalogConfigHelper<JournalBlockConfig> _configHelper;
 
-  late JournalBlockConfig _config;
+  JournalBlockConfig get _config => _configHelper.config;
 
   @override
   void initState() {
     super.initState();
-    _config = JournalBlockConfig.fromJsonString(widget.configJson);
+    _configHelper = CatalogConfigHelper<JournalBlockConfig>(
+      parseConfig: JournalBlockConfig.fromJsonString,
+      configToJson: (c) => c.toJsonString(),
+      onConfigChanged: widget.onConfigChanged,
+      initialJson: widget.configJson,
+    );
   }
 
   @override
   void didUpdateWidget(JournalBlockWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.configJson != widget.configJson) {
-      _config = JournalBlockConfig.fromJsonString(widget.configJson);
+      _configHelper.updateFromJson(widget.configJson);
     }
+  }
+
+  void _updateConfig(JournalBlockConfig newConfig) {
+    setState(() {
+      _configHelper.updateConfig(newConfig);
+    });
   }
 
   void _selectMood(String emoji) {
     if (!widget.isInteractive) return;
-
-    final newConfig = _config.copyWith(mood: emoji);
-    setState(() {
-      _config = newConfig;
-    });
-    widget.onConfigChanged(newConfig.toJsonString());
+    _updateConfig(_config.copyWith(mood: emoji));
   }
 
   void _togglePriority(int index) {
     if (!widget.isInteractive) return;
-
     final item = _config.priorities[index];
     final updated = List<JournalPriorityItem>.from(_config.priorities);
     updated[index] = item.copyWith(isDone: !item.isDone);
-
-    final newConfig = _config.copyWith(priorities: updated);
-    setState(() {
-      _config = newConfig;
-    });
-    widget.onConfigChanged(newConfig.toJsonString());
+    _updateConfig(_config.copyWith(priorities: updated));
   }
 
   void _editPriorityText(int index, String newText) {
     if (!widget.isInteractive) return;
-
     final item = _config.priorities[index];
     final updated = List<JournalPriorityItem>.from(_config.priorities);
     updated[index] = item.copyWith(text: newText);
-
-    final newConfig = _config.copyWith(priorities: updated);
-    setState(() {
-      _config = newConfig;
-    });
-    widget.onConfigChanged(newConfig.toJsonString());
+    _updateConfig(_config.copyWith(priorities: updated));
   }
 
   void _updateDate(String newDate) {
     if (!widget.isInteractive) return;
-
-    final newConfig = _config.copyWith(date: newDate);
-    setState(() {
-      _config = newConfig;
-    });
-    widget.onConfigChanged(newConfig.toJsonString());
+    _updateConfig(_config.copyWith(date: newDate));
   }
 
   void _updateNotes(String newNotes) {
     if (!widget.isInteractive) return;
-
-    final newConfig = _config.copyWith(notes: newNotes);
-    setState(() {
-      _config = newConfig;
-    });
-    widget.onConfigChanged(newConfig.toJsonString());
+    _updateConfig(_config.copyWith(notes: newNotes));
   }
 
   String _localizedDate(String date, AppLocalizations l10n) {
@@ -350,211 +213,37 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                       ),
               ),
               const SizedBox(width: 8),
-              if (widget.isInteractive)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: _moodEmojis.map((emoji) {
-                    final isSelected = emoji == _config.mood;
-                    return GestureDetector(
-                      onTap: () => _selectMood(emoji),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        padding: const EdgeInsets.all(3),
-                        margin: const EdgeInsets.symmetric(horizontal: 1.5),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? colorScheme.primaryContainer
-                              : Colors.transparent,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isSelected
-                                ? colorScheme.primary
-                                : Colors.transparent,
-                            width: 1.2,
-                          ),
-                        ),
-                        child: Text(
-                          emoji,
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                )
-              else
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: colorScheme.primary),
-                  ),
-                  child: Text(
-                    _config.mood,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ),
+              JournalMoodSelector(
+                selectedMood: _config.mood,
+                isInteractive: widget.isInteractive,
+                onMoodSelected: _selectMood,
+              ),
             ],
           ),
           const SizedBox(height: 6),
           Divider(height: 1, color: colorScheme.outline),
           const SizedBox(height: 8),
-          Text(
-            l10n.catalogJournalPrioritiesHeader,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: colorScheme.primary,
-              letterSpacing: 0.3,
-            ),
+          JournalPriorityList(
+            priorities: _config.priorities,
+            isInteractive: widget.isInteractive,
+            onToggle: _togglePriority,
+            onTextChanged: _editPriorityText,
+            localizeText: (text) => _localizedPriorityText(text, l10n),
+            headerText: l10n.catalogJournalPrioritiesHeader,
           ),
-          const SizedBox(height: 4),
-          ...List.generate(_config.priorities.length, (index) {
-            final priority = _config.priorities[index];
-            final displayText = _localizedPriorityText(priority.text, l10n);
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: widget.isInteractive
-                        ? () => _togglePriority(index)
-                        : null,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      width: 18,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        color: priority.isDone
-                            ? colorScheme.primary
-                            : colorScheme.surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(
-                          color: priority.isDone
-                              ? colorScheme.primary
-                              : colorScheme.outline,
-                          width: 1.2,
-                        ),
-                      ),
-                      child: priority.isDone
-                          ? Icon(
-                              Icons.check_rounded,
-                              size: 13,
-                              color: colorScheme.onPrimary,
-                            )
-                          : null,
-                    ),
-                  ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: widget.isInteractive
-                        ? TextFormField(
-                            initialValue: displayText,
-                            key: ValueKey('prio_${priority.id}_$displayText'),
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: priority.isDone
-                                  ? colorScheme.onSurfaceVariant
-                                  : colorScheme.onSurface,
-                              decoration: priority.isDone
-                                  ? TextDecoration.lineThrough
-                                  : TextDecoration.none,
-                            ),
-                            decoration: InputDecoration(
-                              isDense: true,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: 2,
-                              ),
-                              border: InputBorder.none,
-                              focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: colorScheme.primary,
-                                ),
-                              ),
-                            ),
-                            onFieldSubmitted: (val) =>
-                                _editPriorityText(index, val),
-                          )
-                        : Text(
-                            displayText,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: priority.isDone
-                                  ? colorScheme.onSurfaceVariant
-                                  : colorScheme.onSurface,
-                              decoration: priority.isDone
-                                  ? TextDecoration.lineThrough
-                                  : TextDecoration.none,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                  ),
-                ],
-              ),
-            );
-          }),
           const SizedBox(height: 8),
           Divider(height: 1, color: colorScheme.outline),
           const SizedBox(height: 6),
-          Text(
-            l10n.catalogJournalNotesHeader,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
-              letterSpacing: 0.3,
-            ),
-          ),
-          const SizedBox(height: 4),
           Expanded(
-            child: widget.isInteractive
-                ? TextFormField(
-                    initialValue: displayNotes,
-                    key: ValueKey('notes_${widget.elementId}_$displayNotes'),
-                    maxLines: null,
-                    expands: true,
-                    textAlignVertical: TextAlignVertical.top,
-                    style: TextStyle(
-                      fontSize: 12,
-                      height: 1.6,
-                      color: colorScheme.onSurface,
-                    ),
-                    decoration: InputDecoration(
-                      hintText: l10n.catalogJournalNotesHint,
-                      hintStyle: TextStyle(
-                        fontSize: 11,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      isDense: true,
-                      contentPadding: const EdgeInsets.all(6),
-                      border: InputBorder.none,
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: colorScheme.primary),
-                      ),
-                    ),
-                    onChanged: _updateNotes,
-                  )
-                : Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(6),
-                      child: Text(
-                      displayNotes.isEmpty
-                          ? (l10n.catalogJournalNoNotes)
-                          : displayNotes,
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 1.6,
-                        color: displayNotes.isEmpty
-                            ? colorScheme.onSurfaceVariant
-                            : colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
+            child: JournalNotesSection(
+              notes: displayNotes,
+              elementId: widget.elementId,
+              isInteractive: widget.isInteractive,
+              onChanged: _updateNotes,
+              headerText: l10n.catalogJournalNotesHeader,
+              hintText: l10n.catalogJournalNotesHint,
+              noNotesText: l10n.catalogJournalNoNotes,
+            ),
           ),
         ],
       ),

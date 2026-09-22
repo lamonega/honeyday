@@ -1,8 +1,11 @@
+library;
+
+import 'package:honeyday/core/theme/design_tokens.dart';
+
 /// UI layer constants for the Honeyday app.
 ///
 /// Only constants referenced in 2+ files are kept here.
 /// All single-use constants live at the top of the file that consumes them.
-library;
 
 /// Responsive grid breakpoint for mobile layout.
 /// Used by: app/app_shell.dart, features/agendas/presentation/pages/home_page.dart
@@ -17,4 +20,4 @@ const String kDefaultPaperStyle = 'dotted';
 /// Used by: features/agendas/presentation/widgets/new_agenda_dialog.dart,
 /// features/agendas/presentation/widgets/resource_catalog_sidebar.dart,
 /// features/settings/presentation/pages/settings_page.dart
-const Duration kAnimationDurationNormal = Duration(milliseconds: 200);
+const Duration kAnimationDurationNormal = DesignTokens.animationNormal;

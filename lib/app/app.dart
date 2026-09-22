@@ -7,84 +7,17 @@ import 'package:go_router/go_router.dart';
 import 'package:honeyday/app/router.dart';
 import 'package:honeyday/app/theme.dart';
 import 'package:honeyday/core/constants/preferences_keys.dart';
+import 'package:honeyday/core/providers/shared_preferences_provider.dart';
+import 'package:honeyday/core/theme/theme_providers.dart';
 import 'package:honeyday/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:honeyday/features/onboarding/presentation/providers/onboarding_provider.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-/// Application version string resolved from platform package metadata.
-final appVersionProvider = FutureProvider<String>((ref) async {
-  try {
-    final info = await PackageInfo.fromPlatform();
-    return info.buildNumber.isNotEmpty && info.buildNumber != '0'
-        ? '${info.version}+${info.buildNumber}'
-        : info.version;
-  } on Object {
-    return '0.1.7+1';
-  }
-});
-
-/// Shared instance of [SharedPreferences] available app-wide.
-final sharedPreferencesProvider = FutureProvider<SharedPreferences>((ref) {
-  return SharedPreferences.getInstance();
-});
 
 /// Whether the user has completed onboarding (persisted).
 final onboardingCompleteProvider = FutureProvider<bool>((ref) async {
   final prefs = await ref.watch(sharedPreferencesProvider.future);
   return prefs.getBool(PreferencesKeys.onboardingComplete) ?? false;
 });
-
-/// Persisted theme mode (light / dark / system).
-final themeModeProvider =
-    AsyncNotifierProvider<ThemeModeNotifier, ThemeMode>(ThemeModeNotifier.new);
-
-/// Persisted accent seed color as hex string.
-final accentColorProvider =
-    AsyncNotifierProvider<AccentColorNotifier, Color>(
-  AccentColorNotifier.new,
-);
-
-class ThemeModeNotifier extends AsyncNotifier<ThemeMode> {
-  @override
-  Future<ThemeMode> build() async {
-    final prefs = await ref.watch(sharedPreferencesProvider.future);
-    final value = prefs.getString(PreferencesKeys.themeMode);
-    return ThemeMode.values.firstWhere(
-      (e) => e.name == value,
-      orElse: () => ThemeMode.system,
-    );
-  }
-
-  Future<void> set(ThemeMode mode) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setString(PreferencesKeys.themeMode, mode.name);
-    ref.invalidateSelf();
-  }
-}
-
-class AccentColorNotifier extends AsyncNotifier<Color> {
-  @override
-  Future<Color> build() async {
-    final prefs = await ref.watch(sharedPreferencesProvider.future);
-    final hex = prefs.getString(PreferencesKeys.accentColor);
-    if (hex != null) {
-      try {
-        return Color(int.parse('FF$hex', radix: 16));
-      } on FormatException {
-        return AppColors.honeyAmber;
-      }
-    }
-    return AppColors.honeyAmber;
-  }
-
-  Future<void> set(Color color) async {
-    final hex = color.toARGB32().toRadixString(16).substring(2).toUpperCase();
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setString(PreferencesKeys.accentColor, hex);
-    ref.invalidateSelf();
-  }
-}
 
 /// Minimal router that only shows onboarding.
 final _onboardingRouter = GoRouter(

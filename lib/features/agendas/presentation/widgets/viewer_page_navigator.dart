@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/viewer_page_indicator.dart';
 
 // ──────────────────────────────────────────────
 // Viewer navigator constants (used only here)
@@ -16,10 +17,6 @@ const double kViewerNavBorderRadius = 20;
 const double kViewerNavShadowBlur = 8;
 /// Chevron icon size in the navigator.
 const double kViewerNavChevronIconSize = 22;
-/// Margin between pagination dots.
-const double kViewerNavDotMargin = 3;
-/// Size of inactive pagination dots.
-const double kViewerNavInactiveDotSize = 5;
 /// Width of the divider line.
 const double kViewerNavDividerWidth = 1;
 /// Height of the divider line.
@@ -29,6 +26,8 @@ const double kViewerNavDividerMargin = 6;
 /// Font size for the page counter text.
 const double kViewerNavTextFontSize = 12;
 
+/// Positioned navigator bar at the bottom of the viewer showing chevrons,
+/// a page indicator, and a page counter.
 class ViewerPageNavigator extends StatelessWidget {
   const ViewerPageNavigator({
     required this.childCount,
@@ -81,21 +80,10 @@ class ViewerPageNavigator extends StatelessWidget {
                       : colorScheme.onSurface.withValues(alpha: 0.2),
                 ),
               ),
-              ...List.generate(childCount, (i) {
-                final isActive = i == currentPage;
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 250),
-                  margin: const EdgeInsets.symmetric(horizontal: kViewerNavDotMargin),
-                  width: isActive ? 16 : 5,
-                  height: kViewerNavInactiveDotSize,
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? colorScheme.primary
-                        : colorScheme.primary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                );
-              }),
+              ViewerPageIndicator(
+                childCount: childCount,
+                currentPage: currentPage,
+              ),
               Container(
                 width: kViewerNavDividerWidth,
                 height: kViewerNavDividerHeight,

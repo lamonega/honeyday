@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:honeyday/core/constants/app_constants.dart';
-import 'package:honeyday/core/theme/app_colors.dart';
+import 'package:honeyday/core/theme/design_tokens.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
 import 'package:honeyday/core/utils/color_utils.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/new_agenda/agenda_cover_picker.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/new_agenda/agenda_cover_preview.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/new_agenda/agenda_paper_style_picker.dart';
 
 /// Default cover style for new agendas.
 /// Referenced by: new_agenda_dialog.dart (local definition),
@@ -55,7 +58,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
     _titleController.addListener(() => setState(() {}));
     _animController = AnimationController(
       vsync: this,
-            duration: kAnimationDurationNormal,
+      duration: DesignTokens.animationNormal,
     );
     _scaleAnim = Tween<double>(begin: 0.92, end: 1).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
@@ -75,8 +78,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
     final l10n = AppLocalizations.of(context);
     if (!_defaultTitleSet) {
       _defaultTitleSet = true;
-      _titleController.text =
-          l10n.agendaNewDefaultTitle;
+      _titleController.text = l10n.agendaNewDefaultTitle;
     }
     final activeColor = hexToColor(_selectedCover);
     final darkColor = darken(activeColor);
@@ -105,7 +107,7 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Center(
-                  child: _LiveCoverPreview(
+                  child: AgendaCoverPreview(
                     title: previewTitle,
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -125,14 +127,14 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
                   ),
                 ),
                 const SizedBox(height: 20),
-                _CoverColorPicker(
+                AgendaCoverPicker(
                   colors: _presetColors,
                   selectedCover: _selectedCover,
                   onColorSelected: (hex) =>
                       setState(() => _selectedCover = hex),
                 ),
                 const SizedBox(height: 20),
-                _PaperStyleSelector(
+                AgendaPaperStylePicker(
                   styles: _paperStyles(context),
                   selectedPaper: _selectedPaper,
                   onPaperSelected: (key) =>
@@ -170,199 +172,6 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
           ),
         ],
       ),
-    );
-  }
-
-}
-
-class _LiveCoverPreview extends StatelessWidget {
-  const _LiveCoverPreview({
-    required this.title,
-    required this.gradient,
-    required this.shadowColor,
-  });
-
-  final String title;
-  final LinearGradient gradient;
-  final Color shadowColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      width: 170,
-      height: 110,
-      margin: const EdgeInsets.only(bottom: 20),
-      decoration: BoxDecoration(
-        gradient: gradient,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: shadowColor.withValues(alpha: 0.35),
-            blurRadius: 14,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 16,
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withValues(alpha: 0.3),
-                    Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            left: 6,
-            top: 0,
-            bottom: 0,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(
-                4,
-                (i) => Container(
-                  width: 3,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.5),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 0,
-            right: 28,
-            child: Container(
-              width: 8,
-              height: 20,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.85),
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(2),
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            top: 0,
-            bottom: 0,
-            right: 0,
-            width: 4,
-            child: Container(color: AppColors.paperEdge),
-          ),
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Text(
-                title,
-                maxLines: 2,
-                textAlign: TextAlign.center,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.fraunces(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 2,
-                      offset: const Offset(0, 1),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CoverColorPicker extends StatelessWidget {
-  const _CoverColorPicker({
-    required this.colors,
-    required this.selectedCover,
-    required this.onColorSelected,
-  });
-
-  final List<String> colors;
-  final String selectedCover;
-  final ValueChanged<String> onColorSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: colors.map((hex) {
-        final isSelected = selectedCover == hex;
-        final color = hexToColor(hex);
-        return GestureDetector(
-          onTap: () {
-            unawaited(HapticFeedback.selectionClick());
-            onColorSelected(hex);
-          },
-          child: AnimatedContainer(
-      duration: kAnimationDurationNormal,
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected
-                    ? Theme.of(context).colorScheme.onSurface
-                    : Colors.transparent,
-                width: isSelected ? 2.5 : 0,
-              ),
-            ),
-            child: isSelected
-                ? const Icon(Icons.check, color: Colors.white, size: 18)
-                : null,
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-}
-
-class _PaperStyleSelector extends StatelessWidget {
-  const _PaperStyleSelector({
-    required this.styles,
-    required this.selectedPaper,
-    required this.onPaperSelected,
-  });
-
-  final Map<String, String> styles;
-  final String selectedPaper;
-  final ValueChanged<String> onPaperSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return SegmentedButton<String>(
-      segments: styles.entries.map((entry) {
-        return ButtonSegment(value: entry.key, label: Text(entry.value));
-      }).toList(),
-      selected: {selectedPaper},
-      onSelectionChanged: (newSelection) {
-        unawaited(HapticFeedback.selectionClick());
-        onPaperSelected(newSelection.first);
-      },
     );
   }
 }

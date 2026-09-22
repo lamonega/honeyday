@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:honeyday/core/constants/app_constants.dart';
+import 'package:honeyday/core/theme/design_tokens.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/category_filter.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Sidebar panel displaying the "Catálogo de Elementos" in Edit Mode.
@@ -22,16 +23,6 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
   bool _isCollapsed = false;
   ElementCategory? _selectedCategory;
 
-  static List<(String, ElementCategory?)> _getFilterTabs(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return [
-      (l10n.catalogFilterAll, null),
-      (l10n.catalogFilterShapes, ElementCategory.shapes),
-      (l10n.catalogFilterAgenda, ElementCategory.planner),
-      (l10n.catalogFilterStickers, ElementCategory.stickers),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
     final allDefs = CatalogRegistry.getAllDefinitions();
@@ -39,10 +30,9 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
         ? allDefs.where((d) => d.category != ElementCategory.legacy).toList()
         : allDefs.where((d) => d.category == _selectedCategory).toList();
     final colorScheme = Theme.of(context).colorScheme;
-    final filterTabs = _getFilterTabs(context);
 
     return AnimatedContainer(
-      duration: kAnimationDurationNormal,
+      duration: DesignTokens.animationNormal,
       curve: Curves.easeInOut,
       width: _isCollapsed ? 52 : widget.width,
       clipBehavior: Clip.hardEdge,
@@ -52,7 +42,7 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
       ),
       child: _isCollapsed
           ? _buildCollapsedRail(colorScheme)
-          : _buildExpandedSidebar(visibleDefs, filterTabs, colorScheme),
+          : _buildExpandedSidebar(visibleDefs, colorScheme),
     );
   }
 
@@ -82,7 +72,6 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
 
   Widget _buildExpandedSidebar(
     List<AgendaWidgetDefinition> visibleDefs,
-    List<(String, ElementCategory?)> filterTabs,
     ColorScheme colorScheme,
   ) {
     return OverflowBox(
@@ -119,41 +108,10 @@ class _ResourceCatalogSidebarState extends State<ResourceCatalogSidebar> {
                 ],
               ),
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Row(
-                children: filterTabs.map((tab) {
-                  final isSelected = _selectedCategory == tab.$2;
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: ChoiceChip(
-                      label: Text(tab.$1),
-                      labelStyle: TextStyle(
-                        fontSize: 11,
-                        fontWeight: isSelected
-                            ? FontWeight.bold
-                            : FontWeight.w500,
-                        color: isSelected
-                            ? colorScheme.onPrimaryContainer
-                            : colorScheme.onSurface.withValues(alpha: 0.5),
-                      ),
-                      selected: isSelected,
-                      selectedColor: colorScheme.primaryContainer,
-                      backgroundColor: colorScheme.surface,
-                      side: BorderSide(
-                        color: isSelected
-                            ? colorScheme.primary
-                            : colorScheme.outline,
-                      ),
-                      visualDensity: VisualDensity.compact,
-                      onSelected: (_) {
-                        setState(() => _selectedCategory = tab.$2);
-                      },
-                    ),
-                  );
-                }).toList(),
-              ),
+            CategoryFilter(
+              selectedCategory: _selectedCategory,
+              onCategoryChanged: (cat) =>
+                  setState(() => _selectedCategory = cat),
             ),
             const SizedBox(height: 4),
             Expanded(

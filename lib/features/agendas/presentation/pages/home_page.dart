@@ -1,19 +1,21 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/home_controller.dart';
-import 'package:honeyday/features/agendas/presentation/widgets/agenda_card.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/home/agenda_grid_card.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/home/home_empty_state.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/home/home_fab.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/home/home_header.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/new_agenda_dialog.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 // ──────────────────────────────────────────────
-// Home page constants (used only in this file)
+// Home page layout constants
 // ──────────────────────────────────────────────
 
 /// Breakpoint for tablet layout in responsive grid.
@@ -26,8 +28,6 @@ const double kSpacingExtraLarge = 24;
 const double kHomeGridSpacing = 20;
 /// Aspect ratio for home agenda cards.
 const double kHomeCardAspectRatio = 0.85;
-/// Initial scale for onboarding-style animation begin value.
-const double kOnboardingScaleBegin = 0.92;
 
 /// Home dashboard displaying "Tus agendas".
 ///
@@ -43,16 +43,7 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text(
-          AppLocalizations.of(context).homeTitle,
-          style: GoogleFonts.fraunces(
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
-            letterSpacing: -0.3,
-          ),
-        ),
+      appBar: HomeHeader(
         actions: [
           IconButton(
             icon: const Icon(Icons.add_rounded),
@@ -60,97 +51,16 @@ class HomePage extends ConsumerWidget {
           ),
         ],
       ),
+      floatingActionButton: const HomeFab(),
       body: agendasAsync.when(
         loading: () => _buildSkeletonLoader(context),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.error_outline_rounded,
-                size: 48,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                AppLocalizations.of(context).homeErrorLoading,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '$error',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface
-                      .withValues(alpha: 0.5),
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
-        ),
+        error: (error, _) => _buildErrorState(context, error),
         data: (agendas) {
           if (agendas.isEmpty) {
-            return _buildEmptyState(context, ref);
+            return const HomeEmptyState();
           }
 
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final width = constraints.maxWidth;
-              final crossAxisCount = width < kBreakpointMobile
-                  ? 1
-                  : width < kBreakpointTablet
-                  ? 2
-                  : width < kBreakpointDesktop
-                  ? 3
-                  : 4;
-
-              return Padding(
-                padding: const EdgeInsets.all(kSpacingExtraLarge),
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: kHomeGridSpacing,
-                    mainAxisSpacing: kHomeGridSpacing,
-                    childAspectRatio: kHomeCardAspectRatio,
-                  ),
-                  itemCount: agendas.length,
-                  itemBuilder: (context, index) {
-                    final agenda = agendas[index];
-                    return AgendaCard(
-                          agenda: agenda,
-                          onOpenWriting: () {
-                            context.go('/agenda/${agenda.id}?mode=writing');
-                          },
-                          onOpenReading: () {
-                            context.go('/agenda/${agenda.id}?mode=reading');
-                          },
-                          onOpenEdit: () {
-                            context.go('/agenda/${agenda.id}?mode=edit');
-                          },
-                          onDelete: () =>
-                              _confirmDeleteAgenda(context, ref, agenda),
-                        )
-                        .animate()
-                        .fadeIn(
-                          duration: 400.ms,
-                          delay: Duration(milliseconds: 60 * index),
-                        )
-                        .slideY(
-                          begin: kOnboardingScaleBegin,
-                          end: 0,
-                          duration: 400.ms,
-                          delay: Duration(milliseconds: 60 * index),
-                          curve: Curves.easeOutCubic,
-                        );
-                  },
-                ),
-              );
-            },
-          );
+          return _AgendaGrid(agendas: agendas, onDelete: _confirmDeleteAgenda);
         },
       ),
     );
@@ -186,39 +96,37 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context, WidgetRef ref) {
+  Widget _buildErrorState(BuildContext context, Object error) {
+    final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.auto_stories_rounded,
-              size: 56,
-              color: Theme.of(context).colorScheme.primary,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            Icons.error_outline_rounded,
+            size: 48,
+            color: colorScheme.error,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            l10n.homeErrorLoading,
+            style: TextStyle(
+              color: colorScheme.onSurface,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
             ),
-            const SizedBox(height: 24),
-            Text(
-              AppLocalizations.of(context).homeEmptyTitle,
-              style: GoogleFonts.fraunces(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '$error',
+            style: TextStyle(
+              color: colorScheme.onSurface.withValues(alpha: 0.5),
+              fontSize: 13,
             ),
-            const SizedBox(height: 8),
-            Text(
-              AppLocalizations.of(context).homeEmptyBody,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Theme.of(context).colorScheme.onSurface
-                    .withValues(alpha: 0.5),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -289,6 +197,65 @@ class HomePage extends ConsumerWidget {
     if (confirmed == true) {
       await ref.read(homeControllerProvider).deleteAgenda(agenda.id);
     }
+  }
+}
+
+/// Responsive grid of agenda cards.
+class _AgendaGrid extends ConsumerWidget {
+  const _AgendaGrid({
+    required this.agendas,
+    required this.onDelete,
+  });
+
+  final List<Agenda> agendas;
+
+  /// Callback that receives a context, ref, and agenda for deletion confirmation.
+  final Future<void> Function(BuildContext, WidgetRef, Agenda) onDelete;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final crossAxisCount = width < kBreakpointMobile
+            ? 1
+            : width < kBreakpointTablet
+            ? 2
+            : width < kBreakpointDesktop
+            ? 3
+            : 4;
+
+        return Padding(
+          padding: const EdgeInsets.all(kSpacingExtraLarge),
+          child: GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: kHomeGridSpacing,
+              mainAxisSpacing: kHomeGridSpacing,
+              childAspectRatio: kHomeCardAspectRatio,
+            ),
+            itemCount: agendas.length,
+            itemBuilder: (context, index) {
+              final agenda = agendas[index];
+              return AgendaGridCard(
+                agenda: agenda,
+                index: index,
+                onOpenWriting: () {
+                  context.go('/agenda/${agenda.id}?mode=writing');
+                },
+                onOpenReading: () {
+                  context.go('/agenda/${agenda.id}?mode=reading');
+                },
+                onOpenEdit: () {
+                  context.go('/agenda/${agenda.id}?mode=edit');
+                },
+                onDelete: () => onDelete(context, ref, agenda),
+              );
+            },
+          ),
+        );
+      },
+    );
   }
 }
 

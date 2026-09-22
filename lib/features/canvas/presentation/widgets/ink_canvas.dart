@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
-import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
+import 'package:honeyday/features/canvas/domain/ink_tool.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/canvas/domain/models/stroke_point.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/erase_logic.dart';

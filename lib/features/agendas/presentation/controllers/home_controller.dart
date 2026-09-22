@@ -23,10 +23,10 @@ final Provider<HomeController> homeControllerProvider =
 ///
 /// Encapsulates agenda creation, initialization of first page background, and deletions.
 class HomeController {
-  /// Constructs a [HomeController] with the required [AgendaRepository].
+  /// Constructs a [HomeController] with the required [FullAgendaRepository].
   const HomeController(this._repository);
 
-  final AgendaRepository _repository;
+  final FullAgendaRepository _repository;
 
   /// Creates a new agenda with title, cover style, and custom initial paper style.
   Future<Agenda> createAgenda({

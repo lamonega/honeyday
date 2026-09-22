@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:honeyday/app/app.dart';
-import 'package:honeyday/core/constants/app_constants.dart';
+import 'package:honeyday/core/providers/app_version_provider.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
+import 'package:honeyday/core/theme/design_tokens.dart';
+import 'package:honeyday/core/theme/theme_providers.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 class SettingsPage extends ConsumerWidget {
@@ -140,7 +141,7 @@ class SettingsPage extends ConsumerWidget {
                 if (context.mounted) Navigator.of(context).pop();
               },
               child: AnimatedContainer(
-                duration: kAnimationDurationNormal,
+                duration: DesignTokens.animationNormal,
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
