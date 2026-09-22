@@ -4,6 +4,8 @@ import 'package:honeyday/features/agendas/presentation/widgets/add_catalog_eleme
 import 'package:honeyday/features/agendas/presentation/widgets/resource_catalog_sidebar.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 
+import '../../../../helpers/pump_app.dart';
+
 void main() {
   group('ResourceCatalogSidebar', () {
     testWidgets(
@@ -12,7 +14,7 @@ void main() {
         AgendaWidgetDefinition? selected;
 
         await tester.pumpWidget(
-          MaterialApp(
+          testMaterialApp(
             home: Scaffold(
               body: ResourceCatalogSidebar(
                 onSelectDefinition: (def) => selected = def,
@@ -53,7 +55,7 @@ void main() {
 
     testWidgets('collapses to 52 width rail and expands back', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: ResourceCatalogSidebar(onSelectDefinition: (_) {}),
           ),
@@ -87,7 +89,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: ResourceCatalogSidebar(onSelectDefinition: (_) {}),
           ),
@@ -112,7 +114,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        const MaterialApp(home: Scaffold(body: AddCatalogElementSheet())),
+        testMaterialApp(home: const Scaffold(body: AddCatalogElementSheet())),
       );
 
       expect(find.text('Elementos'), findsOneWidget);

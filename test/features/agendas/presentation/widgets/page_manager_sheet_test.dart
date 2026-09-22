@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/page_manager_sheet.dart';
 
+import '../../../../helpers/pump_app.dart';
+
 void main() {
   group('PageManagerSheet', () {
     final pages = [
@@ -26,7 +28,7 @@ void main() {
 
     testWidgets('renders pages, page count, and add button', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: PageManagerSheet(
               pages: pages,
@@ -51,7 +53,7 @@ void main() {
       int? selected;
 
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: PageManagerSheet(
               pages: pages,
@@ -76,7 +78,7 @@ void main() {
       var added = false;
 
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: PageManagerSheet(
               pages: pages,
@@ -99,7 +101,7 @@ void main() {
 
     testWidgets('delete button shown when more than 1 page', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: PageManagerSheet(
               pages: pages,
@@ -119,7 +121,7 @@ void main() {
 
     testWidgets('delete confirmation dialog appears on tap', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: PageManagerSheet(
               pages: pages,
@@ -144,7 +146,7 @@ void main() {
       String? deletedId;
 
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: PageManagerSheet(
               pages: pages,
@@ -170,7 +172,7 @@ void main() {
 
     testWidgets('paper style dropdown shows current style', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: PageManagerSheet(
               pages: pages,

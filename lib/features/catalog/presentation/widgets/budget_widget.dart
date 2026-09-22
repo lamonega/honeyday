@@ -160,7 +160,8 @@ class _BudgetWidgetState extends State<BudgetWidget> {
     final netBalance = _config.netBalance;
     final cs = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
-    final isDefaultTitle = _config.title == l10n.catalogBudgetTitle;
+    final isDefaultTitle =
+        _config.title.isEmpty || _config.title == l10n.catalogBudgetTitle;
     final displayTitle =
         isDefaultTitle ? l10n.catalogBudgetTitle : _config.title;
 

@@ -9,6 +9,8 @@ import 'package:honeyday/features/catalog/presentation/widgets/journal_block_wid
 import 'package:honeyday/features/catalog/presentation/widgets/text_box/text_box_config.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/text_box_widget.dart';
 
+import '../../../../helpers/pump_app.dart';
+
 void main() {
   group('CatalogRegistry Tests', () {
     test(
@@ -100,7 +102,7 @@ void main() {
       tester,
     ) async {
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: Builder(
               builder: (context) => CatalogRegistry.buildWidget(
@@ -123,7 +125,9 @@ void main() {
   group('CalendarGridWidget & CalendarGridConfig Tests', () {
     test('Config parsing with fallback', () {
       final config = CalendarGridConfig.fromJsonString('');
-      expect(config.title, 'Hábitos Semanales');
+      // Default titles stay empty; the UI resolves them via localized
+      // strings (see catalogHabitsTitle).
+      expect(config.title, '');
       expect(config.habits.length, 3);
       expect(config.habits.first.checks.length, 7);
 
@@ -137,7 +141,7 @@ void main() {
         String? updatedJson;
 
         await tester.pumpWidget(
-          MaterialApp(
+          testMaterialApp(
             home: Scaffold(
               body: SizedBox(
                 width: 350,
@@ -209,7 +213,7 @@ void main() {
       String? updatedJson;
 
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: SizedBox(
               width: 400,
@@ -256,7 +260,7 @@ void main() {
       String? updatedJson;
 
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: SizedBox(
               width: 350,
@@ -304,7 +308,7 @@ void main() {
       String? updatedJson;
 
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: SizedBox(
               width: 250,
@@ -338,7 +342,7 @@ void main() {
       'renders 4 paper design options (Líneas, Puntos, En blanco, Cuadrícula)',
       (tester) async {
         await tester.pumpWidget(
-          const MaterialApp(home: Scaffold(body: NewPageDesignDialog())),
+          testMaterialApp(home: const Scaffold(body: NewPageDesignDialog())),
         );
 
         expect(find.text('Diseño de la Página'), findsNothing);
@@ -350,45 +354,44 @@ void main() {
       },
     );
 
-    testWidgets(
-      'selecting option and tapping Crear returns selected style',
-      (tester) async {
-        String? chosen;
-        await tester.pumpWidget(
-          MaterialApp(
-            home: Scaffold(
-              body: Builder(
-                builder: (context) => ElevatedButton(
-                  onPressed: () async {
-                    chosen = await showNewPageDesignDialog(context);
-                  },
-                  child: const Text('Open'),
-                ),
+    testWidgets('selecting option and tapping Crear returns selected style', (
+      tester,
+    ) async {
+      String? chosen;
+      await tester.pumpWidget(
+        testMaterialApp(
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => ElevatedButton(
+                onPressed: () async {
+                  chosen = await showNewPageDesignDialog(context);
+                },
+                child: const Text('Open'),
               ),
             ),
           ),
-        );
+        ),
+      );
 
-        await tester.tap(find.text('Open'));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
 
-        // Tap 'Líneas'
-        await tester.tap(find.text('Líneas'));
-        await tester.pumpAndSettle();
+      // Tap 'Líneas'
+      await tester.tap(find.text('Líneas'));
+      await tester.pumpAndSettle();
 
-        // Tap 'Crear'
-        await tester.tap(find.text('Crear'));
-        await tester.pumpAndSettle();
+      // Tap 'Crear'
+      await tester.tap(find.text('Crear'));
+      await tester.pumpAndSettle();
 
-        expect(chosen, 'lined');
-      },
-    );
+      expect(chosen, 'lined');
+    });
   });
 
   group('StaticDesignElements Rendering Tests', () {
     testWidgets('renders static shapes without errors', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: Column(
               children: [

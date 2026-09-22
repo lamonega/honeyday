@@ -3,14 +3,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/transformable_box.dart';
 
+import '../../../../helpers/pump_app.dart';
+
 void main() {
   group('TransformableBox Tests', () {
     testWidgets(
       'renders pure child without transform handles in writing mode',
       (tester) async {
         await tester.pumpWidget(
-          const MaterialApp(
-            home: Scaffold(
+          testMaterialApp(
+            home: const Scaffold(
               body: Stack(
                 children: [
                   TransformableBox(
@@ -38,7 +40,7 @@ void main() {
       var deleteClicked = false;
 
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: Stack(
               children: [
@@ -69,7 +71,7 @@ void main() {
       Offset? updatedPos;
 
       await tester.pumpWidget(
-        MaterialApp(
+        testMaterialApp(
           home: Scaffold(
             body: Stack(
               children: [
@@ -103,7 +105,7 @@ void main() {
         await tester.pumpWidget(
           StatefulBuilder(
             builder: (context, setState) {
-              return MaterialApp(
+              return testMaterialApp(
                 home: Scaffold(
                   body: Stack(
                     children: [
@@ -149,7 +151,7 @@ void main() {
         var centerCalled = false;
 
         await tester.pumpWidget(
-          MaterialApp(
+          testMaterialApp(
             home: Scaffold(
               body: Stack(
                 children: [

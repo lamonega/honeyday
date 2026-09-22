@@ -1,0 +1,6 @@
+tags:
+  golden:
+    # Golden tests compare against committed PNGs; they run everywhere but are
+    # tagged so they can be excluded with `--exclude-tags golden`.
+    targets:
+      - default

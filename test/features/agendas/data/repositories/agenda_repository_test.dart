@@ -65,25 +65,24 @@ void main() {
       },
     );
 
-    test(
-      'createPage keeps updatedAt within a plausible range',
-      () async {
-        final agenda = await repository.createAgenda(title: 'Timestamps');
-        await repository.createPage(agendaId: agenda.id, pageNumber: 2);
+    test('createPage keeps updatedAt within a plausible range', () async {
+      final agenda = await repository.createAgenda(title: 'Timestamps');
+      await repository.createPage(agendaId: agenda.id, pageNumber: 2);
 
-        final updated = await repository.getAgenda(agenda.id);
-        final updatedAt = updated!.updatedAt;
-        expect(
-          updatedAt.isBefore(DateTime.now().toUtc().add(const Duration(days: 1))),
-          isTrue,
-          reason: 'updatedAt must not be written in the wrong epoch unit',
-        );
-        expect(
-          updatedAt.isAfter(DateTime.now().toUtc().subtract(const Duration(days: 1))),
-          isTrue,
-        );
-      },
-    );
+      final updated = await repository.getAgenda(agenda.id);
+      final updatedAt = updated!.updatedAt;
+      expect(
+        updatedAt.isBefore(DateTime.now().toUtc().add(const Duration(days: 1))),
+        isTrue,
+        reason: 'updatedAt must not be written in the wrong epoch unit',
+      );
+      expect(
+        updatedAt.isAfter(
+          DateTime.now().toUtc().subtract(const Duration(days: 1)),
+        ),
+        isTrue,
+      );
+    });
 
     test(
       'deletePage soft-deletes the page and decrements agenda pageCount',
@@ -204,7 +203,7 @@ void main() {
       final pages = await repository.watchPages(agenda.id).first;
       final pageId = pages.first.id;
 
-        const strokeId = 'stroke-uuid-1';
+      const strokeId = 'stroke-uuid-1';
       await repository.insertStroke(
         InkStroke(
           id: strokeId,

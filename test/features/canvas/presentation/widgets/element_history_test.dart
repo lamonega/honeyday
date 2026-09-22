@@ -4,12 +4,12 @@ import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/element_history.dart';
 
 CanvasWidgetData _el(String id, {double x = 0}) => CanvasWidgetData(
-      id: id,
-      pageId: 'page-1',
-      widgetType: 'text_box',
-      position: Offset(x, 0),
-      size: const Size(100, 50),
-    );
+  id: id,
+  pageId: 'page-1',
+  widgetType: 'text_box',
+  position: Offset(x, 0),
+  size: const Size(100, 50),
+);
 
 void main() {
   group('ElementHistory', () {

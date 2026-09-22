@@ -7,6 +7,8 @@ import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/page_surface.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/transformable_box.dart';
 
+import '../../../../helpers/pump_app.dart';
+
 void main() {
   group('PageViewCanvas Multi-Layer Stack Tests', () {
     testWidgets(
@@ -21,9 +23,9 @@ void main() {
         );
 
         await tester.pumpWidget(
-          const ProviderScope(
-            child: MaterialApp(
-              home: Scaffold(
+          ProviderScope(
+            child: testMaterialApp(
+              home: const Scaffold(
                 body: PageViewCanvas(
                   pageId: 'page-1',
                   initialElements: [sampleElement],
@@ -62,8 +64,8 @@ void main() {
       await tester.pumpWidget(
         UncontrolledProviderScope(
           container: container,
-          child: const MaterialApp(
-            home: Scaffold(
+          child: testMaterialApp(
+            home: const Scaffold(
               body: PageViewCanvas(
                 pageId: 'page-1',
                 initialElements: [sampleElement],
@@ -78,6 +80,12 @@ void main() {
 
       // Switch to edit mode via provider
       container.read(canvasModeProvider.notifier).setEdit();
+      await tester.pumpAndSettle();
+
+      // Selection is intentionally not seeded with the first element, so
+      // handles only appear once the user taps the element to select it.
+      expect(find.byIcon(Icons.refresh_rounded), findsNothing);
+      await tester.tap(find.text('budget_calc'));
       await tester.pumpAndSettle();
 
       // Now edit handles must be visible

@@ -199,12 +199,15 @@ class _TransformableBoxState extends State<TransformableBox>
                 ),
               ),
 
-              // Delete handle
+              // Delete handle. Raised onto the same row as the rotation
+              // handle: at the previous height it overlapped the NE resize
+              // dot (which sits on the element's top-right corner and is
+              // painted above it), swallowing taps meant for deletion.
               Positioned(
                 left: kTransformHMargin +
                     widget.size.width -
                     kHandleCircleSize / 2,
-                top: kTransformTopMargin - kHandleCircleSize + 6,
+                top: kTransformTopMargin - kRotationHandleTopOffset,
                 child: DeleteHandle(onTap: widget.onDelete),
               ),
 
