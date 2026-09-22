@@ -103,4 +103,8 @@ class DriftAgendaRepository implements FullAgendaRepository {
 
   @override
   Future<void> clearStrokes(String pageId) => _strokeDao.clearStrokes(pageId);
+
+  @override
+  Future<void> replaceStrokes(String pageId, List<InkStroke> strokes) =>
+      _strokeDao.replaceStrokes(pageId, strokes);
 }

@@ -83,14 +83,14 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
     _configHelper = CatalogConfigHelper<TextBoxConfig>(
       parseConfig: TextBoxConfig.fromJsonString,
       configToJson: (c) => c.toJsonString(),
-      onConfigChanged: widget.onConfigChanged,
       initialJson: widget.configJson,
-    );
+    )..onConfigChanged = widget.onConfigChanged;
   }
 
   @override
   void didUpdateWidget(TextBoxWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _configHelper.onConfigChanged = widget.onConfigChanged;
     if (oldWidget.configJson != widget.configJson) {
       _configHelper.updateFromJson(widget.configJson);
     }

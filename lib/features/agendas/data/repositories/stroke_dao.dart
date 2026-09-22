@@ -65,6 +65,22 @@ class StrokeDao {
     });
   }
 
+  /// Replaces all strokes belonging to [pageId] with [strokes] atomically.
+  ///
+  /// Delete and insert run in a single transaction so a failure mid-way can
+  /// never leave a page with its ink half-erased.
+  Future<void> replaceStrokes(String pageId, List<InkStroke> strokes) async {
+    await _db.transaction(() async {
+      await (_db.delete(
+        _db.strokes,
+      )..where((tbl) => tbl.pageId.equals(pageId))).go();
+      if (strokes.isEmpty) return;
+      await _db.batch((batch) {
+        batch.insertAll(_db.strokes, strokes.map(_strokeToCompanion).toList());
+      });
+    });
+  }
+
   /// Permanently deletes the stroke identified by [id].
   Future<void> deleteStroke(String id) async {
     await (_db.delete(_db.strokes)..where((tbl) => tbl.id.equals(id))).go();

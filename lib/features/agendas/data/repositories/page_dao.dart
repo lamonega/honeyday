@@ -52,10 +52,22 @@ class PageDao {
 
       await _db.into(_db.pages).insert(pageCompanion);
 
-      await _db.customStatement(
-        'UPDATE agendas SET page_count = page_count + 1, updated_at = ? WHERE id = ?',
-        [now.millisecondsSinceEpoch, agendaId],
-      );
+      // Increment the agenda's page count through Drift's typed API so the
+      // DateTime is serialized consistently (raw SQL here previously wrote
+      // milliseconds where drift stores seconds, corrupting updatedAt).
+      final agenda = await (_db.select(_db.agendas)
+            ..where((tbl) => tbl.id.equals(agendaId)))
+          .getSingleOrNull();
+      if (agenda != null) {
+        await (_db.update(_db.agendas)
+              ..where((tbl) => tbl.id.equals(agendaId)))
+            .write(
+          AgendasCompanion(
+            pageCount: Value(agenda.pageCount + 1),
+            updatedAt: Value(now),
+          ),
+        );
+      }
 
       final created = await (_db.select(
         _db.pages,

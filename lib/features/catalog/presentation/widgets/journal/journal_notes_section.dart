@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
 /// In interactive mode a [TextFormField] allows the user to type notes. In
 /// non-interactive mode the notes are displayed as plain text, or a "no notes"
 /// placeholder when empty.
-class JournalNotesSection extends StatelessWidget {
+class JournalNotesSection extends StatefulWidget {
+  /// Creates a [JournalNotesSection].
   const JournalNotesSection({
     required this.notes,
     required this.elementId,
@@ -40,6 +41,35 @@ class JournalNotesSection extends StatelessWidget {
   final String noNotesText;
 
   @override
+  State<JournalNotesSection> createState() => _JournalNotesSectionState();
+}
+
+class _JournalNotesSectionState extends State<JournalNotesSection> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.notes);
+  }
+
+  @override
+  void didUpdateWidget(JournalNotesSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Adopt external changes (undo/redo, config reload) without clobbering
+    // in-flight typing.
+    if (widget.notes != _controller.text) {
+      _controller.text = widget.notes;
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -47,7 +77,7 @@ class JournalNotesSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Text(
-          headerText,
+          widget.headerText,
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
@@ -57,10 +87,10 @@ class JournalNotesSection extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Expanded(
-          child: isInteractive
+          child: widget.isInteractive
               ? TextFormField(
-                  initialValue: notes,
-                  key: ValueKey('notes_${elementId}_$notes'),
+                  controller: _controller,
+                  key: ValueKey('notes_${widget.elementId}'),
                   maxLines: null,
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
@@ -70,7 +100,7 @@ class JournalNotesSection extends StatelessWidget {
                     color: colorScheme.onSurface,
                   ),
                   decoration: InputDecoration(
-                    hintText: hintText,
+                    hintText: widget.hintText,
                     hintStyle: TextStyle(
                       fontSize: 11,
                       color: colorScheme.onSurfaceVariant,
@@ -82,17 +112,17 @@ class JournalNotesSection extends StatelessWidget {
                       borderSide: BorderSide(color: colorScheme.primary),
                     ),
                   ),
-                  onChanged: onChanged,
+                  onChanged: widget.onChanged,
                 )
               : Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(6),
                   child: Text(
-                    notes.isEmpty ? noNotesText : notes,
+                    widget.notes.isEmpty ? widget.noNotesText : widget.notes,
                     style: TextStyle(
                       fontSize: 12,
                       height: 1.6,
-                      color: notes.isEmpty
+                      color: widget.notes.isEmpty
                           ? colorScheme.onSurfaceVariant
                           : colorScheme.onSurface,
                     ),

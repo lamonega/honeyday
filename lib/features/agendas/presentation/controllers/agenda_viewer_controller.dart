@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:honeyday/features/agendas/data/repositories/agenda_repository_provider.dart';
@@ -59,7 +61,7 @@ final Provider<AgendaViewerController> agendaViewerControllerProvider =
 /// Encapsulates page management, element lifecycle, and vector stroke synchronization.
 class AgendaViewerController {
   /// Constructs an [AgendaViewerController] using the provided [FullAgendaRepository].
-  const AgendaViewerController(this._repository);
+  AgendaViewerController(this._repository);
 
   final FullAgendaRepository _repository;
   static const _uuid = Uuid();
@@ -138,9 +140,29 @@ class AgendaViewerController {
   }
 
   /// Synchronizes vector ink strokes for a page.
-  Future<void> syncStrokes(String pageId, List<InkStroke> newStrokes) async {
-    await _repository.clearStrokes(pageId);
-    if (newStrokes.isEmpty) return;
-    await _repository.insertStrokesBatch(newStrokes);
+  ///
+  /// Replaces the page's strokes atomically (single transaction) and
+  /// serializes concurrent calls per page so overlapping syncs cannot
+  /// interleave their delete/insert pairs.
+  Future<void> syncStrokes(String pageId, List<InkStroke> newStrokes) {
+    final pending = _pendingStrokeSyncs[pageId] ?? Future<void>.value();
+    final next = pending.then(
+      (_) => _repository.replaceStrokes(pageId, newStrokes),
+    );
+    // Keep the chain alive even if one sync fails; the failure still
+    // propagates to this call's caller through `next`.
+    final guarded = next.then<void>((_) {}, onError: (Object _) {});
+    _pendingStrokeSyncs[pageId] = guarded;
+    unawaited(
+      guarded.whenComplete(() {
+        if (identical(_pendingStrokeSyncs[pageId], guarded)) {
+          unawaited(_pendingStrokeSyncs.remove(pageId));
+        }
+      }),
+    );
+    return next;
   }
+
+  /// In-flight stroke syncs keyed by page, used to serialize replacements.
+  final Map<String, Future<void>> _pendingStrokeSyncs = {};
 }

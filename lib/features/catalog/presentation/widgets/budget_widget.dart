@@ -74,14 +74,14 @@ class _BudgetWidgetState extends State<BudgetWidget> {
     _configHelper = CatalogConfigHelper<BudgetConfig>(
       parseConfig: BudgetConfig.fromJsonString,
       configToJson: (c) => c.toJsonString(),
-      onConfigChanged: widget.onConfigChanged,
       initialJson: widget.configJson,
-    );
+    )..onConfigChanged = widget.onConfigChanged;
   }
 
   @override
   void didUpdateWidget(BudgetWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _configHelper.onConfigChanged = widget.onConfigChanged;
     if (oldWidget.configJson != widget.configJson) {
       _configHelper.updateFromJson(widget.configJson);
     }

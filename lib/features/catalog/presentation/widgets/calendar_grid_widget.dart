@@ -77,14 +77,14 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
     _configHelper = CatalogConfigHelper<CalendarGridConfig>(
       parseConfig: CalendarGridConfig.fromJsonString,
       configToJson: (c) => c.toJsonString(),
-      onConfigChanged: widget.onConfigChanged,
       initialJson: widget.configJson,
-    );
+    )..onConfigChanged = widget.onConfigChanged;
   }
 
   @override
   void didUpdateWidget(CalendarGridWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _configHelper.onConfigChanged = widget.onConfigChanged;
     if (oldWidget.configJson != widget.configJson) {
       _configHelper.updateFromJson(widget.configJson);
     }

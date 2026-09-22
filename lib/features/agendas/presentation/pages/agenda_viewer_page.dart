@@ -555,6 +555,29 @@ class _PageContentLoader extends ConsumerWidget {
     final elementsAsync = ref.watch(pageElementsProvider(page.id));
     final strokesAsync = ref.watch(pageStrokesProvider(page.id));
     final controller = ref.read(agendaViewerControllerProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // PageViewCanvas and InkCanvas only consume their initial lists on mount;
+    // mounting while the streams are still loading would render the page
+    // blank and, worse, let a first stroke wipe previously saved ink.
+    if (elementsAsync.isLoading || strokesAsync.isLoading) {
+      return Center(
+        child: CircularProgressIndicator(color: colorScheme.primary),
+      );
+    }
+
+    final elementsAsyncError = elementsAsync.hasError
+        ? elementsAsync
+        : strokesAsync;
+    if (elementsAsyncError.hasError) {
+      final error = elementsAsyncError.error;
+      return Center(
+        child: Text(
+          AppLocalizations.of(context).agendaPagesError(error.toString()),
+          style: TextStyle(color: colorScheme.onSurfaceVariant),
+        ),
+      );
+    }
 
     final elements = elementsAsync.value ?? [];
     final strokes = strokesAsync.value ?? [];

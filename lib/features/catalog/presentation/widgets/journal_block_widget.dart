@@ -76,14 +76,14 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
     _configHelper = CatalogConfigHelper<JournalBlockConfig>(
       parseConfig: JournalBlockConfig.fromJsonString,
       configToJson: (c) => c.toJsonString(),
-      onConfigChanged: widget.onConfigChanged,
       initialJson: widget.configJson,
-    );
+    )..onConfigChanged = widget.onConfigChanged;
   }
 
   @override
   void didUpdateWidget(JournalBlockWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
+    _configHelper.onConfigChanged = widget.onConfigChanged;
     if (oldWidget.configJson != widget.configJson) {
       _configHelper.updateFromJson(widget.configJson);
     }

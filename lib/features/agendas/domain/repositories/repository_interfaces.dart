@@ -42,6 +42,9 @@ abstract interface class StrokeRepository {
   Future<void> insertStrokesBatch(List<InkStroke> strokes);
   Future<void> deleteStroke(String id);
   Future<void> clearStrokes(String pageId);
+
+  /// Atomically replaces every stroke on [pageId] with [strokes].
+  Future<void> replaceStrokes(String pageId, List<InkStroke> strokes);
 }
 
 /// Combined repository interface for backward compatibility.
