@@ -139,10 +139,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
         newSize,
         newRotation,
       );
-      widget.onElementUpdated?.call(
-        _elementManager.elements.firstWhere((e) => e.id == elementId),
-      );
-      widget.onDirty?.call();
+      _notifyElementUpdated(elementId);
     });
   }
 
@@ -157,30 +154,21 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
   void _handleAdaptToPage(String elementId) {
     setState(() {
       _elementManager.handleAdaptToPage(elementId);
-      widget.onElementUpdated?.call(
-        _elementManager.elements.firstWhere((e) => e.id == elementId),
-      );
-      widget.onDirty?.call();
+      _notifyElementUpdated(elementId);
     });
   }
 
   void _handleFitWidth(String elementId) {
     setState(() {
       _elementManager.handleFitWidth(elementId);
-      widget.onElementUpdated?.call(
-        _elementManager.elements.firstWhere((e) => e.id == elementId),
-      );
-      widget.onDirty?.call();
+      _notifyElementUpdated(elementId);
     });
   }
 
   void _handleCenter(String elementId) {
     setState(() {
       _elementManager.handleCenter(elementId);
-      widget.onElementUpdated?.call(
-        _elementManager.elements.firstWhere((e) => e.id == elementId),
-      );
-      widget.onDirty?.call();
+      _notifyElementUpdated(elementId);
     });
   }
 
@@ -191,11 +179,24 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
   ) {
     setState(() {
       _elementManager.handleColorChanged(elementId, fillColor, borderColor);
-      widget.onElementUpdated?.call(
-        _elementManager.elements.firstWhere((e) => e.id == elementId),
-      );
-      widget.onDirty?.call();
+      _notifyElementUpdated(elementId);
     });
+  }
+
+  /// Reports the element back to [PageViewCanvas.onElementUpdated] after a
+  /// mutation, marking the page dirty.
+  ///
+  /// No-op when the element no longer exists (it may have been removed by a
+  /// concurrent deletion), matching the guards used before the manager
+  /// extraction.
+  void _notifyElementUpdated(String elementId) {
+    final index = _elementManager.elements.indexWhere(
+      (e) => e.id == elementId,
+    );
+    if (index != -1) {
+      widget.onElementUpdated?.call(_elementManager.elements[index]);
+      widget.onDirty?.call();
+    }
   }
 
   void _addElement(CanvasWidgetData element) {
