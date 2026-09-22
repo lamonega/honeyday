@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:drift/drift.dart';
 import 'package:honeyday/core/database/app_database.dart' hide Agenda, AgendaPage;
 import 'package:honeyday/features/agendas/data/models/agenda_page_dto.dart';
@@ -31,6 +33,10 @@ class PageDao {
   }
 
   /// Creates a new page and atomically increments the parent agenda's page count.
+  ///
+  /// The effective page number is derived inside the transaction as
+  /// `max(pageNumber, highest live number + 1)` so callers can never create
+  /// duplicate numbers after an intermediate page was deleted.
   Future<AgendaPage> createPage({
     required String agendaId,
     required int pageNumber,
@@ -40,10 +46,20 @@ class PageDao {
     final pageId = _uuid.v4();
 
     return await _db.transaction(() async {
+      final latest = await (_db.select(_db.pages)
+            ..where(
+              (tbl) =>
+                  tbl.agendaId.equals(agendaId) & tbl.isDeleted.equals(false),
+            )
+            ..orderBy([(t) => OrderingTerm.desc(t.pageNumber)])
+            ..limit(1))
+          .getSingleOrNull();
+      final nextNumber = math.max(pageNumber, (latest?.pageNumber ?? 0) + 1);
+
       final pageCompanion = PagesCompanion.insert(
         id: pageId,
         agendaId: agendaId,
-        pageNumber: pageNumber,
+        pageNumber: nextNumber,
         backgroundStyle: Value(backgroundStyle),
         createdAt: Value(now),
         updatedAt: Value(now),
@@ -90,13 +106,36 @@ class PageDao {
   }
 
   /// Soft-deletes the page identified by [pageId].
+  ///
+  /// Runs atomically with a decrement of the parent agenda's page count
+  /// (never below 1) so the badge shown in the home list stays truthful.
   Future<void> deletePage(String pageId) async {
-    await (_db.update(_db.pages)..where((tbl) => tbl.id.equals(pageId))).write(
-      PagesCompanion(
-        isDeleted: const Value(true),
-        updatedAt: Value(DateTime.now().toUtc()),
-      ),
-    );
+    await _db.transaction(() async {
+      final page = await (_db.select(_db.pages)
+            ..where((tbl) => tbl.id.equals(pageId)))
+          .getSingleOrNull();
+      if (page == null || page.isDeleted) return;
+
+      final now = DateTime.now().toUtc();
+      await (_db.update(_db.pages)..where((tbl) => tbl.id.equals(pageId)))
+          .write(
+        PagesCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
+      );
+
+      final agenda = await (_db.select(_db.agendas)
+            ..where((tbl) => tbl.id.equals(page.agendaId)))
+          .getSingleOrNull();
+      if (agenda != null && agenda.pageCount > 1) {
+        await (_db.update(_db.agendas)
+              ..where((tbl) => tbl.id.equals(page.agendaId)))
+            .write(
+          AgendasCompanion(
+            pageCount: Value(agenda.pageCount - 1),
+            updatedAt: Value(now),
+          ),
+        );
+      }
+    });
   }
 
   /// Reorders pages by assigning sequential page numbers in a transaction.

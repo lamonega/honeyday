@@ -66,6 +66,99 @@ void main() {
     );
 
     test(
+      'createPage keeps updatedAt within a plausible range',
+      () async {
+        final agenda = await repository.createAgenda(title: 'Timestamps');
+        await repository.createPage(agendaId: agenda.id, pageNumber: 2);
+
+        final updated = await repository.getAgenda(agenda.id);
+        final updatedAt = updated!.updatedAt;
+        expect(
+          updatedAt.isBefore(DateTime.now().toUtc().add(const Duration(days: 1))),
+          isTrue,
+          reason: 'updatedAt must not be written in the wrong epoch unit',
+        );
+        expect(
+          updatedAt.isAfter(DateTime.now().toUtc().subtract(const Duration(days: 1))),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'deletePage soft-deletes the page and decrements agenda pageCount',
+      () async {
+        final agenda = await repository.createAgenda(title: 'Borrado');
+        final page2 = await repository.createPage(
+          agendaId: agenda.id,
+          pageNumber: 2,
+        );
+
+        await repository.deletePage(page2.id);
+
+        final pages = await repository.watchPages(agenda.id).first;
+        expect(pages.length, 1);
+
+        final updated = await repository.getAgenda(agenda.id);
+        expect(updated?.pageCount, 1);
+      },
+    );
+
+    test(
+      'createPage never collides after an intermediate page was deleted',
+      () async {
+        final agenda = await repository.createAgenda(title: 'Colisiones');
+        final page2 = await repository.createPage(
+          agendaId: agenda.id,
+          pageNumber: 2,
+        );
+        await repository.createPage(agendaId: agenda.id, pageNumber: 3);
+
+        // Delete middle page; live pages are now 1 and 3.
+        await repository.deletePage(page2.id);
+
+        // A stale caller-supplied number (2) must not collide with page 3.
+        final page4 = await repository.createPage(
+          agendaId: agenda.id,
+          pageNumber: 2,
+        );
+        expect(page4.pageNumber, 4);
+
+        final pages = await repository.watchPages(agenda.id).first;
+        expect(pages.map((p) => p.pageNumber).toList(), [1, 3, 4]);
+      },
+    );
+
+    test(
+      'replaceStrokes atomically swaps the full stroke set of a page',
+      () async {
+        final agenda = await repository.createAgenda(title: 'Tinta');
+        final pageId = (await repository.watchPages(agenda.id).first).first.id;
+
+        InkStroke stroke(String id) => InkStroke(
+          id: id,
+          pageId: pageId,
+          tool: InkToolType.pen,
+          colorHex: '#FF1E293B',
+          strokeWidth: 3,
+          points: [const StrokePoint(1, 1, 0.5)],
+          createdAt: DateTime.now().toUtc(),
+        );
+
+        await repository.insertStrokesBatch([stroke('a'), stroke('b')]);
+        expect((await repository.watchStrokes(pageId).first).length, 2);
+
+        await repository.replaceStrokes(pageId, [stroke('c')]);
+        final swapped = await repository.watchStrokes(pageId).first;
+        expect(swapped.length, 1);
+        expect(swapped.single.id, 'c');
+
+        await repository.replaceStrokes(pageId, []);
+        expect((await repository.watchStrokes(pageId).first).isEmpty, isTrue);
+      },
+    );
+
+    test(
       'upsertCanvasElement adds and updates modular widgets on a page',
       () async {
         final agenda = await repository.createAgenda(title: 'Estudios');

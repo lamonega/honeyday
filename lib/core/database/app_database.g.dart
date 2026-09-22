@@ -999,7 +999,7 @@ class $CanvasElementsTable extends CanvasElements
     false,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
-    defaultValue: const Constant(0.0),
+    defaultValue: const Constant(0),
   );
   static const VerificationMeta _posYMeta = const VerificationMeta('posY');
   @override
@@ -1009,7 +1009,7 @@ class $CanvasElementsTable extends CanvasElements
     false,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
-    defaultValue: const Constant(0.0),
+    defaultValue: const Constant(0),
   );
   static const VerificationMeta _widthMeta = const VerificationMeta('width');
   @override
@@ -1019,7 +1019,7 @@ class $CanvasElementsTable extends CanvasElements
     false,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
-    defaultValue: const Constant(220.0),
+    defaultValue: const Constant(220),
   );
   static const VerificationMeta _heightMeta = const VerificationMeta('height');
   @override
@@ -1029,7 +1029,7 @@ class $CanvasElementsTable extends CanvasElements
     false,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
-    defaultValue: const Constant(180.0),
+    defaultValue: const Constant(180),
   );
   static const VerificationMeta _rotationMeta = const VerificationMeta(
     'rotation',
@@ -1041,7 +1041,7 @@ class $CanvasElementsTable extends CanvasElements
     false,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
-    defaultValue: const Constant(0.0),
+    defaultValue: const Constant(0),
   );
   static const VerificationMeta _configJsonMeta = const VerificationMeta(
     'configJson',
@@ -1722,7 +1722,7 @@ class $StrokesTable extends Strokes with TableInfo<$StrokesTable, Stroke> {
     false,
     type: DriftSqlType.double,
     requiredDuringInsert: false,
-    defaultValue: const Constant(3.0),
+    defaultValue: const Constant(3),
   );
   static const VerificationMeta _pointsJsonMeta = const VerificationMeta(
     'pointsJson',
@@ -2242,6 +2242,22 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $PagesTable pages = $PagesTable(this);
   late final $CanvasElementsTable canvasElements = $CanvasElementsTable(this);
   late final $StrokesTable strokes = $StrokesTable(this);
+  late final Index idxAgendasUpdatedAt = Index(
+    'idx_agendas_updated_at',
+    'CREATE INDEX idx_agendas_updated_at ON agendas (updated_at)',
+  );
+  late final Index idxPagesAgendaId = Index(
+    'idx_pages_agenda_id',
+    'CREATE INDEX idx_pages_agenda_id ON pages (agenda_id)',
+  );
+  late final Index idxCanvasElementsPageId = Index(
+    'idx_canvas_elements_page_id',
+    'CREATE INDEX idx_canvas_elements_page_id ON canvas_elements (page_id)',
+  );
+  late final Index idxStrokesPageId = Index(
+    'idx_strokes_page_id',
+    'CREATE INDEX idx_strokes_page_id ON strokes (page_id)',
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2251,6 +2267,10 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     pages,
     canvasElements,
     strokes,
+    idxAgendasUpdatedAt,
+    idxPagesAgendaId,
+    idxCanvasElementsPageId,
+    idxStrokesPageId,
   ];
 }
 

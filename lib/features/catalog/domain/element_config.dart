@@ -95,18 +95,21 @@ class ElementConfig {
       return const ElementConfig();
     }
     try {
-      final map = jsonDecode(jsonStr) as Map<String, dynamic>;
-      return ElementConfig(
-        colorHex: map['color'] as String? ?? '#FEF3C7',
-        borderColorHex: map['borderColor'] as String? ?? '#D97706',
-        borderWidth: (map['borderWidth'] as num?)?.toDouble() ?? 1.5,
-        opacity: (map['opacity'] as num?)?.toDouble() ?? 1.0,
-        cornerRadius: (map['cornerRadius'] as num?)?.toDouble() ?? 12.0,
-        customProps: map,
-      );
-    } on Exception catch (_) {
-      return const ElementConfig();
+      final dynamic decoded = jsonDecode(jsonStr);
+      if (decoded is Map<String, dynamic>) {
+        return ElementConfig(
+          colorHex: decoded['color']?.toString() ?? '#FEF3C7',
+          borderColorHex: decoded['borderColor']?.toString() ?? '#D97706',
+          borderWidth: (decoded['borderWidth'] as num?)?.toDouble() ?? 1.5,
+          opacity: (decoded['opacity'] as num?)?.toDouble() ?? 1.0,
+          cornerRadius: (decoded['cornerRadius'] as num?)?.toDouble() ?? 12.0,
+          customProps: decoded,
+        );
+      }
+    } on Object catch (_) {
+      // Fall through to the default config below.
     }
+    return const ElementConfig();
   }
 
   /// Fill color in hex format (e.g. '#FEF3C7' or 'transparent').

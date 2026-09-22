@@ -6,7 +6,8 @@ part 'app_database.g.dart';
 /// Represents user-created agendas in Honeyday.
 ///
 /// What: Stores agenda metadata such as title, visual cover theme, and page count.
-/// Why: Provides offline-first storage and audit timestamps compatible with Supabase sync.
+/// Why: Provides offline-first storage and audit timestamps.
+@TableIndex(name: 'idx_agendas_updated_at', columns: {#updatedAt})
 class Agendas extends Table {
   /// UUID v4 unique identifier.
   TextColumn get id => text()();
@@ -37,6 +38,7 @@ class Agendas extends Table {
 ///
 /// What: Stores the page sequence index and visual paper texture/grid type.
 /// Why: Allows dynamic page reordering, insertion, and custom page backgrounds.
+@TableIndex(name: 'idx_pages_agenda_id', columns: {#agendaId})
 class Pages extends Table {
   /// UUID v4 unique identifier.
   TextColumn get id => text()();
@@ -68,6 +70,7 @@ class Pages extends Table {
 ///
 /// What: Stores 2D positioning (X, Y), dimensions (width, height), rotation, and widget configuration.
 /// Why: Decouples widget visual representations from the layout engine, allowing arbitrary transforms.
+@TableIndex(name: 'idx_canvas_elements_page_id', columns: {#pageId})
 class CanvasElements extends Table {
   /// UUID v4 unique identifier.
   TextColumn get id => text()();
@@ -113,6 +116,7 @@ class CanvasElements extends Table {
 ///
 /// What: Stores brush profile, hex color, stroke width, and vector points serialized as JSON.
 /// Why: Allows vector stroke serialization, undo/redo reconstructability, and resolution-independent rendering.
+@TableIndex(name: 'idx_strokes_page_id', columns: {#pageId})
 class Strokes extends Table {
   /// UUID v4 unique identifier.
   TextColumn get id => text()();
@@ -167,7 +171,26 @@ class AppDatabase extends _$AppDatabase {
       );
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (m) => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      // v1 → v2: add indexes over columns queried on every read. createIndex
+      // runs plain `CREATE INDEX` (no IF NOT EXISTS), hence the version guard:
+      // a v1 database has none of these yet.
+      if (from < 2) {
+        await m.createIndex(idxAgendasUpdatedAt);
+        await m.createIndex(idxPagesAgendaId);
+        await m.createIndex(idxCanvasElementsPageId);
+        await m.createIndex(idxStrokesPageId);
+      }
+    },
+    beforeOpen: (details) async {
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
 }
 
 /// Type alias for the Drift-generated [Page] data class to avoid naming conflicts with Flutter's `Page` widget.
