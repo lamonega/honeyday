@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/core/theme/design_tokens.dart';
+import 'package:honeyday/core/widgets/category_filter.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
-import 'package:honeyday/features/catalog/presentation/widgets/category_filter.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Sidebar panel displaying the "Catálogo de Elementos" in Edit Mode.

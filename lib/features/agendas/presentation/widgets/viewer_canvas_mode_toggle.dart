@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 
 /// Floating action button that toggles between writing and reading canvas modes.
@@ -35,7 +34,3 @@ class ViewerCanvasModeToggle extends StatelessWidget {
     );
   }
 }
-
-/// Shows a haptic light feedback.
-Future<void> hapticLight() =>
-    Haptics.vibrate(HapticsType.light).onError((_, _) {});

@@ -10,10 +10,10 @@ import 'package:honeyday/core/theme/app_colors.dart';
 class AgendaCoverPreview extends StatelessWidget {
   /// Constructs an [AgendaCoverPreview].
   const AgendaCoverPreview({
-    super.key,
     required this.title,
     required this.gradient,
     required this.shadowColor,
+    super.key,
   });
 
   /// The agenda title displayed centered on the cover preview.

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/widgets/category_filter.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
-import 'package:honeyday/features/catalog/presentation/widgets/category_filter.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Draggable bottom sheet displaying the catalog of design elements.

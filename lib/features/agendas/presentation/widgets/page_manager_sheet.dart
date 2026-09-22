@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:honeyday/core/theme/paper_style.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/page_manager/page_manager_actions.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/page_manager/page_manager_grid.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Bottom sheet for managing agenda pages: view thumbnails, navigate,
@@ -32,16 +33,6 @@ class PageManagerSheet extends StatefulWidget {
 class _PageManagerSheetState extends State<PageManagerSheet> {
   late List<AgendaPage> _pages;
   late int _currentPageIndex;
-
-  static Map<String, String> _paperStyles(BuildContext context) =>
-      PaperStyle.localizedLabels(context);
-
-  static const _paperIcons = <String, IconData>{
-    'dotted': Icons.grain_rounded,
-    'lined': Icons.view_headline_rounded,
-    'grid': Icons.grid_4x4_rounded,
-    'blank': Icons.crop_portrait_rounded,
-  };
 
   @override
   void initState() {
@@ -78,7 +69,23 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
     widget.onReorderPages(_pages.map((p) => p.id).toList());
   }
 
+  void _onChangePaperStyle(String style) {
+    setState(() {
+      _pages[_currentPageIndex] = _pages[_currentPageIndex]
+          .copyWith(backgroundStyle: style);
+    });
+    widget.onChangePaperStyle(style);
+  }
+
+  void _onAddPage() {
+    Navigator.of(context).pop();
+    widget.onAddPage();
+  }
+
   Future<void> _confirmDelete() async {
+    // At least one page must exist.
+    if (_pages.length <= 1) return;
+
     final currentPage = _currentPageIndex < _pages.length
         ? _pages[_currentPageIndex]
         : null;
@@ -112,65 +119,6 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
       widget.onDeletePage(currentPage.id);
       Navigator.of(context).pop();
     }
-  }
-
-  Widget _buildPageCard(AgendaPage page, int index, ColorScheme colorScheme) {
-    final isCurrent = index == _currentPageIndex;
-    final styleKey = page.backgroundStyle;
-    final icon = _paperIcons[styleKey] ?? Icons.grain_rounded;
-
-    return GestureDetector(
-      onTap: () {
-        widget.onSelectPage(index);
-        Navigator.of(context).pop();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        width: 100,
-        height: 130,
-        decoration: BoxDecoration(
-          color: isCurrent
-              ? colorScheme.primaryContainer
-              : colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isCurrent ? colorScheme.primary : colorScheme.outline,
-            width: isCurrent ? 2 : 1,
-          ),
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              size: 22,
-              color: isCurrent
-                  ? colorScheme.primary
-                  : colorScheme.onSurface.withValues(alpha: 0.4),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              '${index + 1}',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isCurrent
-                    ? colorScheme.primary
-                    : colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              _paperStyles(context)[styleKey] ?? styleKey,
-              style: TextStyle(
-                fontSize: 10,
-                color: colorScheme.onSurface.withValues(alpha: 0.5),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
@@ -209,89 +157,22 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
             ),
           ),
           const SizedBox(height: 12),
-          SizedBox(
-            height: 140,
-            child: ReorderableListView.builder(
-              scrollDirection: Axis.horizontal,
-              onReorderItem: _onReorder,
-              proxyDecorator: (child, index, animation) {
-                return Material(
-                  color: Colors.transparent,
-                  elevation: 6,
-                  shadowColor: Colors.black26,
-                  borderRadius: BorderRadius.circular(12),
-                  child: child,
-                );
-              },
-              itemBuilder: (context, index) {
-                final page = _pages[index];
-                return Container(
-                  key: ValueKey(page.id),
-                  margin: const EdgeInsets.only(right: 10),
-                  child: _buildPageCard(page, index, colorScheme),
-                );
-              },
-              itemCount: _pages.length,
-            ),
+          PageManagerGrid(
+            pages: _pages,
+            currentPageIndex: _currentPageIndex,
+            onSelectPage: (index) {
+              widget.onSelectPage(index);
+              Navigator.of(context).pop();
+            },
+            onReorder: _onReorder,
           ),
           const SizedBox(height: 12),
-          if (currentPage != null)
-            Row(
-              children: [
-                DropdownButton<String>(
-                  value: currentPage.backgroundStyle,
-                  underline: const SizedBox.shrink(),
-                  isDense: true,
-                  items: _paperStyles(context).entries.map((entry) {
-                    return DropdownMenuItem(
-                      value: entry.key,
-                      child: Text(entry.value),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    if (val != null) {
-                      setState(() {
-                        _pages[_currentPageIndex] = _pages[_currentPageIndex]
-                            .copyWith(backgroundStyle: val);
-                      });
-                      widget.onChangePaperStyle(val);
-                    }
-                  },
-                ),
-                const Spacer(),
-                if (_pages.length > 1)
-                  IconButton(
-                    icon: Icon(
-                      Icons.delete_outline_rounded,
-                      size: 20,
-                      color: colorScheme.error,
-                    ),
-                    visualDensity: VisualDensity.compact,
-                    onPressed: _confirmDelete,
-                  ),
-              ],
-            ),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () {
-                Navigator.of(context).pop();
-                widget.onAddPage();
-              },
-              icon: const Icon(Icons.add_rounded, size: 18),
-              label: Text(
-                AppLocalizations.of(context).agendaPageAdd,
-              ),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colorScheme.primary,
-                side: BorderSide(color: colorScheme.primary),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 10),
-              ),
-            ),
+          PageManagerActions(
+            currentPage: currentPage,
+            canDeletePage: _pages.length > 1,
+            onChangePaperStyle: _onChangePaperStyle,
+            onDeletePage: _confirmDelete,
+            onAddPage: _onAddPage,
           ),
         ],
       ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// The notes section of a journal block, containing a labeled header and a
 /// multi-line text area.

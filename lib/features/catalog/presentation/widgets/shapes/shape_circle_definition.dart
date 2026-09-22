@@ -5,7 +5,7 @@ import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Definition for an aesthetic geometric circle or ellipse shape.
 ///
-/// Used by [CatalogRegistry] to register in the catalog sidebar.
+/// Used by `CatalogRegistry` to register in the catalog sidebar.
 final class ShapeCircleDefinition extends AgendaWidgetDefinition {
   const ShapeCircleDefinition();
 

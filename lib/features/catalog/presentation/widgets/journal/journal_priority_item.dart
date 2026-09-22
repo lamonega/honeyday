@@ -4,7 +4,7 @@ import 'package:honeyday/features/catalog/presentation/widgets/journal/journal_c
 /// A single priority row containing a checkbox, text field, and strike-through
 /// styling when completed.
 ///
-/// Used inside [JournalPriorityList] to render each individual priority entry.
+/// Used inside `JournalPriorityList` to render each individual priority entry.
 class JournalPriorityItemWidget extends StatelessWidget {
   const JournalPriorityItemWidget({
     required this.priority,

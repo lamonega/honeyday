@@ -1,5 +1,3 @@
-library;
-
 import 'package:honeyday/core/theme/design_tokens.dart';
 
 /// UI layer constants for the Honeyday app.

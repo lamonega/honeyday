@@ -7,7 +7,7 @@ import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Definition for a decorative horizontal divider line.
 ///
-/// Used by [CatalogRegistry] to register in the catalog sidebar.
+/// Used by `CatalogRegistry` to register in the catalog sidebar.
 final class ShapeDividerDefinition extends AgendaWidgetDefinition {
   const ShapeDividerDefinition();
 

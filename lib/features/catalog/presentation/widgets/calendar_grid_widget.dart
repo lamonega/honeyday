@@ -175,8 +175,19 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
           Row(
             children: [
               Expanded(
-                child: CalendarHeader(days: days),
+                child: Text(
+                  displayTitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
+              const SizedBox(width: 8),
+              CalendarHeader(days: days),
               if (widget.isInteractive) const SizedBox(width: 24),
             ],
           ),
@@ -189,7 +200,6 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
               onEditTitle: _editHabitTitle,
               onRemoveHabit: _removeHabit,
               onAddHabit: _addNewHabit,
-              localizedTitle: displayTitle,
             ),
           ),
         ],

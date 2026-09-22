@@ -5,7 +5,7 @@ import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Definition for a decorative page frame / border.
 ///
-/// Used by [CatalogRegistry] to register in the catalog sidebar.
+/// Used by `CatalogRegistry` to register in the catalog sidebar.
 final class ShapeFrameDefinition extends AgendaWidgetDefinition {
   const ShapeFrameDefinition();
 

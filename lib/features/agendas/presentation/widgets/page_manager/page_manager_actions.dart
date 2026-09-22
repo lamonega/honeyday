@@ -12,6 +12,7 @@ class PageManagerActions extends StatelessWidget {
   /// Creates a [PageManagerActions].
   const PageManagerActions({
     required this.currentPage,
+    required this.canDeletePage,
     required this.onChangePaperStyle,
     required this.onDeletePage,
     required this.onAddPage,
@@ -20,6 +21,12 @@ class PageManagerActions extends StatelessWidget {
 
   /// The currently selected page, or `null` if no page exists.
   final AgendaPage? currentPage;
+
+  /// Whether the delete button should be shown.
+  ///
+  /// At least one page must exist, so deletion is only offered when
+  /// there is more than one page.
+  final bool canDeletePage;
 
   /// Called when the user picks a new paper style key.
   final ValueChanged<String> onChangePaperStyle;
@@ -33,7 +40,7 @@ class PageManagerActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final colorScheme = Theme.of.of(context).colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     final paperStyles = PaperStyle.localizedLabels(context);
 
     return Column(
@@ -57,15 +64,16 @@ class PageManagerActions extends StatelessWidget {
                 },
               ),
               const Spacer(),
-              IconButton(
-                icon: Icon(
-                  Icons.delete_outline_rounded,
-                  size: 20,
-                  color: colorScheme.error,
+              if (canDeletePage)
+                IconButton(
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    size: 20,
+                    color: colorScheme.error,
+                  ),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: onDeletePage,
                 ),
-                visualDensity: VisualDensity.compact,
-                onPressed: onDeletePage,
-              ),
             ],
           ),
         const SizedBox(height: 8),

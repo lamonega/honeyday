@@ -11,10 +11,10 @@ import 'package:flutter/services.dart';
 class AgendaPaperStylePicker extends StatelessWidget {
   /// Constructs an [AgendaPaperStylePicker].
   const AgendaPaperStylePicker({
-    super.key,
     required this.styles,
     required this.selectedPaper,
     required this.onPaperSelected,
+    super.key,
   });
 
   /// Map of paper style keys to their display labels.

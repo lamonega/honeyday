@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
+import 'package:honeyday/core/utils/haptics.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/agenda_viewer_controller.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/viewer_app_bar.dart';

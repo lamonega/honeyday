@@ -5,7 +5,7 @@ import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Definition for a versatile geometric box/card element.
 ///
-/// Used by [CatalogRegistry] to register in the catalog sidebar.
+/// Used by `CatalogRegistry` to register in the catalog sidebar.
 final class ShapeBoxDefinition extends AgendaWidgetDefinition {
   const ShapeBoxDefinition();
 

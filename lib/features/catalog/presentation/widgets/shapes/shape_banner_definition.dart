@@ -5,7 +5,7 @@ import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Definition for a decorative banner / ribbon header shape.
 ///
-/// Used by [CatalogRegistry] to register in the catalog sidebar.
+/// Used by `CatalogRegistry` to register in the catalog sidebar.
 final class ShapeBannerDefinition extends AgendaWidgetDefinition {
   const ShapeBannerDefinition();
 

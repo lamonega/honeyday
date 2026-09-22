@@ -7,10 +7,10 @@ import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:honeyday/core/theme/design_tokens.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
 import 'package:honeyday/core/utils/color_utils.dart';
-import 'package:honeyday/l10n/generated/app_localizations.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/new_agenda/agenda_cover_picker.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/new_agenda/agenda_cover_preview.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/new_agenda/agenda_paper_style_picker.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Default cover style for new agendas.
 /// Referenced by: new_agenda_dialog.dart (local definition),

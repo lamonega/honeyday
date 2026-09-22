@@ -13,10 +13,10 @@ import 'package:honeyday/core/utils/color_utils.dart';
 class AgendaCoverPicker extends StatelessWidget {
   /// Constructs an [AgendaCoverPicker].
   const AgendaCoverPicker({
-    super.key,
     required this.colors,
     required this.selectedCover,
     required this.onColorSelected,
+    super.key,
   });
 
   /// Hex color strings for each swatch in the palette.

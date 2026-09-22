@@ -16,7 +16,6 @@ class CalendarGrid extends StatelessWidget {
     required this.onEditTitle,
     required this.onRemoveHabit,
     required this.onAddHabit,
-    required this.localizedTitle,
     super.key,
   });
 
@@ -38,9 +37,6 @@ class CalendarGrid extends StatelessWidget {
   /// Called when the user taps the "add habit" button.
   final VoidCallback onAddHabit;
 
-  /// The resolved title string to display at the top of the grid.
-  final String localizedTitle;
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -49,17 +45,6 @@ class CalendarGrid extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          localizedTitle,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w700,
-            color: colorScheme.onSurface,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 8),
         Divider(height: 1, color: colorScheme.outline),
         const SizedBox(height: 6),
         Expanded(
