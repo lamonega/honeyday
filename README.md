@@ -9,7 +9,8 @@
   <img src="https://img.shields.io/badge/Dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white" alt="Dart">
   <img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20Linux%20%7C%20macOS%20%7C%20Windows-blue?style=for-the-badge" alt="Platforms">
   <img src="https://img.shields.io/badge/License-GPL--3.0-green?style=for-the-badge" alt="License">
-  <img src="https://img.shields.io/badge/version-0.1.0--1-orange?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/github/actions/workflow/status/lamonega/honeyday/ci.yml?branch=develop&style=for-the-badge&label=CI" alt="CI">
+  <img src="https://img.shields.io/badge/version-0.1.7--1-orange?style=for-the-badge" alt="Version">
 </p>
 
 <p align="center">
@@ -28,7 +29,7 @@
 - **Freehand ink engine** — Write, draw, and highlight with pressure-sensitive vector strokes (pen, highlighter, eraser).
 - **Modular canvas widgets** — Drop shapes, planner templates, stickers, calendars, budget trackers, and more onto your pages.
 - **Three interaction modes** — Reading (flip pages), Writing (ink drawing), Edit (drag, resize, rotate widgets).
-- **Customizable themes** — Light/dark mode, 8 accent color presets, warm paper-and-honey aesthetic.
+- **Customizable themes** — System / light / dark mode, 8 accent color presets, warm paper-and-honey aesthetic.
 - **Onboarding flow** — Clean 3-step onboarding carousel.
 - **Offline-first** — Local SQLite persistence via Drift with cloud-ready sync architecture.
 - **Responsive layout** — Adaptive navigation (bottom bar on mobile, rail on desktop).
@@ -57,8 +58,13 @@ lib/
 │   └── theme.dart          # Material 3 themes
 ├── core/                   # Shared infrastructure
 │   ├── accessibility/      # Semantic widgets
+│   ├── constants/          # Shared UI constants
 │   ├── database/           # Drift schema & providers
-│   └── theme/              # Colors, paper styles
+│   ├── l10n/               # Localization extensions
+│   ├── providers/          # Riverpod providers (prefs, app version)
+│   ├── theme/              # Colors, paper styles, design tokens
+│   ├── utils/              # Color & haptic helpers
+│   └── widgets/            # Reusable widgets (category filter)
 ├── features/               # Feature modules (domain / data / presentation)
 │   ├── agendas/            # Agenda CRUD & viewer
 │   ├── canvas/             # Ink canvas, transform engine, snapping

@@ -22,13 +22,13 @@ flutter pub get
 dart run build_runner build --delete-conflicting-outputs
 
 # Verify everything works
-flutter analyze
+dart analyze
 flutter test
 ```
 
 ## Project Structure
 
-This project follows [Clean Architecture](https://pub.dev/packages/flutter_clean_architecture) principles:
+This project follows [Clean Architecture](https://en.wikipedia.org/wiki/Clean_architecture) principles:
 
 ```
 lib/features/<feature>/
@@ -41,7 +41,7 @@ When adding a new feature, create a new directory under `lib/features/` followin
 
 ## Code Style
 
-- This project uses **Very Good Analysis** for linting. Run `flutter analyze` before committing.
+- This project uses **Very Good Analysis** for linting. Run `dart analyze` before committing.
 - Prefer `const` constructors where possible.
 - Use `final` for immutable variables.
 - Follow the existing naming conventions (camelCase for variables/functions, PascalCase for classes).
@@ -49,6 +49,7 @@ When adding a new feature, create a new directory under `lib/features/` followin
 
 ## Branching
 
+- `develop` — integration branch; CI runs on it and PRs target it
 - `main` — stable, production-ready code
 - `feat/<name>` — new features
 - `fix/<name>` — bug fixes
@@ -56,15 +57,15 @@ When adding a new feature, create a new directory under `lib/features/` followin
 
 ## Pull Requests
 
-1. Create a feature branch from `main`
+1. Create a feature branch from `develop`
 2. Make your changes
-3. Run `flutter analyze` and `flutter test` — ensure no errors
+3. Run `dart analyze` and `flutter test` — ensure no errors
 4. Commit with a [conventional commit](https://www.conventionalcommits.org/) message:
    - `feat: add new widget type`
    - `fix: resolve page ordering bug`
    - `docs: update README`
    - `chore: upgrade dependencies`
-5. Open a PR against `main` with a clear description
+5. Open a PR against `develop` with a clear description
 
 ## Golden Tests
 
