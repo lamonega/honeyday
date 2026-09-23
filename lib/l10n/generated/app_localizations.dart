@@ -410,10 +410,10 @@ abstract class AppLocalizations {
   /// **'Edit mode'**
   String get agendaModeEdit;
 
-  /// {count, plural, =1{# page} other{# pages}}
+  /// {count, plural, =1{{count} page} other{{count} pages}}
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{# page} other{# pages}}'**
+  /// **'{count, plural, =1{{count} page} other{{count} pages}}'**
   String agendaPageBadge(num count);
 
   /// Delete agenda

@@ -510,7 +510,15 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                     return AnimatedBuilder(
                       animation: _pageController,
                       builder: (context, child) {
-                        var position = index.toDouble();
+                        // Swapping the canvas mode swaps the PageView physics,
+                        // so Scrollable recreates its ScrollPosition and
+                        // `haveDimensions` resets to false; this builder then
+                        // runs during layout, before applyContentDimensions.
+                        // The fallback must be page-relative so the active page
+                        // stays at rest — using the absolute item index leaves
+                        // the current page stuck mid-flip until the controller
+                        // notifies again on the next page turn.
+                        var position = (index - _currentPageIndex).toDouble();
                         if (_pageController.position.haveDimensions &&
                             _pageController.page != null) {
                           position = index - _pageController.page!;

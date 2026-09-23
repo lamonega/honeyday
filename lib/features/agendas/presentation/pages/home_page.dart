@@ -8,7 +8,6 @@ import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/home_controller.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/home/agenda_grid_card.dart';
-import 'package:honeyday/features/agendas/presentation/widgets/home/create_agenda_flow.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/home/home_empty_state.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/home/home_fab.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/home/home_header.dart';
@@ -54,14 +53,7 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: HomeHeader(
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add_rounded),
-            onPressed: () => showCreateAgendaAndNavigate(context, ref),
-          ),
-        ],
-      ),
+      appBar: const HomeHeader(),
       floatingActionButton: const HomeFab(),
       body: agendasAsync.when(
         loading: () => _buildSkeletonLoader(context),

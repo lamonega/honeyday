@@ -52,7 +52,7 @@
   "agendaPageAdd": "Añadir página",
   "agendaModeRead": "Modo lectura",
   "agendaModeEdit": "Modo edición",
-  "agendaPageBadge": "{count, plural, =1{# pág.} other{# págs.}}",
+  "agendaPageBadge": "{count, plural, =1{{count} pág.} other{{count} págs.}}",
   "agendaDeleteTooltip": "Eliminar agenda",
   "catalogFilterAll": "Todas",
   "catalogFilterShapes": "Formas",

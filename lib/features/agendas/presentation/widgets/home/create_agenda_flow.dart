@@ -9,9 +9,9 @@ import 'package:honeyday/l10n/generated/app_localizations.dart';
 /// Opens [NewAgendaDialog] and, on confirmation, creates the agenda via
 /// [HomeController] then navigates to the edit route.
 ///
-/// Single entry point for every "create agenda" trigger on the home screen
-/// (the AppBar action and the floating action button), so the dialog defaults,
-/// the repository call and the destination route only exist in one place.
+/// Single entry point for the "create agenda" trigger on the home screen (the
+/// `HomeFab`), so the dialog defaults, the repository call and the destination
+/// route only exist in one place.
 Future<void> showCreateAgendaAndNavigate(
   BuildContext context,
   WidgetRef ref,

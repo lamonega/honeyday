@@ -4,15 +4,11 @@ import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// AppBar for the home dashboard displaying the "Tus agendas" title.
 ///
-/// The trailing action slot is left open so callers can inject an
-/// [actions] list via the [HomeHeader] constructor. This keeps the
-/// header focused on layout and styling while remaining composable.
+/// The header is layout-only: the single "create agenda" entry point lives in
+/// the home FAB, so this bar carries no trailing actions of its own.
 class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
   /// Constructs a [HomeHeader].
-  const HomeHeader({this.actions, super.key});
-
-  /// Optional widgets displayed at the end of the AppBar (e.g. a create button).
-  final List<Widget>? actions;
+  const HomeHeader({super.key});
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -32,7 +28,6 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
           letterSpacing: -0.3,
         ),
       ),
-      actions: actions,
     );
   }
 }

@@ -180,8 +180,8 @@ class AppLocalizationsEs extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '# págs.',
-      one: '# pág.',
+      other: '$count págs.',
+      one: '$count pág.',
     );
     return '$_temp0';
   }

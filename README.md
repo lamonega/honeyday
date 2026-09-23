@@ -104,10 +104,6 @@ flutter run
 flutter test
 ```
 
-## Contributing
-
-Contributions are welcome! Please read the [Contributing Guide](CONTRIBUTING.md) before submitting a PR.
-
 ## License
 
 This project is licensed under the **GNU General Public License v3.0** — see the [LICENSE](LICENSE) file for details.

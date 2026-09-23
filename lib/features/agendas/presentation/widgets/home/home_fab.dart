@@ -4,8 +4,9 @@ import 'package:honeyday/features/agendas/presentation/widgets/home/create_agend
 
 /// Floating action button that creates a new agenda.
 ///
-/// Delegates to [showCreateAgendaAndNavigate], shared with the home AppBar
-/// action, so both entry points run the exact same create flow.
+/// The single "create agenda" entry point on the home screen; it delegates to
+/// [showCreateAgendaAndNavigate] so the dialog, repository call and destination
+/// route only exist in one place.
 class HomeFab extends ConsumerWidget {
   /// Constructs a [HomeFab].
   const HomeFab({super.key});

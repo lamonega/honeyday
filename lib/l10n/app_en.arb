@@ -208,9 +208,9 @@
   "@agendaModeEdit": {
     "description": "Edit mode"
   },
-  "agendaPageBadge": "{count, plural, =1{# page} other{# pages}}",
+  "agendaPageBadge": "{count, plural, =1{{count} page} other{{count} pages}}",
   "@agendaPageBadge": {
-    "description": "{count, plural, =1{# page} other{# pages}}"
+    "description": "{count, plural, =1{{count} page} other{{count} pages}}"
   },
   "agendaDeleteTooltip": "Delete agenda",
   "@agendaDeleteTooltip": {
