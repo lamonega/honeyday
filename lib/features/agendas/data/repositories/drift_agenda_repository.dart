@@ -83,6 +83,10 @@ class DriftAgendaRepository implements FullAgendaRepository {
       _canvasElementDao.upsertCanvasElement(element);
 
   @override
+  Future<bool> updateElementConfig(String id, String configJson) =>
+      _canvasElementDao.updateElementConfig(id, configJson);
+
+  @override
   Future<void> deleteCanvasElement(String id) =>
       _canvasElementDao.deleteCanvasElement(id);
 

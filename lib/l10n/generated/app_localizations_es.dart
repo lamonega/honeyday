@@ -40,10 +40,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsThemeSystem => 'Automático (sistema)';
 
   @override
-  String get settingsThemeOn => 'Activado';
+  String get settingsThemeLight => 'Claro';
 
   @override
-  String get settingsThemeOff => 'Desactivado';
+  String get settingsThemeDark => 'Oscuro';
 
   @override
   String get settingsAccentColor => 'Color de acento';
@@ -124,6 +124,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String agendaPagesError(Object error) {
     return 'Error al cargar páginas: $error';
   }
+
+  @override
+  String get agendaSaveError =>
+      'No se pudieron guardar los cambios. Intentá de nuevo.';
 
   @override
   String get agendaNoPages => 'No hay páginas disponibles.';

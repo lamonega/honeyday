@@ -89,6 +89,12 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
     }
   }
 
+  @override
+  void dispose() {
+    _configHelper.dispose();
+    super.dispose();
+  }
+
   void _updateConfig(JournalBlockConfig newConfig) {
     setState(() {
       _configHelper.updateConfig(newConfig);

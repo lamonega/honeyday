@@ -38,13 +38,31 @@ class SettingsPage extends ConsumerWidget {
     return names[accentColor.toARGB32()];
   }
 
+  static const Map<ThemeMode, IconData> _themeModeIcons = {
+    ThemeMode.system: Icons.brightness_auto_outlined,
+    ThemeMode.light: Icons.light_mode_outlined,
+    ThemeMode.dark: Icons.dark_mode_outlined,
+  };
+
+  static String _themeModeLabel(AppLocalizations l10n, ThemeMode mode) {
+    return switch (mode) {
+      ThemeMode.system => l10n.settingsThemeSystem,
+      ThemeMode.light => l10n.settingsThemeLight,
+      ThemeMode.dark => l10n.settingsThemeDark,
+    };
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = Theme.of(context).colorScheme;
     final themeModeValue = ref.watch(themeModeProvider);
-    final themeMode = themeModeValue.hasValue ? themeModeValue.value! : ThemeMode.system;
+    final themeMode = themeModeValue.hasValue
+        ? themeModeValue.value!
+        : ThemeMode.system;
     final accentColorValue = ref.watch(accentColorProvider);
-    final accentColor = accentColorValue.hasValue ? accentColorValue.value! : AppColors.honeyAmber;
+    final accentColor = accentColorValue.hasValue
+        ? accentColorValue.value!
+        : AppColors.honeyAmber;
 
     final accentName = _getAccentName(context, accentColor);
 
@@ -52,23 +70,20 @@ class SettingsPage extends ConsumerWidget {
       appBar: AppBar(title: Text(AppLocalizations.of(context).settingsTitle)),
       body: ListView(
         children: [
-          _SectionHeader(label: AppLocalizations.of(context).settingsGeneral, colorScheme: colorScheme),
-          SwitchListTile(
+          _SectionHeader(
+            label: AppLocalizations.of(context).settingsGeneral,
+            colorScheme: colorScheme,
+          ),
+          ListTile(
+            leading: const Icon(Icons.dark_mode_outlined),
             title: Text(AppLocalizations.of(context).settingsDarkMode),
             subtitle: Text(
-              themeMode == ThemeMode.system
-                  ? AppLocalizations.of(context).settingsThemeSystem
-                  : themeMode == ThemeMode.dark
-                      ? AppLocalizations.of(context).settingsThemeOn
-                      : AppLocalizations.of(context).settingsThemeOff,
+              _themeModeLabel(AppLocalizations.of(context), themeMode),
               style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
-            secondary: const Icon(Icons.dark_mode_outlined),
-            value: themeMode == ThemeMode.dark,
-            onChanged: (value) {
-              final mode = value ? ThemeMode.dark : ThemeMode.light;
-              unawaited(ref.read(themeModeProvider.notifier).set(mode));
-            },
+            trailing: const Icon(Icons.arrow_drop_down_rounded),
+            onTap: () =>
+                unawaited(_showThemeModePicker(context, ref, themeMode)),
           ),
           const Divider(height: 1),
           ListTile(
@@ -87,12 +102,14 @@ class SettingsPage extends ConsumerWidget {
                 border: Border.all(color: colorScheme.outline),
               ),
             ),
-            onTap: () => unawaited(
-              _showAccentColorPicker(context, ref, accentColor),
-            ),
+            onTap: () =>
+                unawaited(_showAccentColorPicker(context, ref, accentColor)),
           ),
           const Divider(height: 1),
-          _SectionHeader(label: AppLocalizations.of(context).settingsAbout, colorScheme: colorScheme),
+          _SectionHeader(
+            label: AppLocalizations.of(context).settingsAbout,
+            colorScheme: colorScheme,
+          ),
           ListTile(
             leading: const Icon(Icons.info_outline),
             title: Text(AppLocalizations.of(context).settingsVersion),
@@ -112,6 +129,46 @@ class SettingsPage extends ConsumerWidget {
               context: context,
               applicationName: AppLocalizations.of(context).appTitle,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showThemeModePicker(
+    BuildContext context,
+    WidgetRef ref,
+    ThemeMode current,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.settingsDarkMode),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final mode in ThemeMode.values)
+              ListTile(
+                leading: Icon(_themeModeIcons[mode]),
+                title: Text(_themeModeLabel(l10n, mode)),
+                trailing: mode == current
+                    ? const Icon(Icons.check_rounded)
+                    : null,
+                onTap: () async {
+                  await ref.read(themeModeProvider.notifier).set(mode);
+                  if (dialogContext.mounted) {
+                    Navigator.of(dialogContext).pop();
+                  }
+                },
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.commonCancel),
           ),
         ],
       ),

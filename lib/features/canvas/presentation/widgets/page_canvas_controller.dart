@@ -22,6 +22,10 @@ class PageCanvasController extends ChangeNotifier {
   VoidCallback? undoElementsCallback;
   VoidCallback? redoElementsCallback;
 
+  /// Set by the canvas state to sync widget-level config edits into the
+  /// element manager so later full-row persistence writes don't revert them.
+  void Function(String elementId, String configJson)? configSyncCallback;
+
   InkCanvasController get ink => _inkController;
   ElementHistory get elementHistory => _elementHistory;
 
@@ -43,6 +47,11 @@ class PageCanvasController extends ChangeNotifier {
 
   /// Adds an element to the local canvas state (with undo history).
   void addElement(CanvasWidgetData element) => addElementCallback?.call(element);
+
+  /// Pushes a widget-level config edit into the element manager so later
+  /// full-row transform writes (drags, color changes) don't revert it.
+  void syncElementConfig(String elementId, String configJson) =>
+      configSyncCallback?.call(elementId, configJson);
 
   /// Captures the current element state before a mutation.
   void pushElementState(List<CanvasWidgetData> current) =>

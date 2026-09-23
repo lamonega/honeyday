@@ -87,6 +87,12 @@ class _BudgetWidgetState extends State<BudgetWidget> {
     }
   }
 
+  @override
+  void dispose() {
+    _configHelper.dispose();
+    super.dispose();
+  }
+
   void _addEntry() {
     if (!widget.isInteractive) return;
     final l10n = AppLocalizations.of(context);
@@ -162,8 +168,9 @@ class _BudgetWidgetState extends State<BudgetWidget> {
     final l10n = AppLocalizations.of(context);
     final isDefaultTitle =
         _config.title.isEmpty || _config.title == l10n.catalogBudgetTitle;
-    final displayTitle =
-        isDefaultTitle ? l10n.catalogBudgetTitle : _config.title;
+    final displayTitle = isDefaultTitle
+        ? l10n.catalogBudgetTitle
+        : _config.title;
 
     return Container(
       decoration: BoxDecoration(
@@ -221,8 +228,7 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                   currency: _config.currency,
                   isInteractive: widget.isInteractive,
                   onToggleType: () => _toggleType(index),
-                  onUpdateDescription: (val) =>
-                      _updateDescription(index, val),
+                  onUpdateDescription: (val) => _updateDescription(index, val),
                   onUpdateAmount: (val) => _updateAmount(index, val),
                   onRemove: () => _removeEntry(index),
                   formatNumber: _formatNumber,

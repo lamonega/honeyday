@@ -146,29 +146,29 @@ abstract class AppLocalizations {
   /// **'General'**
   String get settingsGeneral;
 
-  /// Switch title for dark mode toggle
+  /// Title of the row that opens the theme mode picker
   ///
   /// In en, this message translates to:
   /// **'Dark mode'**
   String get settingsDarkMode;
 
-  /// Automatic (system)
+  /// Theme mode option that follows the OS setting
   ///
   /// In en, this message translates to:
   /// **'Automatic (system)'**
   String get settingsThemeSystem;
 
-  /// On
+  /// Theme mode option: always light
   ///
   /// In en, this message translates to:
-  /// **'On'**
-  String get settingsThemeOn;
+  /// **'Light'**
+  String get settingsThemeLight;
 
-  /// Off
+  /// Theme mode option: always dark
   ///
   /// In en, this message translates to:
-  /// **'Off'**
-  String get settingsThemeOff;
+  /// **'Dark'**
+  String get settingsThemeDark;
 
   /// List tile title AND dialog title for accent color
   ///
@@ -319,6 +319,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error loading pages: {error}'**
   String agendaPagesError(Object error);
+
+  /// Error shown when a canvas change fails to persist
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your changes. Try again.'**
+  String get agendaSaveError;
 
   /// No pages available.
   ///

@@ -95,6 +95,8 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
     _pageController.undoElementsCallback = undoElements;
     _pageController.redoElementsCallback = redoElements;
     _pageController.addElementCallback = _addElement;
+    _pageController.configSyncCallback =
+        _elementManager.handleConfigChanged;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onControllerCreated?.call(_pageController);
     });

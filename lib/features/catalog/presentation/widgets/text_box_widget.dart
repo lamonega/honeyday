@@ -96,6 +96,12 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
     }
   }
 
+  @override
+  void dispose() {
+    _configHelper.dispose();
+    super.dispose();
+  }
+
   void _setColor(TextBoxColor newColor) {
     if (!widget.isInteractive) return;
 
@@ -133,9 +139,11 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
     final isTransparent = _config.color == TextBoxColor.transparent;
     final l10n = AppLocalizations.of(context);
     final isDefaultContent =
-        _config.text.isEmpty || _config.text == l10n.catalogTextboxDefaultContent;
-    final currentText =
-        isDefaultContent ? l10n.catalogTextboxDefaultContent : _config.text;
+        _config.text.isEmpty ||
+        _config.text == l10n.catalogTextboxDefaultContent;
+    final currentText = isDefaultContent
+        ? l10n.catalogTextboxDefaultContent
+        : _config.text;
 
     return Container(
       decoration: BoxDecoration(

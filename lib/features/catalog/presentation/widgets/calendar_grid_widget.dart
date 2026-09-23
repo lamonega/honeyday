@@ -90,6 +90,12 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
     }
   }
 
+  @override
+  void dispose() {
+    _configHelper.dispose();
+    super.dispose();
+  }
+
   void _toggleCheck(int habitIndex, int dayIndex) {
     if (!widget.isInteractive) return;
 
@@ -152,8 +158,9 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
     final days = buildDaysOfWeek(l10n);
     final isDefaultTitle =
         _config.title.isEmpty || _config.title == l10n.catalogHabitsTitle;
-    final displayTitle =
-        isDefaultTitle ? l10n.catalogHabitsTitle : _config.title;
+    final displayTitle = isDefaultTitle
+        ? l10n.catalogHabitsTitle
+        : _config.title;
 
     return Container(
       decoration: BoxDecoration(
@@ -161,11 +168,7 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: colorScheme.outline),
         boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2)),
         ],
       ),
       padding: const EdgeInsets.all(12),

@@ -34,19 +34,19 @@
   },
   "settingsDarkMode": "Dark mode",
   "@settingsDarkMode": {
-    "description": "Switch title for dark mode toggle"
+    "description": "Title of the row that opens the theme mode picker"
   },
   "settingsThemeSystem": "Automatic (system)",
   "@settingsThemeSystem": {
-    "description": "Automatic (system)"
+    "description": "Theme mode option that follows the OS setting"
   },
-  "settingsThemeOn": "On",
-  "@settingsThemeOn": {
-    "description": "On"
+  "settingsThemeLight": "Light",
+  "@settingsThemeLight": {
+    "description": "Theme mode option: always light"
   },
-  "settingsThemeOff": "Off",
-  "@settingsThemeOff": {
-    "description": "Off"
+  "settingsThemeDark": "Dark",
+  "@settingsThemeDark": {
+    "description": "Theme mode option: always dark"
   },
   "settingsAccentColor": "Accent color",
   "@settingsAccentColor": {
@@ -147,6 +147,10 @@
   "agendaPagesError": "Error loading pages: {error}",
   "@agendaPagesError": {
     "description": "Error loading pages: {error}"
+  },
+  "agendaSaveError": "Could not save your changes. Try again.",
+  "@agendaSaveError": {
+    "description": "Error shown when a canvas change fails to persist"
   },
   "agendaNoPages": "No pages available.",
   "@agendaNoPages": {

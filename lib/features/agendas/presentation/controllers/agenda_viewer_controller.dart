@@ -116,8 +116,21 @@ class AgendaViewerController {
   }
 
   /// Updates the JSON configuration payload of a canvas element.
-  Future<void> updateElementConfig(CanvasWidgetData data, String newJson) {
-    return _repository.upsertCanvasElement(data.copyWith(configJson: newJson));
+  ///
+  /// Column-scoped: only `configJson`/`updatedAt` change, so the write can
+  /// never revert geometry moved concurrently by a drag or transform.
+  Future<void> updateElementConfig(
+    CanvasWidgetData data,
+    String newJson,
+  ) async {
+    final updated = await _repository.updateElementConfig(data.id, newJson);
+    if (!updated) {
+      // Row missing (element never persisted): fall back to a full upsert
+      // so the edit isn't silently dropped.
+      await _repository.upsertCanvasElement(
+        data.copyWith(configJson: newJson),
+      );
+    }
   }
 
   /// Deletes a canvas element by its [id].

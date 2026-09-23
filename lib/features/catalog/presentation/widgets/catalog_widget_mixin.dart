@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 /// Helper class that manages the common lifecycle of catalog widgets
@@ -8,6 +10,11 @@ import 'package:flutter/material.dart';
 /// outdated geometry alongside the new config. Always refresh it on every
 /// parent rebuild by assigning `onConfigChanged` from the State's
 /// `didUpdateWidget`.
+///
+/// Writes are debounced: [config] updates immediately so the UI reacts on
+/// every keystroke, while the persisted JSON is emitted only after
+/// [debounceDuration] of quiet. Call [dispose] from the State's `dispose`
+/// so a pending write is flushed instead of dropped.
 ///
 /// Usage in State class:
 /// ```dart
@@ -32,6 +39,12 @@ import 'package:flutter/material.dart';
 ///   }
 /// }
 ///
+/// @override
+/// void dispose() {
+///   _configHelper.dispose();
+///   super.dispose();
+/// }
+///
 /// MyConfig get _config => _configHelper.config;
 /// ```
 class CatalogConfigHelper<C> {
@@ -41,6 +54,9 @@ class CatalogConfigHelper<C> {
     required String initialJson,
   }) : config = parseConfig(initialJson);
 
+  /// Quiet period required before a config change is written downstream.
+  static const Duration debounceDuration = Duration(milliseconds: 400);
+
   final C Function(String jsonStr) parseConfig;
   final String Function(C config) configToJson;
 
@@ -48,12 +64,36 @@ class CatalogConfigHelper<C> {
 
   C config;
 
+  Timer? _debounce;
+  String? _pendingJson;
+
   void updateFromJson(String jsonStr) {
     config = parseConfig(jsonStr);
   }
 
   void updateConfig(C newConfig) {
     config = newConfig;
-    onConfigChanged(configToJson(newConfig));
+    _pendingJson = configToJson(newConfig);
+    _debounce?.cancel();
+    _debounce = Timer(debounceDuration, _emitPending);
+  }
+
+  /// Emits a pending debounced write right away, if any.
+  void flush() {
+    _debounce?.cancel();
+    _debounce = null;
+    _emitPending();
+  }
+
+  /// Flushes pending work and cancels the timer. Call from `dispose`.
+  void dispose() {
+    flush();
+  }
+
+  void _emitPending() {
+    final json = _pendingJson;
+    if (json == null) return;
+    _pendingJson = null;
+    onConfigChanged(json);
   }
 }

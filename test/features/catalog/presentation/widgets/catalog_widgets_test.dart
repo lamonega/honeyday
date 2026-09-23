@@ -5,6 +5,7 @@ import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/budget_widget.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/calendar/calendar_config.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/calendar_grid_widget.dart';
+import 'package:honeyday/features/catalog/presentation/widgets/catalog_widget_mixin.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/journal_block_widget.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/text_box/text_box_config.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/text_box_widget.dart';
@@ -167,6 +168,8 @@ void main() {
         expect(checkIcons, findsWidgets);
         await tester.tap(checkIcons.first);
         await tester.pumpAndSettle();
+        // Config writes are debounced; let the pending write land.
+        await tester.pump(CatalogConfigHelper.debounceDuration);
 
         expect(updatedJson, isNotNull);
         final newConfig = CalendarGridConfig.fromJsonString(updatedJson!);
@@ -239,6 +242,7 @@ void main() {
       expect(addBtn, findsOneWidget);
       await tester.tap(addBtn);
       await tester.pumpAndSettle();
+      await tester.pump(CatalogConfigHelper.debounceDuration);
 
       expect(updatedJson, isNotNull);
       final newConfig = BudgetConfig.fromJsonString(updatedJson!);
@@ -284,6 +288,7 @@ void main() {
       expect(boltMood, findsOneWidget);
       await tester.tap(boltMood);
       await tester.pumpAndSettle();
+      await tester.pump(CatalogConfigHelper.debounceDuration);
 
       expect(updatedJson, isNotNull);
       final newConfig = JournalBlockConfig.fromJsonString(updatedJson!);
@@ -330,6 +335,7 @@ void main() {
       // Tap font size to cycle
       await tester.tap(find.byIcon(Icons.format_size_rounded));
       await tester.pumpAndSettle();
+      await tester.pump(CatalogConfigHelper.debounceDuration);
 
       expect(updatedJson, isNotNull);
       final newConfig = TextBoxConfig.fromJsonString(updatedJson!);

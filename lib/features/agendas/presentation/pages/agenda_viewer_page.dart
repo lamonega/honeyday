@@ -84,9 +84,8 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   }
 
   void _markDirty() {
-    if (!_hasUnsavedChanges) {
-      setState(() => _hasUnsavedChanges = true);
-    }
+    if (!mounted || _hasUnsavedChanges) return;
+    setState(() => _hasUnsavedChanges = true);
   }
 
   void _undo() {
@@ -170,29 +169,62 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   Future<void> _showPageManager(List<AgendaPage> pages) async {
     final controller = ref.read(agendaViewerControllerProvider);
 
+    // The sheet outlives the build that opened it: pages can be deleted,
+    // added or reordered while it stays on screen, so callbacks must read
+    // the provider instead of trusting the captured snapshot.
+    List<AgendaPage> currentPages() =>
+        ref.read(agendaPagesProvider(widget.agendaId)).value ?? pages;
+
     await ViewerCatalogSheet.showPageManager(
       context: context,
       pages: pages,
       currentPageIndex: _currentPageIndex,
-      onSelectPage: (index) => _goToPage(index, pages.length),
+      onSelectPage: (index) => _goToPage(index, currentPages().length),
       onDeletePage: (pageId) async {
-        if (pages.length <= 1) return;
-        await controller.deletePage(pageId);
+        final before = currentPages();
+        if (before.length <= 1) return;
+        try {
+          await controller.deletePage(pageId);
+        } on Object catch (error) {
+          if (mounted) {
+            _reportPersistError(context, error);
+          }
+          return;
+        }
         _markDirty();
-        if (mounted && _currentPageIndex >= pages.length - 1) {
-          _goToPage(pages.length - 2, pages.length - 1);
+        if (mounted && _currentPageIndex >= before.length - 1) {
+          _goToPage(before.length - 2, before.length - 1);
         }
       },
       onChangePaperStyle: (style) async {
-        final currentPage = pages[_currentPageIndex];
-        await controller.updatePageBackground(currentPage.id, style);
+        final current = currentPages();
+        if (_currentPageIndex >= current.length) return;
+        try {
+          await controller.updatePageBackground(
+            current[_currentPageIndex].id,
+            style,
+          );
+        } on Object catch (error) {
+          if (mounted) {
+            _reportPersistError(context, error);
+          }
+          return;
+        }
         _markDirty();
       },
       onReorderPages: (pageIds) async {
-        final currentPageId = _currentPageIndex < pages.length
-            ? pages[_currentPageIndex].id
+        final current = currentPages();
+        final currentPageId = _currentPageIndex < current.length
+            ? current[_currentPageIndex].id
             : null;
-        await controller.reorderPages(pageIds);
+        try {
+          await controller.reorderPages(pageIds);
+        } on Object catch (error) {
+          if (mounted) {
+            _reportPersistError(context, error);
+          }
+          return;
+        }
         _markDirty();
         if (currentPageId != null && mounted) {
           final newIndex = pageIds.indexOf(currentPageId);
@@ -204,22 +236,28 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
       },
       onAddPage: () async {
         final style = await ViewerCatalogSheet.showNewPageDesign(context);
-        if (style != null && mounted) {
+        if (style == null || !mounted) return;
+        final newIndex = currentPages().length;
+        try {
           await controller.addPage(
             agendaId: widget.agendaId,
-            pageNumber: pages.length + 1,
+            pageNumber: newIndex + 1,
             backgroundStyle: style,
           );
-          _markDirty();
+        } on Object catch (error) {
           if (mounted) {
-            final newIndex = pages.length;
-            ref.invalidate(agendaPagesProvider(widget.agendaId));
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                _goToPage(newIndex, newIndex + 1);
-              }
-            });
+            _reportPersistError(context, error);
           }
+          return;
+        }
+        _markDirty();
+        if (mounted) {
+          ref.invalidate(agendaPagesProvider(widget.agendaId));
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _goToPage(newIndex, newIndex + 1);
+            }
+          });
         }
       },
     );
@@ -265,9 +303,8 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return pagesAsync.when(
-      loading: () => Center(
-        child: CircularProgressIndicator(color: colorScheme.primary),
-      ),
+      loading: () =>
+          Center(child: CircularProgressIndicator(color: colorScheme.primary)),
       error: (error, _) => Center(
         child: Text(
           AppLocalizations.of(context).agendaPagesError(error.toString()),
@@ -296,101 +333,111 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     final totalPages = pages.length;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: ViewerAppBar(
-        onBack: () async {
-          final shouldPop = await _showExitDialog();
-          if (shouldPop && context.mounted) context.go('/');
-        },
-        actions: const [],
-      ),
-      floatingActionButton: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (_canUndo)
-            FloatingActionButton.small(
-              heroTag: 'undo',
-              onPressed: _undo,
-              backgroundColor: colorScheme.secondaryContainer,
-              foregroundColor: colorScheme.onSecondaryContainer,
-              child: const Icon(Icons.undo_rounded, size: 20),
-            ),
-          if (_canUndo) const SizedBox(width: 8),
-          if (_canRedo)
-            FloatingActionButton.small(
-              heroTag: 'redo',
-              onPressed: _redo,
-              backgroundColor: colorScheme.secondaryContainer,
-              foregroundColor: colorScheme.onSecondaryContainer,
-              child: const Icon(Icons.redo_rounded, size: 20),
-            ),
-          if (_canRedo) const SizedBox(width: 8),
-          FloatingActionButton.small(
-            heroTag: 'toggle_strokes',
-            onPressed: _toggleStrokes,
-            backgroundColor: colorScheme.secondaryContainer,
-            foregroundColor: colorScheme.onSecondaryContainer,
-            child: Icon(
-              _strokesVisible ? Icons.draw_outlined : Icons.draw,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 8),
-          FloatingActionButton.small(
-            heroTag: 'page_manager',
-            onPressed: () => _showPageManager(pages),
-            backgroundColor: colorScheme.secondaryContainer,
-            foregroundColor: colorScheme.onSecondaryContainer,
-            child: const Icon(Icons.layers_outlined, size: 20),
-          ),
-          const SizedBox(width: 8),
-          FloatingActionButton(
-            heroTag: 'add_element',
-            onPressed: () async {
-              final def = await ViewerCatalogSheet.showElementPicker(context);
-              if (def == null || !mounted) return;
-              await _addCatalogElement(
-                pages[_currentPageIndex].id,
-                def,
-              );
-            },
-            backgroundColor: colorScheme.primaryContainer,
-            foregroundColor: colorScheme.onPrimaryContainer,
-            child: const Icon(Icons.add_rounded),
-          ),
-        ],
-      ),
-      body: _buildPagesAsyncBody(
-        pagesAsync: pagesAsync,
-        builder: (pagesList) => Stack(
+    return PopScope(
+      canPop: !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final shouldPop = await _showExitDialog();
+        if (shouldPop && context.mounted) context.go('/');
+      },
+      child: Scaffold(
+        backgroundColor: colorScheme.surface,
+        appBar: ViewerAppBar(
+          onBack: () async {
+            final shouldPop = await _showExitDialog();
+            if (shouldPop && context.mounted) context.go('/');
+          },
+          actions: const [],
+        ),
+        floatingActionButton: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            PageView.builder(
-              controller: _pageController,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: pagesList.length,
-              onPageChanged: (index) {
-                setState(() => _currentPageIndex = index);
-              },
-              itemBuilder: (context, index) {
-                final page = pagesList[index];
-                return _PageContentLoader(
-                  key: ValueKey(page.id),
-                  page: page,
-                  currentMode: CanvasMode.edit,
-                  strokesVisible: _strokesVisible,
-                  onDirty: _markDirty,
-                  onControllerCreated: (c) => _pageControllers[page.id] = c,
-                );
-              },
-            ),
-            if (totalPages > 1)
-              ViewerPageNavigator(
-                childCount: totalPages,
-                currentPage: _currentPageIndex,
-                onGoToPage: (index) => _goToPage(index, totalPages),
+            if (_canUndo)
+              FloatingActionButton.small(
+                heroTag: 'undo',
+                onPressed: _undo,
+                backgroundColor: colorScheme.secondaryContainer,
+                foregroundColor: colorScheme.onSecondaryContainer,
+                child: const Icon(Icons.undo_rounded, size: 20),
               ),
+            if (_canUndo) const SizedBox(width: 8),
+            if (_canRedo)
+              FloatingActionButton.small(
+                heroTag: 'redo',
+                onPressed: _redo,
+                backgroundColor: colorScheme.secondaryContainer,
+                foregroundColor: colorScheme.onSecondaryContainer,
+                child: const Icon(Icons.redo_rounded, size: 20),
+              ),
+            if (_canRedo) const SizedBox(width: 8),
+            FloatingActionButton.small(
+              heroTag: 'toggle_strokes',
+              onPressed: _toggleStrokes,
+              backgroundColor: colorScheme.secondaryContainer,
+              foregroundColor: colorScheme.onSecondaryContainer,
+              child: Icon(
+                _strokesVisible ? Icons.draw_outlined : Icons.draw,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 8),
+            FloatingActionButton.small(
+              heroTag: 'page_manager',
+              onPressed: () => _showPageManager(pages),
+              backgroundColor: colorScheme.secondaryContainer,
+              foregroundColor: colorScheme.onSecondaryContainer,
+              child: const Icon(Icons.layers_outlined, size: 20),
+            ),
+            const SizedBox(width: 8),
+            FloatingActionButton(
+              heroTag: 'add_element',
+              onPressed: () async {
+                final def = await ViewerCatalogSheet.showElementPicker(context);
+                if (def == null || !mounted) return;
+                // `_currentPagePageId` is null while pages are still loading
+                // or when the index drifted past the end of the list.
+                final pageId = _currentPagePageId;
+                if (pageId == null) return;
+                await _addCatalogElement(pageId, def);
+              },
+              backgroundColor: colorScheme.primaryContainer,
+              foregroundColor: colorScheme.onPrimaryContainer,
+              child: const Icon(Icons.add_rounded),
+            ),
           ],
+        ),
+        body: _buildPagesAsyncBody(
+          pagesAsync: pagesAsync,
+          builder: (pagesList) => Stack(
+            children: [
+              PageView.builder(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: pagesList.length,
+                onPageChanged: (index) {
+                  setState(() => _currentPageIndex = index);
+                },
+                itemBuilder: (context, index) {
+                  final page = pagesList[index];
+                  return _PageContentLoader(
+                    key: ValueKey(page.id),
+                    page: page,
+                    currentMode: CanvasMode.edit,
+                    canvasControllers: _pageControllers,
+                    strokesVisible: _strokesVisible,
+                    onDirty: _markDirty,
+                    onControllerCreated: (c) => _pageControllers[page.id] = c,
+                  );
+                },
+              ),
+              if (totalPages > 1)
+                ViewerPageNavigator(
+                  childCount: totalPages,
+                  currentPage: _currentPageIndex,
+                  onGoToPage: (index) => _goToPage(index, totalPages),
+                ),
+            ],
+          ),
         ),
       ),
     );
@@ -404,131 +451,140 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     final pages = pagesAsync.value ?? [];
     final totalPages = pages.length;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: ViewerAppBar(
-        onBack: () async {
-          final shouldPop = await _showExitDialog();
-          if (shouldPop && context.mounted) context.go('/');
-        },
-        actions: const [],
-      ),
-      floatingActionButton: ViewerCanvasModeToggle(
-        currentMode: currentMode,
-        onToggle: _toggleCanvasMode,
-      ),
-      body: _buildPagesAsyncBody(
-        pagesAsync: pagesAsync,
-        builder: (pagesList) {
-          final scrollPhysics = currentMode == CanvasMode.reading
-              ? const PageScrollPhysics()
-              : const NeverScrollableScrollPhysics();
+    return PopScope(
+      canPop: !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        final shouldPop = await _showExitDialog();
+        if (shouldPop && context.mounted) context.go('/');
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        appBar: ViewerAppBar(
+          onBack: () async {
+            final shouldPop = await _showExitDialog();
+            if (shouldPop && context.mounted) context.go('/');
+          },
+          actions: const [],
+        ),
+        floatingActionButton: ViewerCanvasModeToggle(
+          currentMode: currentMode,
+          onToggle: _toggleCanvasMode,
+        ),
+        body: _buildPagesAsyncBody(
+          pagesAsync: pagesAsync,
+          builder: (pagesList) {
+            final scrollPhysics = currentMode == CanvasMode.reading
+                ? const PageScrollPhysics()
+                : const NeverScrollableScrollPhysics();
 
-          return Stack(
-            children: [
-              PageView.builder(
-                controller: _pageController,
-                physics: scrollPhysics,
-                itemCount: pagesList.length,
-                onPageChanged: (index) {
-                  setState(() => _currentPageIndex = index);
-                  unawaited(hapticLight());
-                },
-                itemBuilder: (context, index) {
-                  final page = pagesList[index];
-                  final isAdjacent =
-                      (index - _currentPageIndex).abs() <= 1;
+            return Stack(
+              children: [
+                PageView.builder(
+                  controller: _pageController,
+                  physics: scrollPhysics,
+                  itemCount: pagesList.length,
+                  onPageChanged: (index) {
+                    setState(() => _currentPageIndex = index);
+                    unawaited(hapticLight());
+                  },
+                  itemBuilder: (context, index) {
+                    final page = pagesList[index];
+                    final isAdjacent = (index - _currentPageIndex).abs() <= 1;
 
-                  if (!isAdjacent || currentMode != CanvasMode.reading) {
-                    return _PageContentLoader(
-                      key: ValueKey(page.id),
-                      page: page,
-                      currentMode: currentMode,
-                      strokesVisible: _strokesVisible,
-                      onDirty: _isEditMode ? _markDirty : null,
-                      onControllerCreated: _isEditMode
-                          ? (c) => _pageControllers[page.id] = c
-                          : null,
-                    );
-                  }
-
-                  return AnimatedBuilder(
-                    animation: _pageController,
-                    builder: (context, child) {
-                      var position = index.toDouble();
-                      if (_pageController.position.haveDimensions &&
-                          _pageController.page != null) {
-                        position = index - _pageController.page!;
-                      }
-
-                      final clamped = position.clamp(-1.0, 1.0);
-                      final isTurning = clamped.abs() > 0.001;
-                      final isLeft = clamped < 0;
-                      final rotationY = clamped * (math.pi / 3.5);
-                      final shadowOpacity = (clamped.abs() * 0.4).clamp(
-                        0.0,
-                        0.45,
+                    if (!isAdjacent || currentMode != CanvasMode.reading) {
+                      return _PageContentLoader(
+                        key: ValueKey(page.id),
+                        page: page,
+                        currentMode: currentMode,
+                        canvasControllers: _pageControllers,
+                        strokesVisible: _strokesVisible,
+                        onDirty: _isEditMode ? _markDirty : null,
+                        // Register in every mode: writing-mode config
+                        // edits need the controller to sync the manager.
+                        onControllerCreated: (c) =>
+                            _pageControllers[page.id] = c,
                       );
+                    }
 
-                      return Transform(
-                        alignment: isLeft
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft,
-                        transform: Matrix4.identity()
-                          ..setEntry(3, 2, 0.0008)
-                          ..rotateY(rotationY),
-                        child: Stack(
-                          children: [
-                            child!,
-                            if (isTurning)
-                              Positioned.fill(
-                                child: IgnorePointer(
-                                  child: DecoratedBox(
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        begin: isLeft
-                                            ? Alignment.centerRight
-                                            : Alignment.centerLeft,
-                                        end: isLeft
-                                            ? Alignment.centerLeft
-                                            : Alignment.centerRight,
-                                        colors: [
-                                          Colors.black.withValues(
-                                            alpha: shadowOpacity,
-                                          ),
-                                          Colors.transparent,
-                                        ],
+                    return AnimatedBuilder(
+                      animation: _pageController,
+                      builder: (context, child) {
+                        var position = index.toDouble();
+                        if (_pageController.position.haveDimensions &&
+                            _pageController.page != null) {
+                          position = index - _pageController.page!;
+                        }
+
+                        final clamped = position.clamp(-1.0, 1.0);
+                        final isTurning = clamped.abs() > 0.001;
+                        final isLeft = clamped < 0;
+                        final rotationY = clamped * (math.pi / 3.5);
+                        final shadowOpacity = (clamped.abs() * 0.4).clamp(
+                          0.0,
+                          0.45,
+                        );
+
+                        return Transform(
+                          alignment: isLeft
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          transform: Matrix4.identity()
+                            ..setEntry(3, 2, 0.0008)
+                            ..rotateY(rotationY),
+                          child: Stack(
+                            children: [
+                              child!,
+                              if (isTurning)
+                                Positioned.fill(
+                                  child: IgnorePointer(
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: isLeft
+                                              ? Alignment.centerRight
+                                              : Alignment.centerLeft,
+                                          end: isLeft
+                                              ? Alignment.centerLeft
+                                              : Alignment.centerRight,
+                                          colors: [
+                                            Colors.black.withValues(
+                                              alpha: shadowOpacity,
+                                            ),
+                                            Colors.transparent,
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
-                          ],
-                        ),
-                      );
-                    },
-                    child: _PageContentLoader(
-                      key: ValueKey(page.id),
-                      page: page,
-                      currentMode: currentMode,
-                      strokesVisible: _strokesVisible,
-                      onDirty: _isEditMode ? _markDirty : null,
-                      onControllerCreated: _isEditMode
-                          ? (c) => _pageControllers[page.id] = c
-                          : null,
-                    ),
-                  );
-                },
-              ),
-              if (totalPages > 1)
-                ViewerPageNavigator(
-                  childCount: totalPages,
-                  currentPage: _currentPageIndex,
-                  onGoToPage: (index) => _goToPage(index, totalPages),
+                            ],
+                          ),
+                        );
+                      },
+                      child: _PageContentLoader(
+                        key: ValueKey(page.id),
+                        page: page,
+                        currentMode: currentMode,
+                        canvasControllers: _pageControllers,
+                        strokesVisible: _strokesVisible,
+                        onDirty: _isEditMode ? _markDirty : null,
+                        onControllerCreated: (c) =>
+                            _pageControllers[page.id] = c,
+                      ),
+                    );
+                  },
                 ),
-            ],
-          );
-        },
+                if (totalPages > 1)
+                  ViewerPageNavigator(
+                    childCount: totalPages,
+                    currentPage: _currentPageIndex,
+                    onGoToPage: (index) => _goToPage(index, totalPages),
+                  ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -538,6 +594,7 @@ class _PageContentLoader extends ConsumerWidget {
   const _PageContentLoader({
     required this.page,
     required this.currentMode,
+    required this.canvasControllers,
     this.onDirty,
     this.onControllerCreated,
     this.strokesVisible = true,
@@ -546,6 +603,10 @@ class _PageContentLoader extends ConsumerWidget {
 
   final AgendaPage page;
   final CanvasMode currentMode;
+
+  /// Page canvas controllers keyed by page id, used to sync config edits
+  /// into each canvas's element manager.
+  final Map<String, PageCanvasController> canvasControllers;
   final VoidCallback? onDirty;
   final void Function(PageCanvasController controller)? onControllerCreated;
   final bool strokesVisible;
@@ -582,6 +643,10 @@ class _PageContentLoader extends ConsumerWidget {
     final elements = elementsAsync.value ?? [];
     final strokes = strokesAsync.value ?? [];
 
+    void persist(Future<void> write) {
+      unawaited(_guardPersist(context, write));
+    }
+
     return PageViewCanvas(
       key: ValueKey('${page.id}_canvas'),
       pageId: page.id,
@@ -601,20 +666,46 @@ class _PageContentLoader extends ConsumerWidget {
           configJson: elementData.configJson,
           isInteractive: isInteractive,
           onConfigChanged: (newJson) {
-            unawaited(controller.updateElementConfig(elementData, newJson));
+            // Keep the canvas manager's copy fresh so full-row transform
+            // writes (drags, color changes) don't revert this edit.
+            canvasControllers[page.id]
+                ?.syncElementConfig(elementData.id, newJson);
+            persist(controller.updateElementConfig(elementData, newJson));
           },
         );
       },
-      onElementUpdated: (updatedData) {
-        unawaited(controller.updateElementTransform(updatedData));
-      },
-      onElementDeleted: controller.deleteElement,
-      onElementDuplicated: (source) async {
-        await controller.duplicateElement(source);
-      },
-      onStrokesChanged: (newStrokes) async {
-        await controller.syncStrokes(page.id, newStrokes);
-      },
+      onElementUpdated: (updatedData) =>
+          persist(controller.updateElementTransform(updatedData)),
+      onElementDeleted: (id) => persist(controller.deleteElement(id)),
+      onElementDuplicated: (source) =>
+          persist(controller.duplicateElement(source)),
+      onStrokesChanged: (newStrokes) =>
+          persist(controller.syncStrokes(page.id, newStrokes)),
     );
   }
+}
+
+/// Awaits a persistence write so a rejection surfaces to the user instead
+/// of escaping as an unhandled async error.
+Future<void> _guardPersist(BuildContext context, Future<void> write) async {
+  try {
+    await write;
+  } on Object catch (error) {
+    if (context.mounted) {
+      _reportPersistError(context, error);
+    }
+  }
+}
+
+/// Logs [error] and tells the user that their change could not be saved.
+void _reportPersistError(BuildContext context, Object error) {
+  debugPrint('Honeyday: persistence failed: $error');
+  if (!context.mounted) return;
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  if (messenger == null) return;
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context).agendaSaveError)),
+    );
 }

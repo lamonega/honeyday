@@ -56,6 +56,25 @@ class CanvasElementDao {
     await _db.into(_db.canvasElements).insertOnConflictUpdate(companion);
   }
 
+  /// Updates only [configJson] (and `updatedAt`) for the element [id].
+  ///
+  /// Column-scoped so a debounced config flush can never revert geometry
+  /// written concurrently by drags or transforms. Returns whether a
+  /// live (non-deleted) row was updated.
+  Future<bool> updateElementConfig(String id, String configJson) async {
+    final count = await (_db.update(
+      _db.canvasElements,
+    )..where(
+        (tbl) => tbl.id.equals(id) & tbl.isDeleted.equals(false),
+      )).write(
+      CanvasElementsCompanion(
+        configJson: Value(configJson),
+        updatedAt: Value(DateTime.now().toUtc()),
+      ),
+    );
+    return count > 0;
+  }
+
   /// Soft-deletes the canvas element identified by [id].
   Future<void> deleteCanvasElement(String id) async {
     await (_db.update(

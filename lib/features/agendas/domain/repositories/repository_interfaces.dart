@@ -32,6 +32,11 @@ abstract interface class PageRepository {
 abstract interface class CanvasElementRepository {
   Stream<List<CanvasWidgetData>> watchCanvasElements(String pageId);
   Future<void> upsertCanvasElement(CanvasWidgetData element);
+
+  /// Updates only [configJson] (and its timestamp) for [id], leaving
+  /// geometry untouched. Returns whether a live row was updated.
+  Future<bool> updateElementConfig(String id, String configJson);
+
   Future<void> deleteCanvasElement(String id);
 }
 

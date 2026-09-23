@@ -42,6 +42,19 @@ class CanvasElementManager {
     _cachedSiblingRects = _elements.map((e) => e.boundingBox).toList();
   }
 
+  /// Applies a widget-level config edit to the manager's copy of the element.
+  ///
+  /// The widget owns its config state, but the manager's snapshot feeds
+  /// full-row persistence writes (drags, color changes): keeping it fresh
+  /// prevents those writes from reverting the edit. No undo entry is
+  /// recorded — config edits have never been part of element undo.
+  void handleConfigChanged(String elementId, String configJson) {
+    final index = _elements.indexWhere((e) => e.id == elementId);
+    if (index != -1) {
+      _elements[index] = _elements[index].copyWith(configJson: configJson);
+    }
+  }
+
   void handleTransformChanged(
     String elementId,
     Offset newPosition,
