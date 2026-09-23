@@ -204,12 +204,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get catalogElementsHeader => 'Elements';
 
   @override
-  String get catalogFilterAgenda => 'Agenda';
-
-  @override
-  String get catalogFilterStickers => 'Stickers';
-
-  @override
   String get onboardingStep1Title => 'Organize your life';
 
   @override
@@ -312,9 +306,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Aesthetic checkbox list for writing tasks';
 
   @override
-  String get catalogTemplateChecklistHeader => 'CHECKLIST';
-
-  @override
   String get catalogTemplateHabits => 'Habits';
 
   @override
@@ -322,17 +313,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Weekly tracking matrix to color with the pencil';
 
   @override
-  String get catalogTemplateHabitsHeader => 'WEEKLY HABITS';
-
-  @override
   String get catalogTemplatePriorities => 'Priorities';
 
   @override
   String get catalogTemplatePrioritiesDesc =>
       'Highlighted structure for the 3 key priorities';
-
-  @override
-  String get catalogTemplatePrioritiesHeader => 'PRIORITIES';
 
   @override
   String get catalogTemplateLinedNotes => 'Lined notes';
@@ -511,9 +496,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get catalogColorTransparent => 'Transparent';
-
-  @override
-  String get catalogTextboxDefault => 'Note...';
 
   @override
   String get catalogTextboxDefaultContent =>

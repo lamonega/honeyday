@@ -205,12 +205,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get catalogElementsHeader => 'Elementos';
 
   @override
-  String get catalogFilterAgenda => 'Agenda';
-
-  @override
-  String get catalogFilterStickers => 'Stickers';
-
-  @override
   String get onboardingStep1Title => 'Organiza tu vida';
 
   @override
@@ -314,9 +308,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Lista con casillas de verificación estéticas para escribir tareas';
 
   @override
-  String get catalogTemplateChecklistHeader => 'CHECKLIST';
-
-  @override
   String get catalogTemplateHabits => 'Hábitos';
 
   @override
@@ -324,17 +315,11 @@ class AppLocalizationsEs extends AppLocalizations {
       'Matriz de seguimiento semanal para colorear con el lápiz';
 
   @override
-  String get catalogTemplateHabitsHeader => 'HÁBITOS DE LA SEMANA';
-
-  @override
   String get catalogTemplatePriorities => 'Prioridades';
 
   @override
   String get catalogTemplatePrioritiesDesc =>
       'Estructura destacada para las 3 prioridades clave';
-
-  @override
-  String get catalogTemplatePrioritiesHeader => 'PRIORIDADES';
 
   @override
   String get catalogTemplateLinedNotes => 'Notas rayadas';
@@ -514,9 +499,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get catalogColorTransparent => 'Transparente';
-
-  @override
-  String get catalogTextboxDefault => 'Nota...';
 
   @override
   String get catalogTextboxDefaultContent =>

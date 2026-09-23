@@ -452,18 +452,6 @@ abstract class AppLocalizations {
   /// **'Elements'**
   String get catalogElementsHeader;
 
-  /// Filter chip for agenda category in resource catalog sidebar
-  ///
-  /// In en, this message translates to:
-  /// **'Agenda'**
-  String get catalogFilterAgenda;
-
-  /// Filter chip for stickers category in resource catalog sidebar
-  ///
-  /// In en, this message translates to:
-  /// **'Stickers'**
-  String get catalogFilterStickers;
-
   /// Onboarding step 1 title
   ///
   /// In en, this message translates to:
@@ -650,12 +638,6 @@ abstract class AppLocalizations {
   /// **'Aesthetic checkbox list for writing tasks'**
   String get catalogTemplateChecklistDesc;
 
-  /// CHECKLIST
-  ///
-  /// In en, this message translates to:
-  /// **'CHECKLIST'**
-  String get catalogTemplateChecklistHeader;
-
   /// Habits
   ///
   /// In en, this message translates to:
@@ -668,12 +650,6 @@ abstract class AppLocalizations {
   /// **'Weekly tracking matrix to color with the pencil'**
   String get catalogTemplateHabitsDesc;
 
-  /// WEEKLY HABITS
-  ///
-  /// In en, this message translates to:
-  /// **'WEEKLY HABITS'**
-  String get catalogTemplateHabitsHeader;
-
   /// Priorities
   ///
   /// In en, this message translates to:
@@ -685,12 +661,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Highlighted structure for the 3 key priorities'**
   String get catalogTemplatePrioritiesDesc;
-
-  /// PRIORITIES
-  ///
-  /// In en, this message translates to:
-  /// **'PRIORITIES'**
-  String get catalogTemplatePrioritiesHeader;
 
   /// Lined notes
   ///
@@ -1039,12 +1009,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Transparent'**
   String get catalogColorTransparent;
-
-  /// Note...
-  ///
-  /// In en, this message translates to:
-  /// **'Note...'**
-  String get catalogTextboxDefault;
 
   /// Important note!\nWrite your ideas or reminders here.
   ///

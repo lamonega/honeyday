@@ -236,14 +236,6 @@
   "@catalogElementsHeader": {
     "description": "Section header for elements list"
   },
-  "catalogFilterAgenda": "Agenda",
-  "@catalogFilterAgenda": {
-    "description": "Filter chip for agenda category in resource catalog sidebar"
-  },
-  "catalogFilterStickers": "Stickers",
-  "@catalogFilterStickers": {
-    "description": "Filter chip for stickers category in resource catalog sidebar"
-  },
   "onboardingStep1Title": "Organize your life",
   "@onboardingStep1Title": {
     "description": "Onboarding step 1 title"
@@ -368,10 +360,6 @@
   "@catalogTemplateChecklistDesc": {
     "description": "Aesthetic checkbox list for writing tasks"
   },
-  "catalogTemplateChecklistHeader": "CHECKLIST",
-  "@catalogTemplateChecklistHeader": {
-    "description": "CHECKLIST"
-  },
   "catalogTemplateHabits": "Habits",
   "@catalogTemplateHabits": {
     "description": "Habits"
@@ -380,10 +368,6 @@
   "@catalogTemplateHabitsDesc": {
     "description": "Weekly tracking matrix to color with the pencil"
   },
-  "catalogTemplateHabitsHeader": "WEEKLY HABITS",
-  "@catalogTemplateHabitsHeader": {
-    "description": "WEEKLY HABITS"
-  },
   "catalogTemplatePriorities": "Priorities",
   "@catalogTemplatePriorities": {
     "description": "Priorities"
@@ -391,10 +375,6 @@
   "catalogTemplatePrioritiesDesc": "Highlighted structure for the 3 key priorities",
   "@catalogTemplatePrioritiesDesc": {
     "description": "Highlighted structure for the 3 key priorities"
-  },
-  "catalogTemplatePrioritiesHeader": "PRIORITIES",
-  "@catalogTemplatePrioritiesHeader": {
-    "description": "PRIORITIES"
   },
   "catalogTemplateLinedNotes": "Lined notes",
   "@catalogTemplateLinedNotes": {
@@ -627,10 +607,6 @@
   "catalogColorTransparent": "Transparent",
   "@catalogColorTransparent": {
     "description": "Transparent"
-  },
-  "catalogTextboxDefault": "Note...",
-  "@catalogTextboxDefault": {
-    "description": "Note..."
   },
   "catalogTextboxDefaultContent": "Important note!\\nWrite your ideas or reminders here.",
   "@catalogTextboxDefaultContent": {
