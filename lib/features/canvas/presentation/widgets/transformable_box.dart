@@ -5,6 +5,7 @@ import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/presentation/canvas/snapping.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/canvas_action_bar.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/resize_handles.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/static_element_box.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/transform/transform_constants.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/transform/transform_gestures.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/transform/transform_handles.dart';
@@ -119,12 +120,11 @@ class _TransformableBoxState extends State<TransformableBox>
     final isEdit = widget.canvasMode == CanvasMode.edit;
 
     if (!isEdit) {
-      return Positioned(
-        left: widget.position.dx,
-        top: widget.position.dy,
-        width: widget.size.width,
-        height: widget.size.height,
-        child: Transform.rotate(angle: widget.rotation, child: widget.child),
+      return StaticElementBox(
+        position: widget.position,
+        size: widget.size,
+        rotation: widget.rotation,
+        child: widget.child,
       );
     }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/static_element_box.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/transformable_box.dart';
 
 import '../../../../helpers/pump_app.dart';
@@ -31,6 +32,8 @@ void main() {
         // Handles (refresh icon for rotation, close icon for delete) must not be present
         expect(find.byIcon(Icons.refresh_rounded), findsNothing);
         expect(find.byIcon(Icons.close_rounded), findsNothing);
+        // Non-edit modes delegate the geometry to the shared static box.
+        expect(find.byType(StaticElementBox), findsOneWidget);
       },
     );
 
