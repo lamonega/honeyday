@@ -17,6 +17,7 @@ import 'package:honeyday/features/canvas/domain/canvas_mode_notifier.dart';
 import 'package:honeyday/features/canvas/presentation/pages/page_view_canvas.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/page_canvas_controller.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
+import 'package:honeyday/features/export/presentation/export_actions.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 import 'package:uuid/uuid.dart';
 
@@ -129,6 +130,22 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
 
   bool get _canUndo => _currentPageController?.canUndo ?? false;
   bool get _canRedo => _currentPageController?.canRedo ?? false;
+
+  /// App bar action that starts the PDF export flow for this agenda.
+  Widget _buildExportButton(int pagesCount) {
+    return IconButton(
+      icon: const Icon(Icons.picture_as_pdf_outlined),
+      tooltip: AppLocalizations.of(context).exportPdfTooltip,
+      onPressed: () => unawaited(
+        runAgendaExport(
+          context,
+          ref,
+          agendaId: widget.agendaId,
+          pagesCount: pagesCount,
+        ),
+      ),
+    );
+  }
 
   Future<bool> _showExitDialog() async {
     if (!_hasUnsavedChanges) return true;
@@ -347,7 +364,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
             final shouldPop = await _showExitDialog();
             if (shouldPop && context.mounted) context.go('/');
           },
-          actions: const [],
+          actions: [_buildExportButton(totalPages)],
         ),
         floatingActionButton: Row(
           mainAxisSize: MainAxisSize.min,
@@ -465,7 +482,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
             final shouldPop = await _showExitDialog();
             if (shouldPop && context.mounted) context.go('/');
           },
-          actions: const [],
+          actions: [_buildExportButton(totalPages)],
         ),
         floatingActionButton: ViewerCanvasModeToggle(
           currentMode: currentMode,
@@ -676,8 +693,10 @@ class _PageContentLoader extends ConsumerWidget {
           onConfigChanged: (newJson) {
             // Keep the canvas manager's copy fresh so full-row transform
             // writes (drags, color changes) don't revert this edit.
-            canvasControllers[page.id]
-                ?.syncElementConfig(elementData.id, newJson);
+            canvasControllers[page.id]?.syncElementConfig(
+              elementData.id,
+              newJson,
+            );
             persist(controller.updateElementConfig(elementData, newJson));
           },
         );

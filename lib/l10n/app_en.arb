@@ -655,5 +655,58 @@
   "canvasModularWidgetContainer": "Modular Widget Container",
   "@canvasModularWidgetContainer": {
     "description": "Fallback label for unrecognized modular widget containers"
+  },
+  "exportPdfTooltip": "Export to PDF",
+  "@exportPdfTooltip": {
+    "description": "Tooltip of the app bar action that opens the PDF export dialog"
+  },
+  "exportDialogTitle": "Export to PDF",
+  "@exportDialogTitle": {
+    "description": "Title of the PDF export options dialog"
+  },
+  "exportFormatLabel": "Page size",
+  "@exportFormatLabel": {
+    "description": "Label above the paper size selector"
+  },
+  "exportFormatLetter": "Letter",
+  "@exportFormatLetter": {
+    "description": "Letter (ANSI) paper size option; A4 is not translated"
+  },
+  "exportIncludeContentLabel": "Include typed text",
+  "@exportIncludeContentLabel": {
+    "description": "Checkbox label: include the text typed inside widgets"
+  },
+  "exportPagesSummary": "{count} pages · 300 dpi",
+  "@exportPagesSummary": {
+    "description": "Summary line with the total page count and raster resolution",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "exportStart": "Export",
+  "@exportStart": {
+    "description": "Confirm button of the PDF export options dialog"
+  },
+  "exportProgressTitle": "Exporting…",
+  "@exportProgressTitle": {
+    "description": "Title of the PDF export progress dialog"
+  },
+  "exportProgressPage": "Rendering page {current} of {total}",
+  "@exportProgressPage": {
+    "description": "Progress line of the PDF export dialog",
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "exportError": "The export failed. Please try again.",
+  "@exportError": {
+    "description": "Snackbar shown when the PDF export or save fails"
   }
 }

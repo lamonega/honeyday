@@ -163,5 +163,15 @@
   "paperStyleGrid": "Cuadrícula",
   "paperStyleBlank": "Blanca",
   "catalogErrorUnknownWidget": "Widget no reconocido: {widgetType}",
-  "canvasModularWidgetContainer": "Contenedor de widget modular"
+  "canvasModularWidgetContainer": "Contenedor de widget modular",
+  "exportPdfTooltip": "Exportar a PDF",
+  "exportDialogTitle": "Exportar a PDF",
+  "exportFormatLabel": "Tamaño de página",
+  "exportFormatLetter": "Carta",
+  "exportIncludeContentLabel": "Incluir texto escrito",
+  "exportPagesSummary": "{count} páginas · 300 dpi",
+  "exportStart": "Exportar",
+  "exportProgressTitle": "Exportando…",
+  "exportProgressPage": "Renderizando página {current} de {total}",
+  "exportError": "La exportación falló. Intenta de nuevo."
 }

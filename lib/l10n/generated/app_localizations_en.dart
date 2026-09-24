@@ -535,4 +535,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get canvasModularWidgetContainer => 'Modular Widget Container';
+
+  @override
+  String get exportPdfTooltip => 'Export to PDF';
+
+  @override
+  String get exportDialogTitle => 'Export to PDF';
+
+  @override
+  String get exportFormatLabel => 'Page size';
+
+  @override
+  String get exportFormatLetter => 'Letter';
+
+  @override
+  String get exportIncludeContentLabel => 'Include typed text';
+
+  @override
+  String exportPagesSummary(int count) {
+    return '$count pages · 300 dpi';
+  }
+
+  @override
+  String get exportStart => 'Export';
+
+  @override
+  String get exportProgressTitle => 'Exporting…';
+
+  @override
+  String exportProgressPage(int current, int total) {
+    return 'Rendering page $current of $total';
+  }
+
+  @override
+  String get exportError => 'The export failed. Please try again.';
 }

@@ -1081,6 +1081,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Modular Widget Container'**
   String get canvasModularWidgetContainer;
+
+  /// Tooltip of the app bar action that opens the PDF export dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Export to PDF'**
+  String get exportPdfTooltip;
+
+  /// Title of the PDF export options dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Export to PDF'**
+  String get exportDialogTitle;
+
+  /// Label above the paper size selector
+  ///
+  /// In en, this message translates to:
+  /// **'Page size'**
+  String get exportFormatLabel;
+
+  /// Letter (ANSI) paper size option; A4 is not translated
+  ///
+  /// In en, this message translates to:
+  /// **'Letter'**
+  String get exportFormatLetter;
+
+  /// Checkbox label: include the text typed inside widgets
+  ///
+  /// In en, this message translates to:
+  /// **'Include typed text'**
+  String get exportIncludeContentLabel;
+
+  /// Summary line with the total page count and raster resolution
+  ///
+  /// In en, this message translates to:
+  /// **'{count} pages · 300 dpi'**
+  String exportPagesSummary(int count);
+
+  /// Confirm button of the PDF export options dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get exportStart;
+
+  /// Title of the PDF export progress dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Exporting…'**
+  String get exportProgressTitle;
+
+  /// Progress line of the PDF export dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Rendering page {current} of {total}'**
+  String exportProgressPage(int current, int total);
+
+  /// Snackbar shown when the PDF export or save fails
+  ///
+  /// In en, this message translates to:
+  /// **'The export failed. Please try again.'**
+  String get exportError;
 }
 
 class _AppLocalizationsDelegate
