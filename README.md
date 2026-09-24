@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/images/honeyday_logo.png" alt="Honeyday Logo" width="120">
+  <img src="https://raw.githubusercontent.com/lamonega/honeyday/HEAD/assets/images/honeyday_logo.png" alt="Honeyday Logo" width="120">
 </p>
 
 <h1 align="center">Honeyday</h1>
@@ -10,7 +10,7 @@
   <img src="https://img.shields.io/badge/Platform-Android%20%7C%20iOS%20%7C%20Web%20%7C%20Linux%20%7C%20macOS%20%7C%20Windows-blue?style=for-the-badge" alt="Platforms">
   <img src="https://img.shields.io/badge/License-GPL--3.0-green?style=for-the-badge" alt="License">
   <img src="https://img.shields.io/github/actions/workflow/status/lamonega/honeyday/ci.yml?branch=develop&style=for-the-badge&label=CI" alt="CI">
-  <img src="https://img.shields.io/badge/version-0.1.7--1-orange?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/github/v/tag/lamonega/honeyday?style=for-the-badge&color=orange&label=version&sort=semver" alt="Version">
 </p>
 
 <p align="center">
