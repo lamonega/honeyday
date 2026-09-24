@@ -12,6 +12,10 @@ library;
 /// Referenced by: page_view_canvas.dart, snapping.dart, page_surface.dart
 const double kCanvasMargin = 24;
 
+/// Default page width in points.
+/// Referenced by: page_view_canvas.dart, static_page_view.dart
+const double kDefaultPageWidth = 800;
+
 /// Default page height in points.
 /// Referenced by: page_view_canvas.dart, transformable_box.dart
 const double kDefaultPageHeight = 1100;

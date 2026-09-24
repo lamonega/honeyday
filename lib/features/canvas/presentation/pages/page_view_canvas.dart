@@ -26,9 +26,6 @@ export 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 // Page view constants (used only here)
 // ──────────────────────────────────────────────
 
-/// Default page width in points.
-const double kDefaultPageWidth = 800;
-
 /// Touch slop for gesture detection.
 const double kCanvasTouchSlop = 4;
 
