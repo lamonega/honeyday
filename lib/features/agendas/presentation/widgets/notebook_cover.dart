@@ -10,13 +10,17 @@ class NotebookCover extends StatelessWidget {
   const NotebookCover({
     required this.title,
     required this.coverStyle,
-    required this.onDelete,
     super.key,
+    this.onDelete,
   });
 
   final String title;
   final String coverStyle;
-  final VoidCallback onDelete;
+
+  /// Triggered when requesting deletion of this agenda.
+  ///
+  /// Null hides the delete button (static previews such as PDF export).
+  final VoidCallback? onDelete;
 
   static LinearGradient _getCoverGradient(String style) {
     // Try parsing as hex color first
@@ -82,7 +86,7 @@ class NotebookCover extends StatelessWidget {
           const _BookmarkRibbon(),
           const _PageEdges(),
           _CoverTitle(title: title),
-          _DeleteButton(onDelete: onDelete),
+          if (onDelete != null) _DeleteButton(onDelete: onDelete!),
         ],
       ),
     );
