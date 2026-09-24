@@ -5,6 +5,7 @@ import 'package:honeyday/features/agendas/data/repositories/page_dao.dart';
 import 'package:honeyday/features/agendas/data/repositories/stroke_dao.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda_snapshot.dart';
 import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
@@ -17,11 +18,13 @@ import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 class DriftAgendaRepository implements FullAgendaRepository {
   /// Constructs a [DriftAgendaRepository] using the provided [AppDatabase].
   DriftAgendaRepository(AppDatabase db)
-      : _agendaDao = AgendaDao(db),
+      : _db = db,
+        _agendaDao = AgendaDao(db),
         _pageDao = PageDao(db),
         _canvasElementDao = CanvasElementDao(db),
         _strokeDao = StrokeDao(db);
 
+  final AppDatabase _db;
   final AgendaDao _agendaDao;
   final PageDao _pageDao;
   final CanvasElementDao _canvasElementDao;
@@ -111,4 +114,38 @@ class DriftAgendaRepository implements FullAgendaRepository {
   @override
   Future<void> replaceStrokes(String pageId, List<InkStroke> strokes) =>
       _strokeDao.replaceStrokes(pageId, strokes);
+
+  @override
+  Future<AgendaSnapshot?> getAgendaSnapshot(String agendaId) {
+    // One SQLite transaction ⇒ consistent view (SQLite gives a consistent
+    // read inside a transaction; safe even while the viewer keeps writing
+    // during an export).
+    return _db.transaction(() async {
+      final agenda = await _agendaDao.getAgenda(agendaId);
+      if (agenda == null) return null;
+
+      final pages = await _pageDao.getPages(agendaId);
+      final elements = await _canvasElementDao.getCanvasElementsForAgenda(
+        agendaId,
+      );
+
+      // Group the single flat, already-ordered read by page without
+      // reordering, then attach each group to its page.
+      final elementsByPage = <String, List<CanvasWidgetData>>{};
+      for (final element in elements) {
+        elementsByPage.putIfAbsent(element.pageId, () => []).add(element);
+      }
+
+      return AgendaSnapshot(
+        agenda: agenda,
+        pages: [
+          for (final page in pages)
+            AgendaPageSnapshot(
+              page: page,
+              elements: elementsByPage[page.id] ?? const [],
+            ),
+        ],
+      );
+    });
+  }
 }

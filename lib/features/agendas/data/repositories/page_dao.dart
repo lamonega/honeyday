@@ -32,6 +32,18 @@ class PageDao {
         );
   }
 
+  /// Reads all non-deleted pages for [agendaId], ordered by page number.
+  Future<List<AgendaPage>> getPages(String agendaId) async {
+    final rows = await (_db.select(_db.pages)
+          ..where(
+            (tbl) =>
+                tbl.agendaId.equals(agendaId) & tbl.isDeleted.equals(false),
+          )
+          ..orderBy([(t) => OrderingTerm.asc(t.pageNumber)]))
+        .get();
+    return rows.map((r) => AgendaPageDto.fromDrift(r).toEntity()).toList();
+  }
+
   /// Creates a new page and atomically increments the parent agenda's page count.
   ///
   /// The effective page number is derived inside the transaction as

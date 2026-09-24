@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -265,6 +266,143 @@ void main() {
       expect(pages[0].pageNumber, 1);
       expect(pages[1].pageNumber, 2);
       expect(pages[2].pageNumber, 3);
+    });
+  });
+
+  group('getAgendaSnapshot Tests', () {
+    /// Inserts an element with an explicit [createdAt] so ordering
+    /// assertions are independent of insert timing.
+    Future<void> insertElement({
+      required String id,
+      required String pageId,
+      required DateTime createdAt,
+    }) {
+      return db.into(db.canvasElements).insert(
+        CanvasElementsCompanion.insert(
+          id: id,
+          pageId: pageId,
+          widgetType: 'text_box',
+          posX: const Value(10),
+          posY: const Value(20),
+          width: const Value(220),
+          height: const Value(180),
+          rotation: const Value(0),
+          configJson: const Value('{}'),
+          createdAt: Value(createdAt),
+          updatedAt: Value(createdAt),
+        ),
+      );
+    }
+
+    test('returns pages in order and elements grouped in viewer z-order', () async {
+      final agenda = await repository.createAgenda(title: 'Snapshot');
+      final page1 = (await repository.watchPages(agenda.id).first).first;
+      final page2 = await repository.createPage(
+        agendaId: agenda.id,
+        pageNumber: 2,
+        backgroundStyle: 'lined',
+      );
+
+      final base = DateTime.utc(2026, 9, 24, 12);
+      // Inserted out of createdAt order on purpose: the snapshot must order
+      // elements by createdAt, not by insertion.
+      await insertElement(
+        id: 'el-b',
+        pageId: page1.id,
+        createdAt: base.add(const Duration(minutes: 2)),
+      );
+      await insertElement(
+        id: 'el-a',
+        pageId: page1.id,
+        createdAt: base.add(const Duration(minutes: 1)),
+      );
+      await insertElement(
+        id: 'el-c',
+        pageId: page2.id,
+        createdAt: base.add(const Duration(minutes: 3)),
+      );
+
+      final snapshot = await repository.getAgendaSnapshot(agenda.id);
+
+      expect(snapshot, isNotNull);
+      expect(snapshot!.agenda.id, agenda.id);
+      expect(snapshot.agenda.title, 'Snapshot');
+      expect(
+        snapshot.pages.map((p) => p.page.pageNumber).toList(),
+        [1, 2],
+      );
+      expect(snapshot.pages[0].page.id, page1.id);
+      expect(snapshot.pages[1].page.id, page2.id);
+      expect(
+        snapshot.pages[0].elements.map((e) => e.id).toList(),
+        ['el-a', 'el-b'],
+      );
+      expect(snapshot.pages[1].elements.map((e) => e.id).toList(), ['el-c']);
+
+      // Contract: identical z-order to the viewer's per-page stream.
+      final watched = await repository.watchCanvasElements(page1.id).first;
+      expect(
+        snapshot.pages[0].elements.map((e) => e.id).toList(),
+        watched.map((e) => e.id).toList(),
+      );
+    });
+
+    test('excludes soft-deleted pages and elements', () async {
+      final agenda = await repository.createAgenda(title: 'Borrados');
+      final page1 = (await repository.watchPages(agenda.id).first).first;
+      final page2 = await repository.createPage(
+        agendaId: agenda.id,
+        pageNumber: 2,
+      );
+
+      await insertElement(
+        id: 'el-keep',
+        pageId: page1.id,
+        createdAt: DateTime.utc(2026, 9, 24, 10),
+      );
+      await insertElement(
+        id: 'el-gone',
+        pageId: page1.id,
+        createdAt: DateTime.utc(2026, 9, 24, 11),
+      );
+      await insertElement(
+        id: 'el-page2',
+        pageId: page2.id,
+        createdAt: DateTime.utc(2026, 9, 24, 12),
+      );
+
+      await repository.deleteCanvasElement('el-gone');
+      await repository.deletePage(page2.id);
+
+      final snapshot = await repository.getAgendaSnapshot(agenda.id);
+
+      expect(snapshot, isNotNull);
+      expect(snapshot!.pages, hasLength(1));
+      expect(snapshot.pages.single.page.id, page1.id);
+      expect(
+        snapshot.pages.single.elements.map((e) => e.id).toList(),
+        ['el-keep'],
+      );
+    });
+
+    test('returns null for unknown or soft-deleted agendas', () async {
+      expect(await repository.getAgendaSnapshot('missing-id'), isNull);
+
+      final agenda = await repository.createAgenda(title: 'Para borrar');
+      await repository.deleteAgenda(agenda.id);
+
+      expect(await repository.getAgendaSnapshot(agenda.id), isNull);
+    });
+
+    test('returns empty element lists for an agenda without elements', () async {
+      final agenda = await repository.createAgenda(title: 'Vacía');
+
+      final snapshot = await repository.getAgendaSnapshot(agenda.id);
+
+      expect(snapshot, isNotNull);
+      expect(snapshot!.pages, hasLength(1));
+      expect(snapshot.pages.single.elements, isEmpty);
+      expect(snapshot.pages.single.page.backgroundStyle, 'dotted');
     });
   });
 }

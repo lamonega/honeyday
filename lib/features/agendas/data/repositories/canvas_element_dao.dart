@@ -22,21 +22,40 @@ class CanvasElementDao {
           )
           ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
         .watch()
-        .map(
-          (rows) => rows
-              .map(
-                (e) => CanvasWidgetData(
-                  id: e.id,
-                  pageId: e.pageId,
-                  widgetType: e.widgetType,
-                  position: Offset(e.posX, e.posY),
-                  size: Size(e.width, e.height),
-                  rotation: e.rotation,
-                  configJson: e.configJson,
-                ),
-              )
-              .toList(),
-        );
+        .map((rows) => rows.map(_mapRow).toList());
+  }
+
+  /// Reads all live canvas elements across every live page of [agendaId],
+  /// ordered by (pageNumber asc, createdAt asc) — i.e. page order and, within
+  /// each page, the same z-order the viewer renders.
+  Future<List<CanvasWidgetData>> getCanvasElementsForAgenda(
+    String agendaId,
+  ) async {
+    final query = _db.select(_db.canvasElements).join([
+      innerJoin(_db.pages, _db.pages.id.equalsExp(_db.canvasElements.pageId)),
+    ])
+      ..where(_db.pages.agendaId.equals(agendaId))
+      ..where(_db.pages.isDeleted.equals(false))
+      ..where(_db.canvasElements.isDeleted.equals(false))
+      ..orderBy([
+        OrderingTerm.asc(_db.pages.pageNumber),
+        OrderingTerm.asc(_db.canvasElements.createdAt),
+      ]);
+    final rows = await query.get();
+    return rows.map((r) => _mapRow(r.readTable(_db.canvasElements))).toList();
+  }
+
+  /// Maps a Drift [CanvasElement] row onto its domain representation.
+  CanvasWidgetData _mapRow(CanvasElement e) {
+    return CanvasWidgetData(
+      id: e.id,
+      pageId: e.pageId,
+      widgetType: e.widgetType,
+      position: Offset(e.posX, e.posY),
+      size: Size(e.width, e.height),
+      rotation: e.rotation,
+      configJson: e.configJson,
+    );
   }
 
   /// Inserts or updates a canvas element using conflict resolution.

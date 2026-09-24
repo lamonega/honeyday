@@ -1,5 +1,6 @@
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda_snapshot.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 
@@ -59,4 +60,8 @@ abstract interface class FullAgendaRepository
         AgendaRepository,
         PageRepository,
         CanvasElementRepository,
-        StrokeRepository;
+        StrokeRepository {
+  /// One-shot, consistent read of [agendaId] with all live pages and elements.
+  /// Returns null when the agenda does not exist or is soft-deleted.
+  Future<AgendaSnapshot?> getAgendaSnapshot(String agendaId);
+}
