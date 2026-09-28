@@ -21,6 +21,7 @@ environment:
   sdk: ^3.13.3
 
 dependencies:
+  archive: ^4.3.0
   drift: ^2.35.0
   drift_flutter: ^0.3.1
   file_selector: ^1.1.0
@@ -34,8 +35,8 @@ dependencies:
   google_fonts: ^8.2.1
   haptic_feedback: ^0.6.5
   intl: any
+  meta: ^1.16.0
   package_info_plus: ^10.2.1
-  pdf: ^3.13.1
   perfect_freehand: ^2.5.2+1
   share_plus: ^13.3.0
   shared_preferences: ^2.5.5
@@ -48,6 +49,7 @@ dev_dependencies:
   drift_dev: ^2.35.0
   flutter_test:
     sdk: flutter
+  pdf: ^3.13.1
   very_good_analysis: ^11.0.0
 
 flutter:

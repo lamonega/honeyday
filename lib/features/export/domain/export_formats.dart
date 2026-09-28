@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/widgets.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/export/domain/export_options.dart';
-import 'package:pdf/pdf.dart';
 
 /// Export raster resolution (dots per inch) applied to every captured page.
 const double kExportDpi = 300;
@@ -11,13 +10,37 @@ const double kExportDpi = 300;
 /// Points per inch in PDF user space.
 const double kPointsPerInch = 72;
 
-/// Maps [PdfExportFormat] to the concrete [PdfPageFormat] of the document.
+/// Media box of one exported PDF page, in PostScript points.
+///
+/// What: The `/MediaBox` rectangle written into every page object, i.e. the
+/// physical sheet the content is fitted onto.
+/// Why: The app writes the PDF itself, so it owns this table. The values are
+/// the same ones `package:pdf` used, so the exported geometry is unchanged.
+@immutable
+class PdfPageBox {
+  /// Creates a page box of [width] × [height] points.
+  const PdfPageBox({required this.width, required this.height});
+
+  /// ISO 216 A4 (210 × 297 mm).
+  static const PdfPageBox a4 = PdfPageBox(width: 595.28, height: 841.89);
+
+  /// ANSI/US Letter (8.5 × 11 in).
+  static const PdfPageBox letter = PdfPageBox(width: 612, height: 792);
+
+  /// Sheet width in points.
+  final double width;
+
+  /// Sheet height in points.
+  final double height;
+}
+
+/// Maps [PdfExportFormat] to the concrete page box of the document.
 ///
 /// Adding a size to the table (e.g. A5) only requires a new enum value here
 /// and in the format dialog — fit math and capture stay generic.
-PdfPageFormat pdfPageFormatFor(PdfExportFormat format) => switch (format) {
-  PdfExportFormat.a4 => PdfPageFormat.a4,
-  PdfExportFormat.letter => PdfPageFormat.letter,
+PdfPageBox pdfPageBoxFor(PdfExportFormat format) => switch (format) {
+  PdfExportFormat.a4 => PdfPageBox.a4,
+  PdfExportFormat.letter => PdfPageBox.letter,
 };
 
 /// How the logical canvas fits onto one paper size.
@@ -49,28 +72,28 @@ class CanvasFit {
   final double pixelRatio;
 }
 
-/// Contain-fits the logical canvas into [pageFormat], centered both ways.
+/// Contain-fits the logical canvas into [pageBox], centered both ways.
 ///
 /// What: Computes the fitted rect (points) and the capture [CanvasFit.pixelRatio]
 /// needed to rasterize the canvas at [dpi] of printed resolution.
-/// Why: Single source of truth shared by the PDF builder (where to place the
+/// Why: Single source of truth shared by the PDF writer (where to place the
 /// image) and the capture service (how many pixels to render).
 CanvasFit fitCanvas({
-  required PdfPageFormat pageFormat,
+  required PdfPageBox pageBox,
   double dpi = kExportDpi,
   Size canvasSize = const Size(kDefaultPageWidth, kDefaultPageHeight),
 }) {
   final pointsPerUnit = math.min(
-    pageFormat.width / canvasSize.width,
-    pageFormat.height / canvasSize.height,
+    pageBox.width / canvasSize.width,
+    pageBox.height / canvasSize.height,
   );
   final width = canvasSize.width * pointsPerUnit;
   final height = canvasSize.height * pointsPerUnit;
   return CanvasFit(
     width: width,
     height: height,
-    left: (pageFormat.width - width) / 2,
-    top: (pageFormat.height - height) / 2,
+    left: (pageBox.width - width) / 2,
+    top: (pageBox.height - height) / 2,
     pixelRatio: pointsPerUnit * dpi / kPointsPerInch,
   );
 }
