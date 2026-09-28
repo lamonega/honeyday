@@ -104,6 +104,14 @@ flutter run
 flutter test
 ```
 
+The export benchmarks are excluded from that run. They are slow and their
+numbers are machine-specific, so run them explicitly:
+
+```bash
+dart run test/benchmark/export_page_cost.dart          # per-page cost, old vs new
+flutter test test/benchmark --run-skipped              # full pipeline, end to end
+```
+
 ## License
 
 This project is licensed under the **GNU General Public License v3.0** — see the [LICENSE](LICENSE) file for details.

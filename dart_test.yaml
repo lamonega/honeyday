@@ -1,6 +1,21 @@
 tags:
+  benchmark:
+    # Real timings on real-sized pages: slow, noisy, and they move the numbers
+    # the docs quote. Excluded from `flutter test` (which is what CI runs) on
+    # purpose.
+    #
+    # A tag-level `skip` also applies to an explicit `--tags` selection, so the
+    # benchmark needs `--run-skipped` to actually execute:
+    #
+    #   flutter test test/benchmark --run-skipped
+    #   flutter test test/benchmark --run-skipped \
+    #     --dart-define=honeyday.benchPages=4 \
+    #     --dart-define=honeyday.benchWorkers=2
+    #
+    # The dart-defines shrink the run for machines without the memory for a
+    # full 20-page agenda. See docs/export-pipeline.md.
+    skip: "Benchmark; run it with `flutter test test/benchmark --run-skipped`."
   golden:
-    # Golden tests compare against committed PNGs; they run everywhere but are
-    # tagged so they can be excluded with `--exclude-tags golden`.
-    targets:
-      - default
+    # Declared so the tag is known to the runner; goldens run by default and
+    # are only excluded on purpose with `--exclude-tags golden`.
+    description: "Golden comparisons against the committed PNGs."
