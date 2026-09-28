@@ -571,5 +571,18 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get exportPhaseCapturing => 'Renderizando las páginas';
+
+  @override
+  String get exportPhaseCompressing => 'Comprimiendo las imágenes…';
+
+  @override
+  String get exportPhaseWriting => 'Escribiendo el PDF…';
+
+  @override
   String get exportError => 'La exportación falló. Intenta de nuevo.';
+
+  @override
+  String get exportErrorBackground =>
+      'Honeyday no pudo renderizar las páginas porque la ventana estaba en segundo plano. Traé Honeyday al frente e intentá de nuevo.';
 }

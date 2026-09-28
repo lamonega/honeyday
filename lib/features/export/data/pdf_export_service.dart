@@ -1,37 +1,43 @@
-import 'dart:typed_data';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:honeyday/features/agendas/data/repositories/agenda_repository_provider.dart';
 import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.dart';
 import 'package:honeyday/features/export/data/export_page_builder.dart';
-import 'package:honeyday/features/export/data/pdf_builder.dart';
+import 'package:honeyday/features/export/data/pdf_output.dart';
+import 'package:honeyday/features/export/data/pdf_sink.dart';
+import 'package:honeyday/features/export/data/pdf_worker_pool.dart';
+import 'package:honeyday/features/export/data/pdf_writer.dart';
+import 'package:honeyday/features/export/domain/export_cancellation.dart';
+import 'package:honeyday/features/export/domain/export_capture.dart';
 import 'package:honeyday/features/export/domain/export_formats.dart';
 import 'package:honeyday/features/export/domain/export_options.dart';
+import 'package:honeyday/features/export/domain/export_phase.dart';
 
-/// Renders a page widget offscreen to PNG at the given pixel ratio.
+export 'package:honeyday/features/export/domain/export_cancellation.dart'
+    show ExportCancelled;
+
+/// Rasterizes a page widget at the given pixel ratio.
 ///
-/// Implemented by `OffscreenCaptureHost`; injected so the service stays
+/// What: returns the raw RGBA pixels plus their dimensions, *not* encoded
+/// bytes — compression happens later, off the UI isolate.
+/// Why: Implemented by `OffscreenCaptureHost`; injected so the service stays
 /// testable with a fake that records the widgets it receives.
-typedef ExportCaptureFn = Future<Uint8List> Function(
+typedef ExportCaptureFn = Future<CapturedPage> Function(
   Widget page,
   double pixelRatio,
 );
 
-/// Raised when the user cancels an export between pages.
-class ExportCancelled implements Exception {
-  /// Creates the cancellation signal.
-  const ExportCancelled();
-}
-
-/// Result of a successful export run: bytes plus suggested file name.
+/// Result of a successful export run: the document plus a suggested name.
 @immutable
 class PdfExportResult {
-  /// Creates a result with the generated document and its file name.
-  const PdfExportResult({required this.bytes, required this.fileName});
+  /// Creates a result from a finished document.
+  const PdfExportResult({required this.artifact, required this.fileName});
 
-  /// The generated PDF document.
-  final Uint8List bytes;
+  /// The generated PDF, as a temp file on native platforms and as bytes on
+  /// the web. Exactly one of the two is set.
+  final PdfArtifact artifact;
 
   /// Suggested on-disk name (already sanitized, ends in `.pdf`).
   final String fileName;
@@ -39,10 +45,14 @@ class PdfExportResult {
 
 /// Orchestrates a full-agenda PDF export.
 ///
-/// What: Reads one consistent `AgendaSnapshot`, captures the cover plus every
-/// page through `capture`, and assembles the PDF.
-/// Why: Owns the loop/progress/cancel contract so presentation code only
-/// drives dialogs and saving.
+/// What: reads one consistent `AgendaSnapshot`, streams the cover and every
+/// page through the capture callback into a worker pool, and writes the PDF into
+/// [PdfOutput] incrementally as the compressed streams come back.
+/// Why: Owns the loop / progress / cancel contract so presentation code only
+/// drives dialogs and saving. All the CPU lives in [PdfWorkerPool], and the
+/// writer only appends bytes, so the isolate that owns the frame pipeline
+/// produces roughly one frame per page instead of blocking for tens of
+/// seconds — the reported freeze.
 class PdfExportService {
   /// Creates a service backed by the agendas repository.
   PdfExportService(this._repository);
@@ -51,52 +61,139 @@ class PdfExportService {
 
   /// Exports [agendaId] as a PDF honoring [options].
   ///
-  /// [onProgress] reports `(completed, total)` after each capture, where
-  /// total = pages + cover. [isCancelled] is polled between pages; once it
-  /// returns `true` an [ExportCancelled] is thrown.
+  /// [onProgress] is called after every capture and once per phase change.
+  /// [isCancelled] is polled between pages and while the last streams are
+  /// being awaited; once it returns `true` the run stops with
+  /// [ExportCancelled]. [onCapturesDone] is invoked as soon as the last page
+  /// is rasterized, so the caller can drop its capture host and free the layer
+  /// tree while the pool finishes. [pool] and [createOutput] are test seams.
   Future<PdfExportResult> export({
     required String agendaId,
     required ExportOptions options,
     required ExportCaptureFn capture,
-    void Function(int completed, int total)? onProgress,
+    void Function(ExportProgress progress)? onProgress,
     bool Function()? isCancelled,
+    FutureOr<void> Function()? onCapturesDone,
+    PdfWorkerPool? pool,
+    PdfOutput Function()? createOutput,
   }) async {
     final cancelled = isCancelled ?? () => false;
+    if (cancelled()) throw const ExportCancelled();
     final snapshot = await _repository.getAgendaSnapshot(agendaId);
     if (snapshot == null) {
       throw StateError('Agenda $agendaId not found for export.');
     }
 
-    final pageFormat = pdfPageFormatFor(options.format);
-    final fit = fitCanvas(pageFormat: pageFormat);
+    final pageBox = pdfPageBoxFor(options.format);
+    final fit = fitCanvas(pageBox: pageBox);
     final total = snapshot.pages.length + 1; // cover first, then pages
-    final images = <Uint8List>[];
 
     void checkCancelled() {
       if (cancelled()) throw const ExportCancelled();
     }
 
     checkCancelled();
-    images.add(
-      await capture(buildExportCover(snapshot.agenda), fit.pixelRatio),
-    );
-    onProgress?.call(images.length, total);
 
-    for (final page in snapshot.pages) {
-      checkCancelled();
-      images.add(await capture(buildExportPage(page, options), fit.pixelRatio));
-      onProgress?.call(images.length, total);
-    }
-
-    final bytes = await buildPdf(
-      pagePngs: images,
-      options: options,
+    final workers = pool ?? PdfWorkerPool();
+    final output = (createOutput ?? createPdfOutput)();
+    final writer = PdfWriter(
+      sink: output.sink,
+      pageBox: pageBox,
       title: snapshot.agenda.title,
+      pageCount: total,
     );
-    return PdfExportResult(
-      bytes: bytes,
-      fileName: exportFileName(snapshot.agenda.title),
-    );
+    // Only the image dimensions ride along; the rasters go to the pool and
+    // are dropped there, never accumulated the way the old pipeline did.
+    final dimensions = List<({int width, int height})?>.filled(total, null);
+
+    workers.onStream = (pageIndex, flateStream) async {
+      final size = dimensions[pageIndex]!;
+      await writer.writeImage(
+        pageIndex,
+        width: size.width,
+        height: size.height,
+        flateStream: flateStream,
+      );
+    };
+
+    try {
+      await workers.start();
+      await writer.writeHeader();
+
+      for (var index = 0; index < total; index++) {
+        checkCancelled();
+        final widget = index == 0
+            ? buildExportCover(snapshot.agenda)
+            : buildExportPage(snapshot.pages[index - 1], options);
+        final page = await capture(widget, fit.pixelRatio);
+        dimensions[index] = (width: page.width, height: page.height);
+        await writer.writePageSkeleton(index, fit: fit);
+        // Parks here when the pool is saturated: that wait is the backpressure
+        // keeping at most two rasters alive at a time. The pool also polls the
+        // cancellation callback while it is parked.
+        await workers.submit(index, page, isCancelled: cancelled);
+        onProgress?.call(
+          ExportProgress(
+            phase: ExportPhase.capturing,
+            completed: index + 1,
+            total: total,
+          ),
+        );
+      }
+
+      await onCapturesDone?.call();
+      onProgress?.call(
+        ExportProgress(
+          phase: ExportPhase.compressing,
+          completed: total,
+          total: total,
+        ),
+      );
+      checkCancelled();
+      await workers.close(isCancelled: cancelled);
+
+      onProgress?.call(
+        ExportProgress(
+          phase: ExportPhase.writing,
+          completed: total,
+          total: total,
+        ),
+      );
+      await writer.finish();
+      return PdfExportResult(
+        artifact: await output.close(),
+        fileName: exportFileName(snapshot.agenda.title),
+      );
+    } on Object {
+      // A cancelled or failed run must not leave a half-written temp file nor
+      // a pool of isolates behind. Every cleanup step is attempted, and the
+      // original export error is rethrown below even if one of those steps
+      // itself fails.
+      await _discardAfterFailure(workers, output);
+      rethrow;
+    } finally {
+      try {
+        await workers.dispose();
+      } on Object catch (error) {
+        debugPrint('Honeyday: export worker cleanup failed: $error');
+      }
+    }
+  }
+}
+
+Future<void> _discardAfterFailure(
+  PdfWorkerPool workers,
+  PdfOutput output,
+) async {
+  try {
+    await workers.dispose(cancel: true);
+  } on Object catch (error) {
+    debugPrint('Honeyday: export worker cancellation failed: $error');
+  }
+  try {
+    await output.discard();
+  } on Object catch (error) {
+    debugPrint('Honeyday: export output cleanup failed: $error');
   }
 }
 

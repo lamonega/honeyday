@@ -1,27 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:honeyday/features/export/domain/export_phase.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
-/// Immutable progress snapshot rendered by [ExportProgressDialog].
-@immutable
-class ExportProgress {
-  /// Creates a snapshot of a run with [completed] of [total] captures done.
-  const ExportProgress({required this.completed, required this.total});
+export 'package:honeyday/features/export/domain/export_phase.dart'
+    show ExportPhase, ExportProgress;
 
-  /// Captures finished so far (cover counts as one).
-  final int completed;
-
-  /// Total captures of this run (pages + cover).
-  final int total;
-}
-
-/// Non-dismissible progress dialog shown while pages are being captured.
+/// Non-dismissible progress dialog shown while the PDF is being produced.
 ///
-/// What: Renders the current page progress plus a cancel button; [PopScope]
-/// blocks system back so the route can't disappear while the offscreen
-/// capture host is mounted underneath it.
-/// Why: Exports take seconds and the giant capture must stay hidden behind
-/// an opaque barrier.
+/// What: Renders the current phase plus a progress bar, and a cancel button
+/// that is never disabled; [PopScope] blocks system back so the route can't
+/// disappear while the offscreen capture host is mounted underneath it.
+/// Why: exports take seconds and the giant capture must stay hidden behind an
+/// opaque barrier, but a *static* bar over a silent 30-second stall is
+/// indistinguishable from a hang. The bar animates while the pipeline is busy
+/// compressing, and the phase label says which step is running.
 class ExportProgressDialog extends StatelessWidget {
   /// Creates the dialog widget (use [show] to open it as a route).
   const ExportProgressDialog({
@@ -33,8 +26,8 @@ class ExportProgressDialog extends StatelessWidget {
   /// Opens the progress dialog on the root navigator.
   ///
   /// The caller pops it explicitly when the export run ends; [onCancel] only
-  /// flags the session, the service throws `ExportCancelled` at the next
-  /// page boundary.
+  /// flags the session, and the service turns that into `ExportCancelled` at
+  /// its next checkpoint.
   static Future<void> show(
     BuildContext context, {
     required ValueListenable<ExportProgress> progress,
@@ -69,12 +62,15 @@ class ExportProgressDialog extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(l10n.exportProgressPage(value.completed, value.total)),
-                const SizedBox(height: 16),
-                LinearProgressIndicator(
-                  value: value.total == 0
-                      ? null
-                      : value.completed / value.total,
+                const SizedBox(height: 4),
+                Text(
+                  _phaseLabel(l10n, value.phase),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
+                const SizedBox(height: 16),
+                // `null` makes the bar animate, which is the visible proof
+                // that the UI isolate is still alive during the slow phases.
+                LinearProgressIndicator(value: value.isIndeterminate ? null : value.ratio),
               ],
             );
           },
@@ -85,4 +81,11 @@ class ExportProgressDialog extends StatelessWidget {
       ),
     );
   }
+
+  String _phaseLabel(AppLocalizations l10n, ExportPhase phase) =>
+      switch (phase) {
+        ExportPhase.capturing => l10n.exportPhaseCapturing,
+        ExportPhase.compressing => l10n.exportPhaseCompressing,
+        ExportPhase.writing => l10n.exportPhaseWriting,
+      };
 }

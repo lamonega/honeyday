@@ -173,5 +173,9 @@
   "exportStart": "Exportar",
   "exportProgressTitle": "Exportando…",
   "exportProgressPage": "Renderizando página {current} de {total}",
-  "exportError": "La exportación falló. Intenta de nuevo."
+  "exportPhaseCapturing": "Renderizando las páginas",
+  "exportPhaseCompressing": "Comprimiendo las imágenes…",
+  "exportPhaseWriting": "Escribiendo el PDF…",
+  "exportError": "La exportación falló. Intenta de nuevo.",
+  "exportErrorBackground": "Honeyday no pudo renderizar las páginas porque la ventana estaba en segundo plano. Traé Honeyday al frente e intentá de nuevo."
 }

@@ -1136,11 +1136,35 @@ abstract class AppLocalizations {
   /// **'Rendering page {current} of {total}'**
   String exportProgressPage(int current, int total);
 
+  /// Phase label of the PDF export dialog while pages are rasterized
+  ///
+  /// In en, this message translates to:
+  /// **'Rendering pages'**
+  String get exportPhaseCapturing;
+
+  /// Phase label of the PDF export dialog while page images are compressed
+  ///
+  /// In en, this message translates to:
+  /// **'Compressing images…'**
+  String get exportPhaseCompressing;
+
+  /// Phase label of the PDF export dialog while the file is being written
+  ///
+  /// In en, this message translates to:
+  /// **'Writing the PDF…'**
+  String get exportPhaseWriting;
+
   /// Snackbar shown when the PDF export or save fails
   ///
   /// In en, this message translates to:
   /// **'The export failed. Please try again.'**
   String get exportError;
+
+  /// Snackbar shown when the export stalls because the window stopped producing frames
+  ///
+  /// In en, this message translates to:
+  /// **'Honeyday could not render the pages because the window was in the background. Bring it to the front and try again.'**
+  String get exportErrorBackground;
 }
 
 class _AppLocalizationsDelegate

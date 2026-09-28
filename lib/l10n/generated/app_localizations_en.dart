@@ -568,5 +568,18 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get exportPhaseCapturing => 'Rendering pages';
+
+  @override
+  String get exportPhaseCompressing => 'Compressing images…';
+
+  @override
+  String get exportPhaseWriting => 'Writing the PDF…';
+
+  @override
   String get exportError => 'The export failed. Please try again.';
+
+  @override
+  String get exportErrorBackground =>
+      'Honeyday could not render the pages because the window was in the background. Bring it to the front and try again.';
 }

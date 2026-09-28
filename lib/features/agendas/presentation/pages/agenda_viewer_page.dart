@@ -132,17 +132,26 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   bool get _canRedo => _currentPageController?.canRedo ?? false;
 
   /// App bar action that starts the PDF export flow for this agenda.
+  ///
+  /// Disabled while a run is in flight: the progress dialog is
+  /// non-dismissible, so a second export would mount a second capture host
+  /// underneath it and double the memory ceiling mid-run.
   Widget _buildExportButton(int pagesCount) {
-    return IconButton(
-      icon: const Icon(Icons.picture_as_pdf_outlined),
-      tooltip: AppLocalizations.of(context).exportPdfTooltip,
-      onPressed: () => unawaited(
-        runAgendaExport(
-          context,
-          ref,
-          agendaId: widget.agendaId,
-          pagesCount: pagesCount,
-        ),
+    return ValueListenableBuilder<bool>(
+      valueListenable: exportInProgress,
+      builder: (context, busy, _) => IconButton(
+        icon: const Icon(Icons.picture_as_pdf_outlined),
+        tooltip: AppLocalizations.of(context).exportPdfTooltip,
+        onPressed: busy
+            ? null
+            : () => unawaited(
+                runAgendaExport(
+                  context,
+                  ref,
+                  agendaId: widget.agendaId,
+                  pagesCount: pagesCount,
+                ),
+              ),
       ),
     );
   }

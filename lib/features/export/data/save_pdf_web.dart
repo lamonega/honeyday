@@ -1,13 +1,19 @@
 import 'dart:js_interop';
-import 'dart:typed_data';
 
+import 'package:honeyday/features/export/data/pdf_sink.dart';
 import 'package:web/web.dart';
 
-/// Triggers a browser download of [bytes] under [fileName].
+/// Triggers a browser download of the document under [fileName].
 ///
-/// What: Blob → object URL → anchor click → revoke. No navigator.share:
-/// file sharing isn't uniformly supported by desktop browsers.
-Future<void> savePdfImpl(Uint8List bytes, String fileName) async {
+/// What: Blob → object URL → anchor click → revoke. No navigator.share: file
+/// sharing isn't uniformly supported by desktop browsers.
+/// Why: the web output is always byte-backed — a browser has no filesystem to
+/// stream into.
+Future<void> savePdfImpl(PdfArtifact artifact, String fileName) async {
+  final bytes = artifact.bytes;
+  if (bytes == null) {
+    throw StateError('The exported PDF artifact is empty.');
+  }
   final blob = Blob(
     <JSAny>[bytes.toJS].toJS,
     BlobPropertyBag(type: 'application/pdf'),

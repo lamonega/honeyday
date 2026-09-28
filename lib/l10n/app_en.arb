@@ -705,8 +705,24 @@
       }
     }
   },
+  "exportPhaseCapturing": "Rendering pages",
+  "@exportPhaseCapturing": {
+    "description": "Phase label of the PDF export dialog while pages are rasterized"
+  },
+  "exportPhaseCompressing": "Compressing images…",
+  "@exportPhaseCompressing": {
+    "description": "Phase label of the PDF export dialog while page images are compressed"
+  },
+  "exportPhaseWriting": "Writing the PDF…",
+  "@exportPhaseWriting": {
+    "description": "Phase label of the PDF export dialog while the file is being written"
+  },
   "exportError": "The export failed. Please try again.",
   "@exportError": {
     "description": "Snackbar shown when the PDF export or save fails"
+  },
+  "exportErrorBackground": "Honeyday could not render the pages because the window was in the background. Bring it to the front and try again.",
+  "@exportErrorBackground": {
+    "description": "Snackbar shown when the export stalls because the window stopped producing frames"
   }
 }
