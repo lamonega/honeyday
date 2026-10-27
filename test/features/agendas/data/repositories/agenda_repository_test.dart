@@ -199,6 +199,27 @@ void main() {
       },
     );
 
+    test('restoring a soft-deleted element makes it live again', () async {
+      final agenda = await repository.createAgenda(title: 'Restaurar');
+      final page = (await repository.watchPages(agenda.id).first).first;
+      const element = CanvasWidgetData(
+        id: 'restore-me',
+        pageId: 'page-placeholder',
+        widgetType: 'text_box',
+        position: Offset(10, 20),
+        size: Size(100, 80),
+      );
+      final saved = element.copyWith(pageId: page.id);
+      await repository.upsertCanvasElement(saved);
+      await repository.deleteCanvasElement(saved.id);
+      expect(await repository.watchCanvasElements(page.id).first, isEmpty);
+
+      await repository.restoreCanvasElement(saved);
+      final restored = await repository.watchCanvasElements(page.id).first;
+      expect(restored, hasLength(1));
+      expect(restored.single.id, saved.id);
+    });
+
     test('strokes insertion, query, and deletion work properly', () async {
       final agenda = await repository.createAgenda(title: 'Bocetos');
       final pages = await repository.watchPages(agenda.id).first;

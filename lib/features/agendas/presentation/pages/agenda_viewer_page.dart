@@ -8,12 +8,15 @@ import 'package:honeyday/core/theme/paper_style.dart';
 import 'package:honeyday/core/utils/haptics.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/agenda_viewer_controller.dart';
+import 'package:honeyday/features/agendas/presentation/controllers/save_session.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/viewer_app_bar.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/viewer_canvas_mode_toggle.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/viewer_catalog_sheet.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/viewer_page_navigator.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/save_session_scope.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode_notifier.dart';
+import 'package:honeyday/features/canvas/domain/writing_input.dart';
 import 'package:honeyday/features/canvas/presentation/pages/page_view_canvas.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/page_canvas_controller.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
@@ -42,7 +45,9 @@ class AgendaViewerPage extends ConsumerStatefulWidget {
 class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   late final PageController _pageController;
   int _currentPageIndex = 0;
-  bool _hasUnsavedChanges = false;
+  bool _exitInProgress = false;
+  bool _exportPreparing = false;
+  final SaveSession _saveSession = SaveSession();
   bool _strokesVisible = true;
   final Map<String, PageCanvasController> _pageControllers = {};
 
@@ -69,6 +74,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   @override
   void dispose() {
     _pageController.dispose();
+    _saveSession.dispose();
     super.dispose();
   }
 
@@ -84,10 +90,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     }
   }
 
-  void _markDirty() {
-    if (!mounted || _hasUnsavedChanges) return;
-    setState(() => _hasUnsavedChanges = true);
-  }
 
   void _undo() {
     final controller = _currentPageController;
@@ -136,6 +138,52 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   /// Disabled while a run is in flight: the progress dialog is
   /// non-dismissible, so a second export would mount a second capture host
   /// underneath it and double the memory ceiling mid-run.
+  Future<void> _startExport(int pagesCount) async {
+    if (_exportPreparing || exportInProgress.value) return;
+    setState(() => _exportPreparing = true);
+    try {
+      FocusManager.instance.primaryFocus?.unfocus();
+      _saveSession.flushEditors();
+      await _saveSession.drain();
+      if (!mounted) return;
+      await runAgendaExport(
+        context,
+        ref,
+        agendaId: widget.agendaId,
+        pagesCount: pagesCount,
+      );
+    } on Object catch (error) {
+      if (mounted) _reportPersistError(context, error);
+    } finally {
+      if (mounted) setState(() => _exportPreparing = false);
+    }
+  }
+
+  Widget _buildSaveStatus() {
+    return ListenableBuilder(
+      listenable: _saveSession,
+      builder: (context, _) {
+        final l10n = AppLocalizations.of(context);
+        return switch (_saveSession.status) {
+          SaveStatus.saved => Tooltip(message: l10n.agendaSaved, child: const Icon(Icons.cloud_done_outlined)),
+          SaveStatus.saving => Tooltip(message: l10n.agendaSaving, child: const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))),
+          SaveStatus.failed => IconButton(
+              tooltip: l10n.agendaRetrySave,
+              icon: const Icon(Icons.error_outline),
+              onPressed: () async {
+                try {
+                  _saveSession.flushEditors();
+                  await _saveSession.retry();
+                } on Object catch (error) {
+                  if (context.mounted) _reportPersistError(context, error);
+                }
+              },
+            ),
+        };
+      },
+    );
+  }
+
   Widget _buildExportButton(int pagesCount) {
     return ValueListenableBuilder<bool>(
       valueListenable: exportInProgress,
@@ -144,42 +192,24 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         tooltip: AppLocalizations.of(context).exportPdfTooltip,
         onPressed: busy
             ? null
-            : () => unawaited(
-                runAgendaExport(
-                  context,
-                  ref,
-                  agendaId: widget.agendaId,
-                  pagesCount: pagesCount,
-                ),
-              ),
+            : () => unawaited(_startExport(pagesCount)),
       ),
     );
   }
 
-  Future<bool> _showExitDialog() async {
-    if (!_hasUnsavedChanges) return true;
-    final result = await showDialog<String>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context).agendaExitTitle),
-        content: Text(AppLocalizations.of(context).agendaExitContent),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop('cancel'),
-            child: Text(AppLocalizations.of(context).commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop('discard'),
-            child: Text(AppLocalizations.of(context).agendaDiscard),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop('save'),
-            child: Text(AppLocalizations.of(context).agendaSave),
-          ),
-        ],
-      ),
-    );
-    return result != 'cancel';
+  Future<void> _requestExit() async {
+    if (_exitInProgress || _exportPreparing || exportInProgress.value) return;
+    setState(() => _exitInProgress = true);
+    FocusManager.instance.primaryFocus?.unfocus();
+    try {
+      _saveSession.flushEditors();
+      await _saveSession.drain();
+      if (mounted) context.go('/');
+    } on Object catch (error) {
+      if (mounted) _reportPersistError(context, error);
+    } finally {
+      if (mounted) setState(() => _exitInProgress = false);
+    }
   }
 
   void _toggleCanvasMode() {
@@ -210,14 +240,13 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         final before = currentPages();
         if (before.length <= 1) return;
         try {
-          await controller.deletePage(pageId);
+          await _saveSession.enqueue(() => controller.deletePage(pageId));
         } on Object catch (error) {
           if (mounted) {
             _reportPersistError(context, error);
           }
           return;
         }
-        _markDirty();
         if (mounted && _currentPageIndex >= before.length - 1) {
           _goToPage(before.length - 2, before.length - 1);
         }
@@ -226,17 +255,16 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         final current = currentPages();
         if (_currentPageIndex >= current.length) return;
         try {
-          await controller.updatePageBackground(
+          await _saveSession.enqueue(() => controller.updatePageBackground(
             current[_currentPageIndex].id,
             style,
-          );
+          ));
         } on Object catch (error) {
           if (mounted) {
             _reportPersistError(context, error);
           }
           return;
         }
-        _markDirty();
       },
       onReorderPages: (pageIds) async {
         final current = currentPages();
@@ -244,14 +272,13 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
             ? current[_currentPageIndex].id
             : null;
         try {
-          await controller.reorderPages(pageIds);
+          await _saveSession.enqueue(() => controller.reorderPages(pageIds));
         } on Object catch (error) {
           if (mounted) {
             _reportPersistError(context, error);
           }
           return;
         }
-        _markDirty();
         if (currentPageId != null && mounted) {
           final newIndex = pageIds.indexOf(currentPageId);
           if (newIndex != -1 && newIndex != _currentPageIndex) {
@@ -264,19 +291,22 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         final style = await ViewerCatalogSheet.showNewPageDesign(context);
         if (style == null || !mounted) return;
         final newIndex = currentPages().length;
+        final pageId = _uuid.v4();
         try {
-          await controller.addPage(
-            agendaId: widget.agendaId,
-            pageNumber: newIndex + 1,
-            backgroundStyle: style,
-          );
+          await _saveSession.enqueue(() async {
+            await controller.addPage(
+              id: pageId,
+              agendaId: widget.agendaId,
+              pageNumber: newIndex + 1,
+              backgroundStyle: style,
+            );
+          });
         } on Object catch (error) {
           if (mounted) {
             _reportPersistError(context, error);
           }
           return;
         }
-        _markDirty();
         if (mounted) {
           ref.invalidate(agendaPagesProvider(widget.agendaId));
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -315,11 +345,10 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     final pagesAsync = ref.watch(agendaPagesProvider(widget.agendaId));
     final currentMode = ref.watch(canvasModeProvider);
 
-    if (_isEditMode) {
-      return _buildEditModeScaffold(context, pagesAsync);
-    }
-
-    return _buildReadWriteScaffold(context, pagesAsync, currentMode);
+    final scaffold = _isEditMode
+        ? _buildEditModeScaffold(context, pagesAsync)
+        : _buildReadWriteScaffold(context, pagesAsync, currentMode);
+    return SaveSessionScope(session: _saveSession, child: scaffold);
   }
 
   Widget _buildPagesAsyncBody({
@@ -360,20 +389,17 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return PopScope(
-      canPop: !_hasUnsavedChanges,
-      onPopInvokedWithResult: (didPop, _) async {
-        if (didPop) return;
-        final shouldPop = await _showExitDialog();
-        if (shouldPop && context.mounted) context.go('/');
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) unawaited(_requestExit());
       },
-      child: Scaffold(
+      child: AbsorbPointer(
+        absorbing: _exitInProgress || _exportPreparing,
+        child: Scaffold(
         backgroundColor: colorScheme.surface,
         appBar: ViewerAppBar(
-          onBack: () async {
-            final shouldPop = await _showExitDialog();
-            if (shouldPop && context.mounted) context.go('/');
-          },
-          actions: [_buildExportButton(totalPages)],
+          onBack: () => unawaited(_requestExit()),
+          actions: [_buildSaveStatus(), _buildExportButton(totalPages)],
         ),
         floatingActionButton: Row(
           mainAxisSize: MainAxisSize.min,
@@ -451,7 +477,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                     currentMode: CanvasMode.edit,
                     canvasControllers: _pageControllers,
                     strokesVisible: _strokesVisible,
-                    onDirty: _markDirty,
                     onControllerCreated: (c) => _pageControllers[page.id] = c,
                   );
                 },
@@ -464,6 +489,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                 ),
             ],
           ),
+        ),
         ),
       ),
     );
@@ -478,20 +504,17 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     final totalPages = pages.length;
 
     return PopScope(
-      canPop: !_hasUnsavedChanges,
-      onPopInvokedWithResult: (didPop, _) async {
-        if (didPop) return;
-        final shouldPop = await _showExitDialog();
-        if (shouldPop && context.mounted) context.go('/');
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) unawaited(_requestExit());
       },
-      child: Scaffold(
+      child: AbsorbPointer(
+        absorbing: _exitInProgress || _exportPreparing,
+        child: Scaffold(
         backgroundColor: Theme.of(context).colorScheme.surface,
         appBar: ViewerAppBar(
-          onBack: () async {
-            final shouldPop = await _showExitDialog();
-            if (shouldPop && context.mounted) context.go('/');
-          },
-          actions: [_buildExportButton(totalPages)],
+          onBack: () => unawaited(_requestExit()),
+          actions: [_buildSaveStatus(), _buildExportButton(totalPages)],
         ),
         floatingActionButton: ViewerCanvasModeToggle(
           currentMode: currentMode,
@@ -525,7 +548,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                         currentMode: currentMode,
                         canvasControllers: _pageControllers,
                         strokesVisible: _strokesVisible,
-                        onDirty: _isEditMode ? _markDirty : null,
                         // Register in every mode: writing-mode config
                         // edits need the controller to sync the manager.
                         onControllerCreated: (c) =>
@@ -602,7 +624,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                         currentMode: currentMode,
                         canvasControllers: _pageControllers,
                         strokesVisible: _strokesVisible,
-                        onDirty: _isEditMode ? _markDirty : null,
                         onControllerCreated: (c) =>
                             _pageControllers[page.id] = c,
                       ),
@@ -619,6 +640,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
             );
           },
         ),
+        ),
       ),
     );
   }
@@ -629,7 +651,6 @@ class _PageContentLoader extends ConsumerWidget {
     required this.page,
     required this.currentMode,
     required this.canvasControllers,
-    this.onDirty,
     this.onControllerCreated,
     this.strokesVisible = true,
     super.key,
@@ -641,7 +662,6 @@ class _PageContentLoader extends ConsumerWidget {
   /// Page canvas controllers keyed by page id, used to sync config edits
   /// into each canvas's element manager.
   final Map<String, PageCanvasController> canvasControllers;
-  final VoidCallback? onDirty;
   final void Function(PageCanvasController controller)? onControllerCreated;
   final bool strokesVisible;
 
@@ -650,6 +670,7 @@ class _PageContentLoader extends ConsumerWidget {
     final elementsAsync = ref.watch(pageElementsProvider(page.id));
     final strokesAsync = ref.watch(pageStrokesProvider(page.id));
     final controller = ref.read(agendaViewerControllerProvider);
+    final saveSession = SaveSessionScope.maybeOf(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     // PageViewCanvas and InkCanvas only consume their initial lists on mount;
@@ -676,9 +697,17 @@ class _PageContentLoader extends ConsumerWidget {
 
     final elements = elementsAsync.value ?? [];
     final strokes = strokesAsync.value ?? [];
+    final writingInput = ref.watch(writingInputProvider);
 
-    void persist(Future<void> write) {
-      unawaited(_guardPersist(context, write));
+    void persist(Future<void> Function() write) {
+      final session = saveSession;
+      if (session == null) {
+        unawaited(_guardPersist(context, write()));
+        return;
+      }
+      unawaited(session.enqueue(write).catchError((Object error) {
+        if (context.mounted) _reportPersistError(context, error);
+      }));
     }
 
     return PageViewCanvas(
@@ -688,10 +717,10 @@ class _PageContentLoader extends ConsumerWidget {
       initialElements: elements,
       initialStrokes: strokes,
       strokesVisible: strokesVisible,
-      onDirty: onDirty,
       onControllerCreated: onControllerCreated,
       elementBuilder: (context, elementData) {
-        final isInteractive = currentMode == CanvasMode.writing;
+        final isInteractive = currentMode == CanvasMode.writing &&
+            writingInput == WritingInput.content;
 
         return CatalogRegistry.buildWidget(
           context,
@@ -706,17 +735,18 @@ class _PageContentLoader extends ConsumerWidget {
               elementData.id,
               newJson,
             );
-            persist(controller.updateElementConfig(elementData, newJson));
+            persist(() => controller.updateElementConfig(elementData, newJson));
           },
         );
       },
       onElementUpdated: (updatedData) =>
-          persist(controller.updateElementTransform(updatedData)),
-      onElementDeleted: (id) => persist(controller.deleteElement(id)),
-      onElementDuplicated: (source) =>
-          persist(controller.duplicateElement(source)),
+          persist(() => controller.updateElementTransform(updatedData)),
+      onElementDeleted: (id) =>
+          persist(() => controller.deleteElement(id)),
+      onElementRestored: (element) =>
+          persist(() => controller.restoreElement(element)),
       onStrokesChanged: (newStrokes) =>
-          persist(controller.syncStrokes(page.id, newStrokes)),
+          persist(() => controller.syncStrokes(page.id, newStrokes)),
     );
   }
 }

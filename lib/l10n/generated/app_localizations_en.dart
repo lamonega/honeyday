@@ -582,4 +582,19 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get exportErrorBackground =>
       'Honeyday could not render the pages because the window was in the background. Bring it to the front and try again.';
+
+  @override
+  String get agendaSaved => 'Saved';
+
+  @override
+  String get agendaSaving => 'Saving…';
+
+  @override
+  String get agendaRetrySave => 'Save failed. Retry';
+
+  @override
+  String get canvasInputContent => 'Content';
+
+  @override
+  String get canvasInputInk => 'Ink';
 }

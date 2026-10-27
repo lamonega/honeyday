@@ -5,6 +5,7 @@ import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode_notifier.dart';
 import 'package:honeyday/features/canvas/domain/ink_tool.dart';
+import 'package:honeyday/features/canvas/domain/writing_input.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/canvas/presentation/canvas/snapping.dart';
@@ -17,8 +18,10 @@ import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas_control
 import 'package:honeyday/features/canvas/presentation/widgets/page_canvas_controller.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/page_surface.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/transformable_box.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/writing_input_selector.dart';
 import 'package:honeyday/features/catalog/domain/element_config.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
+import 'package:uuid/uuid.dart';
 
 export 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 
@@ -44,6 +47,7 @@ class PageViewCanvas extends ConsumerStatefulWidget {
     this.elementBuilder,
     this.onElementUpdated,
     this.onElementDeleted,
+    this.onElementRestored,
     this.onElementDuplicated,
     this.onStrokesChanged,
     this.onDirty,
@@ -61,6 +65,7 @@ class PageViewCanvas extends ConsumerStatefulWidget {
   elementBuilder;
   final void Function(CanvasWidgetData updatedElement)? onElementUpdated;
   final void Function(String elementId)? onElementDeleted;
+  final ValueChanged<CanvasWidgetData>? onElementRestored;
   final void Function(CanvasWidgetData sourceElement)? onElementDuplicated;
   final ValueChanged<List<InkStroke>>? onStrokesChanged;
   final VoidCallback? onDirty;
@@ -73,6 +78,7 @@ class PageViewCanvas extends ConsumerStatefulWidget {
 }
 
 class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
+  static const _uuid = Uuid();
   late final CanvasElementManager _elementManager;
   bool _transformActive = false;
   List<SnapGuideLine> _activeSnapGuides = const [];
@@ -206,41 +212,50 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
     widget.onDirty?.call();
   }
 
-  void undoElements() {
-    final previous = _elementManager.elements;
-    final restored = _elementManager.undoElements();
-    if (restored != null) {
-      final restoredIds = restored.map((e) => e.id).toSet();
-      for (final removed
-          in previous.where((e) => !restoredIds.contains(e.id))) {
-        widget.onElementDeleted?.call(removed.id);
+  void _persistHistoryTransition(
+    List<CanvasWidgetData> before,
+    List<CanvasWidgetData> after,
+  ) {
+    final beforeById = {for (final element in before) element.id: element};
+    final afterById = {for (final element in after) element.id: element};
+
+    for (final element in before) {
+      if (!afterById.containsKey(element.id)) {
+        widget.onElementDeleted?.call(element.id);
       }
-      setState(() {});
-      final onUpdated = widget.onElementUpdated;
-      if (onUpdated != null) {
-        _elementManager.elements.forEach(onUpdated);
+    }
+    for (final element in after) {
+      if (!beforeById.containsKey(element.id)) {
+        widget.onElementRestored?.call(element);
+      } else if (beforeById[element.id] != element) {
+        widget.onElementUpdated?.call(element);
       }
-      widget.onDirty?.call();
     }
   }
 
+  void undoElements() {
+    final before = List<CanvasWidgetData>.of(_elementManager.elements);
+    final after = _elementManager.undoElements();
+    if (after == null) return;
+    _persistHistoryTransition(before, after);
+    setState(() {});
+    widget.onDirty?.call();
+  }
+
   void redoElements() {
-    final previous = _elementManager.elements;
-    final restored = _elementManager.redoElements();
-    if (restored != null) {
-      final previousIds = previous.map((e) => e.id).toSet();
-      final onUpdated = widget.onElementUpdated;
-      if (onUpdated != null) {
-        restored
-            .where((e) => !previousIds.contains(e.id))
-            .forEach(onUpdated);
-      }
-      setState(() {});
-      if (onUpdated != null) {
-        _elementManager.elements.forEach(onUpdated);
-      }
-      widget.onDirty?.call();
-    }
+    final before = List<CanvasWidgetData>.of(_elementManager.elements);
+    final after = _elementManager.redoElements();
+    if (after == null) return;
+    _persistHistoryTransition(before, after);
+    setState(() {});
+    widget.onDirty?.call();
+  }
+
+  void _duplicateElement(CanvasWidgetData source) {
+    _addElement(source.copyWith(
+      id: _uuid.v4(),
+      position: source.position + const Offset(kDuplicateOffset, kDuplicateOffset),
+    ));
   }
 
   List<Widget> _buildElementLayers(CanvasMode mode) {
@@ -278,9 +293,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
         onAdaptToPage: () => _handleAdaptToPage(element.id),
         onFitWidth: () => _handleFitWidth(element.id),
         onCenter: () => _handleCenter(element.id),
-        onDuplicate: widget.onElementDuplicated != null
-            ? () => widget.onElementDuplicated!(element)
-            : null,
+        onDuplicate: () => _duplicateElement(element),
         onColorChanged: (fill, border) =>
             _handleColorChanged(element.id, fill, border),
         currentColor:
@@ -298,6 +311,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
   Widget build(BuildContext context) {
     final mode = ref.watch(canvasModeProvider);
     final inkToolState = ref.watch(inkToolProvider);
+    final writingInput = ref.watch(writingInputProvider);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -339,6 +353,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                             },
                             canvasMode: mode,
                             strokesVisible: widget.strokesVisible,
+                            inputEnabled: writingInput == WritingInput.ink,
                           ),
                         ],
                       ),
@@ -350,13 +365,20 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                     top: kToolbarTopPosition,
                     left: 0,
                     right: 0,
-                    child: Center(
-                      child: CanvasFloatingToolbar(
-                        inkController: _pageController.ink,
-                        onCloseWriting: () {
-                          ref.read(canvasModeProvider.notifier).setReading();
-                        },
-                      ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const WritingInputSelector(),
+                        if (writingInput == WritingInput.ink) ...[
+                          const SizedBox(height: 8),
+                          CanvasFloatingToolbar(
+                            inkController: _pageController.ink,
+                            onCloseWriting: () {
+                              ref.read(canvasModeProvider.notifier).setReading();
+                            },
+                          ),
+                        ],
+                      ],
                     ),
                   ),
               ],

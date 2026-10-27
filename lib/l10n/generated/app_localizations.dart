@@ -1165,6 +1165,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Honeyday could not render the pages because the window was in the background. Bring it to the front and try again.'**
   String get exportErrorBackground;
+
+  String get agendaSaved;
+  String get agendaSaving;
+  String get agendaRetrySave;
+  String get canvasInputContent;
+  String get canvasInputInk;
 }
 
 class _AppLocalizationsDelegate

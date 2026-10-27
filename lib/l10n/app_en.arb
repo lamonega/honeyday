@@ -724,5 +724,10 @@
   "exportErrorBackground": "Honeyday could not render the pages because the window was in the background. Bring it to the front and try again.",
   "@exportErrorBackground": {
     "description": "Snackbar shown when the export stalls because the window stopped producing frames"
-  }
+  },
+  "agendaSaved": "Saved",
+  "agendaSaving": "Saving…",
+  "agendaRetrySave": "Save failed. Retry",
+  "canvasInputContent": "Content",
+  "canvasInputInk": "Ink"
 }

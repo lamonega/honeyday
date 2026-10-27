@@ -585,4 +585,19 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get exportErrorBackground =>
       'Honeyday no pudo renderizar las páginas porque la ventana estaba en segundo plano. Traé Honeyday al frente e intentá de nuevo.';
+
+  @override
+  String get agendaSaved => 'Guardado';
+
+  @override
+  String get agendaSaving => 'Guardando…';
+
+  @override
+  String get agendaRetrySave => 'Error al guardar. Reintentar';
+
+  @override
+  String get canvasInputContent => 'Contenido';
+
+  @override
+  String get canvasInputInk => 'Tinta';
 }

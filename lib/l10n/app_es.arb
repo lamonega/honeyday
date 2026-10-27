@@ -177,5 +177,10 @@
   "exportPhaseCompressing": "Comprimiendo las imágenes…",
   "exportPhaseWriting": "Escribiendo el PDF…",
   "exportError": "La exportación falló. Intenta de nuevo.",
-  "exportErrorBackground": "Honeyday no pudo renderizar las páginas porque la ventana estaba en segundo plano. Traé Honeyday al frente e intentá de nuevo."
+  "exportErrorBackground": "Honeyday no pudo renderizar las páginas porque la ventana estaba en segundo plano. Traé Honeyday al frente e intentá de nuevo.",
+  "agendaSaved": "Guardado",
+  "agendaSaving": "Guardando…",
+  "agendaRetrySave": "Error al guardar. Reintentar",
+  "canvasInputContent": "Contenido",
+  "canvasInputInk": "Tinta"
 }

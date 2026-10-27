@@ -30,6 +30,7 @@ class CanvasGestureLayer extends StatelessWidget {
     required this.onStrokesChanged,
     required this.canvasMode,
     required this.strokesVisible,
+    this.inputEnabled = true,
     super.key,
   });
 
@@ -60,13 +61,18 @@ class CanvasGestureLayer extends StatelessWidget {
   /// Whether strokes should be visually rendered.
   final bool strokesVisible;
 
+  /// Whether the active writing submode should capture pointer input.
+  final bool inputEnabled;
+
   @override
   Widget build(BuildContext context) {
     return Positioned.fill(
       child: IgnorePointer(
-        ignoring: canvasMode != CanvasMode.writing || !strokesVisible,
+        ignoring:
+            canvasMode != CanvasMode.writing || !inputEnabled || !strokesVisible,
         child: Visibility(
           visible: strokesVisible,
+          maintainState: true,
           child: InkCanvas(
             pageId: pageId,
             activeTool: activeTool,
@@ -75,6 +81,9 @@ class CanvasGestureLayer extends StatelessWidget {
             initialStrokes: initialStrokes,
             controller: controller,
             onStrokesChanged: onStrokesChanged,
+            inputEnabled: canvasMode == CanvasMode.writing &&
+                inputEnabled &&
+                strokesVisible,
           ),
         ),
       ),

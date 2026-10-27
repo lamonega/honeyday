@@ -75,6 +75,25 @@ class CanvasElementDao {
     await _db.into(_db.canvasElements).insertOnConflictUpdate(companion);
   }
 
+  /// Restores a soft-deleted element from an undo/redo snapshot.
+  Future<void> restoreCanvasElement(CanvasWidgetData element) async {
+    await _db.into(_db.canvasElements).insertOnConflictUpdate(
+      CanvasElementsCompanion(
+        id: Value(element.id),
+        pageId: Value(element.pageId),
+        widgetType: Value(element.widgetType),
+        posX: Value(element.position.dx),
+        posY: Value(element.position.dy),
+        width: Value(element.size.width),
+        height: Value(element.size.height),
+        rotation: Value(element.rotation),
+        configJson: Value(element.configJson),
+        isDeleted: const Value(false),
+        updatedAt: Value(DateTime.now().toUtc()),
+      ),
+    );
+  }
+
   /// Updates only [configJson] (and `updatedAt`) for the element [id].
   ///
   /// Column-scoped so a debounced config flush can never revert geometry

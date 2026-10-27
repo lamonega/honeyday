@@ -31,6 +31,7 @@ class InkCanvas extends StatefulWidget {
     this.initialStrokes = const [],
     this.controller,
     this.onStrokesChanged,
+    this.inputEnabled = true,
   });
 
   /// Page ID associated with these strokes.
@@ -54,6 +55,9 @@ class InkCanvas extends StatefulWidget {
   /// Emits updated stroke list for debounced persistence.
   final ValueChanged<List<InkStroke>>? onStrokesChanged;
 
+  /// Whether this canvas currently accepts new pointer gestures.
+  final bool inputEnabled;
+
   @override
   State<InkCanvas> createState() => _InkCanvasState();
 }
@@ -67,6 +71,11 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
 
   List<StrokePoint>? _activePoints;
   bool _hasErasedDuringCurrentGesture = false;
+  int? _activePointerId;
+  InkToolType? _gestureTool;
+  Color? _gestureColor;
+  double? _gestureWidth;
+  List<InkStroke>? _strokesBeforeGesture;
 
   @override
   bool get canUndo => _undoStack.isNotEmpty;
@@ -88,7 +97,11 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
       oldWidget.controller?.detach();
     widget.controller?.attach(this);
     }
+    if (oldWidget.inputEnabled && !widget.inputEnabled) {
+      _cancelGesture();
+    }
     if (oldWidget.pageId != widget.pageId) {
+      _cancelGesture();
       _strokes = List.from(widget.initialStrokes);
       _undoStack.clear();
       _redoStack.clear();
@@ -112,6 +125,7 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
 
   @override
   void undo() {
+    if (_activePointerId != null) _cancelGesture();
     if (_undoStack.isEmpty) return;
     _redoStack.add(List.from(_strokes));
     _strokes = _undoStack.removeLast();
@@ -121,6 +135,7 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
 
   @override
   void redo() {
+    if (_activePointerId != null) _cancelGesture();
     if (_redoStack.isEmpty) return;
     _undoStack.add(List.from(_strokes));
     _strokes = _redoStack.removeLast();
@@ -130,6 +145,7 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
 
   @override
   void clear() {
+    if (_activePointerId != null) _cancelGesture();
     if (_strokes.isEmpty) return;
     _pushUndoState();
     _strokes = [];
@@ -138,13 +154,19 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
   }
 
   void _handlePointerDown(PointerDownEvent event) {
+    if (!widget.inputEnabled || _activePointerId != null) return;
+    _activePointerId = event.pointer;
+    _gestureTool = widget.activeTool;
+    _gestureColor = widget.activeColor;
+    _gestureWidth = widget.activeStrokeWidth;
+    _strokesBeforeGesture = List<InkStroke>.of(_strokes);
     final pos = event.localPosition;
     final pressure = event.pressureMin == event.pressureMax
         ? kDefaultPressure
         : event.pressure;
     final point = StrokePoint(pos.dx, pos.dy, pressure);
 
-    if (widget.activeTool == InkToolType.eraser) {
+    if (_gestureTool == InkToolType.eraser) {
       _hasErasedDuringCurrentGesture = false;
       _activePoints = [point];
       _eraseIntersectingStrokes(pos);
@@ -155,7 +177,7 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
   }
 
   void _handlePointerMove(PointerMoveEvent event) {
-    if (_activePoints == null) return;
+    if (_activePointerId != event.pointer || _activePoints == null) return;
     final pos = event.localPosition;
     final pressure = event.pressureMin == event.pressureMax
         ? kDefaultPressure
@@ -164,49 +186,74 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
 
     _activePoints!.add(point);
 
-    if (widget.activeTool == InkToolType.eraser) {
+    if (_gestureTool == InkToolType.eraser) {
       _eraseIntersectingStrokes(pos);
     }
     setState(() {});
   }
 
   void _handlePointerUp(PointerUpEvent event) {
-    if (_activePoints == null) return;
+    if (_activePointerId != event.pointer || _activePoints == null) return;
+    final before = _strokesBeforeGesture!;
+    var changed = false;
 
-    if (widget.activeTool == InkToolType.eraser) {
-      if (_hasErasedDuringCurrentGesture) {
-        widget.onStrokesChanged?.call(List.unmodifiable(_strokes));
-      }
+    if (_gestureTool == InkToolType.eraser) {
+      changed = _hasErasedDuringCurrentGesture;
     } else if (_activePoints!.isNotEmpty) {
-      _pushUndoState();
       final colorHex =
-          '#${widget.activeColor.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
+          '#${_gestureColor!.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
       final newStroke = InkStroke(
         id: _uuid.v4(),
         pageId: widget.pageId,
-        tool: widget.activeTool,
+        tool: _gestureTool!,
         colorHex: colorHex,
-        strokeWidth: widget.activeStrokeWidth,
+        strokeWidth: _gestureWidth!,
         points: List.from(_activePoints!),
         createdAt: DateTime.now().toUtc(),
       );
       _strokes = [..._strokes, newStroke];
-      widget.onStrokesChanged?.call(List.unmodifiable(_strokes));
+      changed = true;
     }
 
-    _activePoints = null;
-    _hasErasedDuringCurrentGesture = false;
+    if (changed) _recordUndo(before);
+    _resetGesture();
     setState(() {});
+    if (changed) {
+      widget.controller?.notifyHistoryChanged();
+      widget.onStrokesChanged?.call(List.unmodifiable(_strokes));
+    }
   }
 
   void _handlePointerCancel(PointerCancelEvent event) {
-    _activePoints = null;
-    _hasErasedDuringCurrentGesture = false;
+    if (_activePointerId != event.pointer) return;
+    _cancelGesture();
     setState(() {});
   }
 
+  void _recordUndo(List<InkStroke> snapshot) {
+    _undoStack.add(List<InkStroke>.of(snapshot));
+    if (_undoStack.length > kMaxUndoSize) _undoStack.removeAt(0);
+    _redoStack.clear();
+  }
+
+  void _cancelGesture() {
+    final before = _strokesBeforeGesture;
+    if (before != null) _strokes = before;
+    _resetGesture();
+  }
+
+  void _resetGesture() {
+    _activePointerId = null;
+    _activePoints = null;
+    _gestureTool = null;
+    _gestureColor = null;
+    _gestureWidth = null;
+    _strokesBeforeGesture = null;
+    _hasErasedDuringCurrentGesture = false;
+  }
+
   void _eraseIntersectingStrokes(Offset eraserPos) {
-    final eraserRadius = widget.activeStrokeWidth / 2;
+    final eraserRadius = (_gestureWidth ?? widget.activeStrokeWidth) / 2;
     final surviving = <InkStroke>[];
     var erasedAny = false;
 
@@ -219,10 +266,7 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
     }
 
     if (erasedAny) {
-      if (!_hasErasedDuringCurrentGesture) {
-        _pushUndoState();
-        _hasErasedDuringCurrentGesture = true;
-      }
+      _hasErasedDuringCurrentGesture = true;
       _strokes = surviving;
     }
   }
@@ -250,9 +294,9 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
               size: Size.infinite,
               painter: ActiveStrokePainter(
                 activePoints: _activePoints,
-                activeTool: widget.activeTool,
-                activeColor: widget.activeColor,
-                activeStrokeWidth: widget.activeStrokeWidth,
+                activeTool: _gestureTool ?? widget.activeTool,
+                activeColor: _gestureColor ?? widget.activeColor,
+                activeStrokeWidth: _gestureWidth ?? widget.activeStrokeWidth,
               ),
             ),
           ),
