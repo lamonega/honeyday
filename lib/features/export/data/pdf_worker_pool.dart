@@ -285,9 +285,36 @@ class PdfWorkerPool {
     }
   }
 
+  void _throwIfFailed() {
+    final failure = _failure;
+    if (failure != null) {
+      Error.throwWithStackTrace(
+        failure,
+        _failureStack ?? StackTrace.current,
+      );
+    }
+  }
+
+  /// Waits for all submitted work, including stream writing, to finish.
+  /// The pool remains open for another submission afterward.
+  Future<void> waitUntilIdle({bool Function()? isCancelled}) async {
+    while (true) {
+      if (_cancelled || (isCancelled?.call() ?? false)) {
+        throw const ExportCancelled();
+      }
+      if (!_started || _disposed || _closeRequested) {
+        throw StateError('Cannot wait on an inactive PDF pool.');
+      }
+      _throwIfFailed();
+      if (_inFlightCount == 0) return;
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+    }
+  }
+
   Future<void> _acquire(int bytes, bool Function()? isCancelled) async {
     final oversized = bytes > inFlightByteBudget;
     while (true) {
+      _throwIfFailed();
       if (_cancelled || (isCancelled?.call() ?? false)) {
         throw const ExportCancelled();
       }

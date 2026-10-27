@@ -194,6 +194,46 @@ void main() {
     expect(ratios, everyElement(closeTo(3.1, 0.01)));
   });
 
+  test('waits for compression before allocating the next captured page', () async {
+    final releaseFirstPage = Completer<void>();
+    var firstJob = true;
+    var captures = 0;
+    final pool = PdfWorkerPool(
+      maxWorkers: 2,
+      builder: (_) async => PdfCompressionWorker(
+        compress: (request) async {
+          if (firstJob) {
+            firstJob = false;
+            await releaseFirstPage.future;
+          }
+          return Uint8List.fromList([request.pageIndex]);
+        },
+      ),
+    );
+    final service = PdfExportService(_FakeRepository(buildSnapshot(pageCount: 2)));
+    final run = service.export(
+      agendaId: 'a1',
+      options: const ExportOptions(),
+      capture: (_, _) async {
+        captures++;
+        return tinyPage(captures);
+      },
+      pool: pool,
+      createOutput: _MemoryOutput.new,
+    );
+
+    for (var attempt = 0; attempt < 100 && captures == 0; attempt++) {
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+    }
+    expect(captures, 1);
+    await Future<void>.delayed(const Duration(milliseconds: 30));
+    expect(captures, 1, reason: 'do not rasterize ahead of worker capacity');
+
+    releaseFirstPage.complete();
+    await run;
+    expect(captures, 3);
+  });
+
   test('writes a document with one page per captured page', () async {
     final service = PdfExportService(
       _FakeRepository(buildSnapshot(pageCount: 3)),

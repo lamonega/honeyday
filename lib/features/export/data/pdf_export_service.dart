@@ -65,8 +65,8 @@ class PdfExportService {
   /// [isCancelled] is polled between pages and while the last streams are
   /// being awaited; once it returns `true` the run stops with
   /// [ExportCancelled]. [onCapturesDone] is invoked as soon as the last page
-  /// is rasterized, so the caller can drop its capture host and free the layer
-  /// tree while the pool finishes. [pool] and [createOutput] are test seams.
+  /// is rasterized, so the caller can release its independent capture tree
+  /// while the pool finishes. [pool] and [createOutput] are test seams.
   Future<PdfExportResult> export({
     required String agendaId,
     required ExportOptions options,
@@ -94,7 +94,9 @@ class PdfExportService {
 
     checkCancelled();
 
-    final workers = pool ?? PdfWorkerPool();
+    // Start conservatively: one captured raster is allowed in the pipeline
+    // at a time until device profiling justifies more memory/concurrency.
+    final workers = pool ?? PdfWorkerPool(maxWorkers: 1);
     final output = (createOutput ?? createPdfOutput)();
     final writer = PdfWriter(
       sink: output.sink,
@@ -122,15 +124,20 @@ class PdfExportService {
 
       for (var index = 0; index < total; index++) {
         checkCancelled();
-        final widget = index == 0
+
+        // Wait before allocating another full-resolution raster. The previous
+        // compressed stream and PDF image write must have completed first.
+        await workers.waitUntilIdle(isCancelled: cancelled);
+        checkCancelled();
+        await Future<void>.delayed(Duration.zero);
+
+        final pageWidget = index == 0
             ? buildExportCover(snapshot.agenda)
             : buildExportPage(snapshot.pages[index - 1], options);
-        final page = await capture(widget, fit.pixelRatio);
+        final page = await capture(pageWidget, fit.pixelRatio);
+        checkCancelled();
         dimensions[index] = (width: page.width, height: page.height);
         await writer.writePageSkeleton(index, fit: fit);
-        // Parks here when the pool is saturated: that wait is the backpressure
-        // keeping at most two rasters alive at a time. The pool also polls the
-        // cancellation callback while it is parked.
         await workers.submit(index, page, isCancelled: cancelled);
         onProgress?.call(
           ExportProgress(
