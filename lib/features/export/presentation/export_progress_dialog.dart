@@ -10,9 +10,9 @@ export 'package:honeyday/features/export/domain/export_phase.dart'
 ///
 /// What: Renders the current phase plus a progress bar, and a cancel button
 /// that is never disabled; [PopScope] blocks system back so the route can't
-/// disappear while the offscreen capture host is mounted underneath it.
-/// Why: exports take seconds and the giant capture must stay hidden behind an
-/// opaque barrier, but a *static* bar over a silent 30-second stall is
+/// disappear while the export is running. Capture uses a separate render tree,
+/// so the dialog does not need to hide a page-sized overlay.
+/// Why: exports take seconds, and a *static* bar over a silent 30-second stall is
 /// indistinguishable from a hang. The bar animates while the pipeline is busy
 /// compressing, and the phase label says which step is running.
 class ExportProgressDialog extends StatelessWidget {
@@ -70,7 +70,9 @@ class ExportProgressDialog extends StatelessWidget {
                 const SizedBox(height: 16),
                 // `null` makes the bar animate, which is the visible proof
                 // that the UI isolate is still alive during the slow phases.
-                LinearProgressIndicator(value: value.isIndeterminate ? null : value.ratio),
+                LinearProgressIndicator(
+                  value: value.isIndeterminate ? null : value.ratio,
+                ),
               ],
             );
           },

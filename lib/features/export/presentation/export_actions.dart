@@ -20,8 +20,8 @@ final ValueNotifier<bool> exportInProgress = ValueNotifier(false);
 
 /// Runs the whole PDF export flow from an app bar action.
 ///
-/// What: options dialog → opaque progress dialog over an offscreen capture
-/// host → export loop → save/share → cleanup, with an error snackbar on
+/// What: options dialog → progress dialog plus an independent capture tree
+/// → export loop → save/share → cleanup, with an error snackbar on
 /// failure (cancellation exits silently).
 /// Why: Presentation-only orchestration in one place so both viewer scaffolds
 /// share the exact same behavior.
@@ -44,8 +44,7 @@ Future<void> runAgendaExport(
     );
     if (options == null || !context.mounted) return;
 
-    // showDialog pushes on the root navigator; capturing it here (before any
-    // await) is what lets us pop the progress dialog in every exit path.
+    // Keep the exact root route so cleanup never pops an unrelated dialog.
     final rootNavigator = Navigator.of(context, rootNavigator: true);
     final service = ref.read(exportServiceProvider);
     final progressNotifier = ValueNotifier(
@@ -59,11 +58,15 @@ Future<void> runAgendaExport(
     final cancelFlag = ValueNotifier(false);
     cancelled = cancelFlag;
     host = OffscreenCaptureHost(context);
-    final progressShown = ExportProgressDialog.show(
-      context,
-      progress: progressNotifier,
-      onCancel: () => cancelFlag.value = true,
+    final progressRoute = DialogRoute<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => ExportProgressDialog(
+        progress: progressNotifier,
+        onCancel: () => cancelFlag.value = true,
+      ),
     );
+    unawaited(rootNavigator.push<void>(progressRoute).then<void>((_) {}));
 
     PdfExportResult? result;
     Object? failure;
@@ -86,15 +89,14 @@ Future<void> runAgendaExport(
       host.dispose();
     }
 
-    // Nothing else is pushed above the progress dialog while the export runs
-    // (PopScope keeps system back from removing it early), so this pop is safe
-    // on success, cancel and failure alike.
+    // Remove this exact route instead of popping whichever route happens to
+    // be on top, then wait until its reverse transition has fully completed.
     try {
-      if (rootNavigator.mounted) rootNavigator.pop();
-      await progressShown;
+      if (rootNavigator.mounted && progressRoute.isActive) {
+        rootNavigator.removeRoute(progressRoute);
+      }
+      await progressRoute.completed;
     } on Object catch (error) {
-      // The export is already over; a route teardown race must not turn a
-      // successful export into a second snackbar or an unhandled rejection.
       debugPrint('Honeyday: progress dialog teardown failed: $error');
     }
 
@@ -130,12 +132,9 @@ Future<void> runAgendaExport(
 /// Explains a failed export; a stalled capture gets its own actionable text
 /// because "bring the window to the front" is the only thing that fixes it.
 void _reportExportError(BuildContext context, Object error) {
+  debugPrint('Honeyday: export error: $error');
   if (!context.mounted) return;
-  final l10n = AppLocalizations.of(context);
-  final message = error is ExportCaptureStalled
-      ? l10n.exportErrorBackground
-      : l10n.exportError;
   ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-    SnackBar(content: Text(message)),
+    SnackBar(content: Text(AppLocalizations.of(context).exportError)),
   );
 }
