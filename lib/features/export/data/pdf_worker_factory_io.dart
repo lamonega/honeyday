@@ -49,9 +49,19 @@ class IsolatePdfWorker {
     final exits = ReceivePort();
     final ready = Completer<SendPort>();
     _IsolateBackedWorker? worker;
+    Object? earlyFailure;
+    StackTrace? earlyFailureStack;
 
-    void failStartup(Object error, [StackTrace? stackTrace]) {
-      if (!ready.isCompleted) ready.completeError(error, stackTrace);
+    void failWorker(Object error, StackTrace stackTrace) {
+      final current = worker;
+      if (current != null) {
+        current._fail(error, stackTrace);
+      } else if (!ready.isCompleted) {
+        ready.completeError(error, stackTrace);
+      } else {
+        earlyFailure ??= error;
+        earlyFailureStack ??= stackTrace;
+      }
     }
 
     answers.listen((message) {
@@ -63,23 +73,26 @@ class IsolatePdfWorker {
       if (currentWorker != null) {
         currentWorker._onReply(message);
       } else {
-        failStartup(StateError('Export worker sent data before becoming ready.'));
+        failWorker(
+          StateError('Export worker sent data before becoming ready.'),
+          StackTrace.current,
+        );
       }
     });
     errors.listen((message) {
-      if (ready.isCompleted) return;
       final parts = message is List ? message : const <Object?>[];
-      failStartup(
-        StateError('Export worker failed during startup: $message'),
+      failWorker(
+        StateError('Export worker failed: $message'),
         parts.length > 1 && parts[1] is String
             ? StackTrace.fromString(parts[1]! as String)
-            : null,
+            : StackTrace.current,
       );
     });
     exits.listen((_) {
-      if (!ready.isCompleted) {
-        failStartup(StateError('Export worker exited during startup.'));
-      }
+      failWorker(
+        StateError('Export worker exited unexpectedly.'),
+        StackTrace.current,
+      );
     });
 
     Isolate? isolate;
@@ -91,10 +104,16 @@ class IsolatePdfWorker {
         onExit: exits.sendPort,
         debugName: 'honeyday-export-$index',
       );
-      final commands = await ready.future;
+      final commands = await ready.future.timeout(
+        const Duration(seconds: 10),
+      );
       worker = _IsolateBackedWorker(
         IsolatePdfWorker._(isolate, commands, answers, errors, exits),
       );
+      final earlyError = earlyFailure;
+      if (earlyError != null) {
+        worker._fail(earlyError, earlyFailureStack ?? StackTrace.current);
+      }
       return worker.handle;
     } on Object {
       answers.close();
@@ -120,6 +139,8 @@ class _IsolateBackedWorker {
 
   int? _pageIndex;
   Completer<Uint8List>? _pending;
+  Object? _failure;
+  StackTrace? _failureStack;
   bool _shutdown = false;
 
   PdfCompressionWorker get handle => PdfCompressionWorker(
@@ -129,6 +150,10 @@ class _IsolateBackedWorker {
 
   Future<Uint8List> _compress(PdfWorkerRequest request) {
     if (_shutdown) return Future<Uint8List>.error(const ExportCancelled());
+    final failure = _failure;
+    if (failure != null) {
+      return Future<Uint8List>.error(failure, _failureStack);
+    }
     if (_pending != null) {
       return Future<Uint8List>.error(
         StateError('An export worker received overlapping jobs.'),
@@ -139,8 +164,9 @@ class _IsolateBackedWorker {
     _pageIndex = request.pageIndex;
     _pending = completer;
     try {
-      // TransferableTypedData hands the raster over without another Dart
-      // heap copy. The isolate materializes it only for its own lifetime.
+      // Creating TransferableTypedData copies the bytes once on this isolate;
+      // sending it is constant-time, and the worker materializes the transferred
+      // payload only for the lifetime of its compression job.
       _worker._commands.send(<Object?>[
         request.pageIndex,
         TransferableTypedData.fromList(<TypedData>[request.page.rgba]),
@@ -152,37 +178,59 @@ class _IsolateBackedWorker {
       _pageIndex = null;
       completer.completeError(error, stackTrace);
     }
-    return completer.future;
+    return completer.future.timeout(
+      const Duration(seconds: 60),
+      onTimeout: () {
+        final error = TimeoutException('PDF compression exceeded 60 seconds.');
+        _fail(error, StackTrace.current);
+        _worker._isolate.kill(priority: Isolate.immediate);
+        throw error;
+      },
+    );
+  }
+
+  void _fail(Object error, StackTrace stackTrace) {
+    if (_shutdown) return;
+    _failure ??= error;
+    _failureStack ??= stackTrace;
+
+    final pending = _pending;
+    _pending = null;
+    _pageIndex = null;
+    if (pending != null && !pending.isCompleted) {
+      pending.completeError(_failure!, _failureStack!);
+    }
   }
 
   void _onReply(Object? reply) {
     final completer = _pending;
     if (completer == null || completer.isCompleted) return;
-    if (reply is! List || reply.isEmpty || reply.first != _pageIndex) return;
+    if (reply is! List || reply.isEmpty || reply.first != _pageIndex) {
+      _fail(
+        StateError('Export worker replied with an invalid page index.'),
+        StackTrace.current,
+      );
+      return;
+    }
 
-    _pending = null;
-    _pageIndex = null;
     final payload = reply.length > 1 ? reply[1] : null;
     if (payload is Uint8List) {
+      _pending = null;
+      _pageIndex = null;
       completer.complete(payload);
     } else {
       final detail = reply.length > 2 ? reply[2] : null;
-      completer.completeError(
+      _fail(
         StateError('Export worker failed: $payload\n$detail'),
+        StackTrace.current,
       );
     }
   }
 
   Future<void> _shutdownWorker() async {
     if (_shutdown) return;
+    _fail(const ExportCancelled(), StackTrace.current);
     _shutdown = true;
-
-    final pending = _pending;
-    _pending = null;
-    _pageIndex = null;
-    if (pending != null && !pending.isCompleted) {
-      pending.completeError(const ExportCancelled());
-    }
 
     _worker._answers.close();
     _worker._errors.close();
