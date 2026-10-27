@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/features/agendas/presentation/controllers/save_session.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/save_session_scope.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/budget/budget_config.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/budget/budget_entry_form.dart';
@@ -65,6 +67,7 @@ class BudgetWidget extends StatefulWidget {
 
 class _BudgetWidgetState extends State<BudgetWidget> {
   late CatalogConfigHelper<BudgetConfig> _configHelper;
+  SaveSession? _saveSession;
 
   BudgetConfig get _config => _configHelper.config;
 
@@ -79,6 +82,16 @@ class _BudgetWidgetState extends State<BudgetWidget> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final session = SaveSessionScope.maybeOf(context);
+    if (identical(session, _saveSession)) return;
+    _saveSession?.unregisterEditor(_configHelper.flush);
+    _saveSession = session;
+    _saveSession?.registerEditor(_configHelper.flush);
+  }
+
+  @override
   void didUpdateWidget(BudgetWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     _configHelper.onConfigChanged = widget.onConfigChanged;
@@ -89,6 +102,7 @@ class _BudgetWidgetState extends State<BudgetWidget> {
 
   @override
   void dispose() {
+    _saveSession?.unregisterEditor(_configHelper.flush);
     _configHelper.dispose();
     super.dispose();
   }

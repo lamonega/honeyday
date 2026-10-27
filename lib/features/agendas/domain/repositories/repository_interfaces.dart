@@ -20,6 +20,7 @@ abstract interface class AgendaRepository {
 abstract interface class PageRepository {
   Stream<List<AgendaPage>> watchPages(String agendaId);
   Future<AgendaPage> createPage({
+    String? id,
     required String agendaId,
     required int pageNumber,
     String backgroundStyle = 'dotted',
@@ -33,6 +34,7 @@ abstract interface class PageRepository {
 abstract interface class CanvasElementRepository {
   Stream<List<CanvasWidgetData>> watchCanvasElements(String pageId);
   Future<void> upsertCanvasElement(CanvasWidgetData element);
+  Future<void> restoreCanvasElement(CanvasWidgetData element);
 
   /// Updates only [configJson] (and its timestamp) for [id], leaving
   /// geometry untouched. Returns whether a live row was updated.

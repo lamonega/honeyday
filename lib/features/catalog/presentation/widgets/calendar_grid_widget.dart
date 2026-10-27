@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/features/agendas/presentation/controllers/save_session.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/save_session_scope.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/calendar/calendar_config.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/calendar/calendar_grid.dart';
@@ -68,6 +70,7 @@ class CalendarGridWidget extends StatefulWidget {
 
 class _CalendarGridWidgetState extends State<CalendarGridWidget> {
   late CatalogConfigHelper<CalendarGridConfig> _configHelper;
+  SaveSession? _saveSession;
 
   CalendarGridConfig get _config => _configHelper.config;
 
@@ -82,6 +85,16 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final session = SaveSessionScope.maybeOf(context);
+    if (identical(session, _saveSession)) return;
+    _saveSession?.unregisterEditor(_configHelper.flush);
+    _saveSession = session;
+    _saveSession?.registerEditor(_configHelper.flush);
+  }
+
+  @override
   void didUpdateWidget(CalendarGridWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     _configHelper.onConfigChanged = widget.onConfigChanged;
@@ -92,6 +105,7 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
 
   @override
   void dispose() {
+    _saveSession?.unregisterEditor(_configHelper.flush);
     _configHelper.dispose();
     super.dispose();
   }

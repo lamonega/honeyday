@@ -50,14 +50,22 @@ class PageDao {
   /// `max(pageNumber, highest live number + 1)` so callers can never create
   /// duplicate numbers after an intermediate page was deleted.
   Future<AgendaPage> createPage({
+    String? id,
     required String agendaId,
     required int pageNumber,
     String backgroundStyle = 'dotted',
   }) async {
     final now = DateTime.now().toUtc();
-    final pageId = _uuid.v4();
+    final pageId = id ?? _uuid.v4();
 
     return await _db.transaction(() async {
+      final existing = await (_db.select(_db.pages)
+            ..where((tbl) => tbl.id.equals(pageId)))
+          .getSingleOrNull();
+      if (existing != null) {
+        return AgendaPageDto.fromDrift(existing).toEntity();
+      }
+
       final latest = await (_db.select(_db.pages)
             ..where(
               (tbl) =>

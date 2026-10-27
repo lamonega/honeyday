@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/features/agendas/presentation/controllers/save_session.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/save_session_scope.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/catalog_widget_mixin.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/text_box/text_box_color_picker.dart';
@@ -74,6 +76,7 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
   static const List<double> _fontSizes = [12.0, 14.0, 17.0, 21.0];
 
   late CatalogConfigHelper<TextBoxConfig> _configHelper;
+  SaveSession? _saveSession;
 
   TextBoxConfig get _config => _configHelper.config;
 
@@ -88,6 +91,16 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final session = SaveSessionScope.maybeOf(context);
+    if (identical(session, _saveSession)) return;
+    _saveSession?.unregisterEditor(_configHelper.flush);
+    _saveSession = session;
+    _saveSession?.registerEditor(_configHelper.flush);
+  }
+
+  @override
   void didUpdateWidget(TextBoxWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     _configHelper.onConfigChanged = widget.onConfigChanged;
@@ -98,6 +111,7 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
 
   @override
   void dispose() {
+    _saveSession?.unregisterEditor(_configHelper.flush);
     _configHelper.dispose();
     super.dispose();
   }

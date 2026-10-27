@@ -56,11 +56,13 @@ class DriftAgendaRepository implements FullAgendaRepository {
 
   @override
   Future<AgendaPage> createPage({
+    String? id,
     required String agendaId,
     required int pageNumber,
     String backgroundStyle = 'dotted',
   }) =>
       _pageDao.createPage(
+        id: id,
         agendaId: agendaId,
         pageNumber: pageNumber,
         backgroundStyle: backgroundStyle,
@@ -84,6 +86,10 @@ class DriftAgendaRepository implements FullAgendaRepository {
   @override
   Future<void> upsertCanvasElement(CanvasWidgetData element) =>
       _canvasElementDao.upsertCanvasElement(element);
+
+  @override
+  Future<void> restoreCanvasElement(CanvasWidgetData element) =>
+      _canvasElementDao.restoreCanvasElement(element);
 
   @override
   Future<bool> updateElementConfig(String id, String configJson) =>

@@ -68,11 +68,13 @@ class AgendaViewerController {
 
   /// Adds a new page to the given [agendaId].
   Future<AgendaPage> addPage({
+    String? id,
     required String agendaId,
     required int pageNumber,
     String backgroundStyle = 'dotted',
   }) {
     return _repository.createPage(
+      id: id,
       agendaId: agendaId,
       pageNumber: pageNumber,
       backgroundStyle: backgroundStyle,
@@ -115,6 +117,10 @@ class AgendaViewerController {
     return _repository.upsertCanvasElement(updatedData);
   }
 
+  /// Restores a soft-deleted element from an undo/redo snapshot.
+  Future<void> restoreElement(CanvasWidgetData element) =>
+      _repository.restoreCanvasElement(element);
+
   /// Updates the JSON configuration payload of a canvas element.
   ///
   /// Column-scoped: only `configJson`/`updatedAt` change, so the write can
@@ -123,14 +129,10 @@ class AgendaViewerController {
     CanvasWidgetData data,
     String newJson,
   ) async {
-    final updated = await _repository.updateElementConfig(data.id, newJson);
-    if (!updated) {
-      // Row missing (element never persisted): fall back to a full upsert
-      // so the edit isn't silently dropped.
-      await _repository.upsertCanvasElement(
-        data.copyWith(configJson: newJson),
-      );
-    }
+    // A missing or soft-deleted row must not be recreated by a delayed
+    // configuration debounce. Local creation is persisted by the element
+    // creation path, not by a config update.
+    await _repository.updateElementConfig(data.id, newJson);
   }
 
   /// Deletes a canvas element by its [id].
