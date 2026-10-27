@@ -79,7 +79,7 @@ Uint8List encodePageImageWithCompositing(
   required int creamG,
   required int creamB,
 }) {
-  final argb = (0xFF << 24) | (creamB << 16) | (creamG << 8) | creamR;
+  final argb = (0xFF << 24) | (creamR << 16) | (creamG << 8) | creamB;
   return deflatePdfStream(
     filterPageRows(page, backgroundArgb: argb).rows,
   );
@@ -114,7 +114,7 @@ FilteredPage filterPageRows(CapturedPage page, {int? backgroundArgb}) {
         ];
   final composite = backgroundArgb != null;
 
-  var alphaOr = 0;
+  var hadTransparency = false;
   var source = 0;
   var target = 0;
   for (var y = 0; y < height; y++) {
@@ -122,7 +122,7 @@ FilteredPage filterPageRows(CapturedPage page, {int? backgroundArgb}) {
     for (var x = 0; x < width; x++) {
       final pixel = source + x * _bytesPerPixel;
       final alpha = rgba[pixel + 3];
-      alphaOr |= alpha;
+      if (alpha != 0xFF) hadTransparency = true;
 
       for (var channel = 0; channel < _rgbBytesPerPixel; channel++) {
         var value = rgba[pixel + channel];
@@ -135,7 +135,7 @@ FilteredPage filterPageRows(CapturedPage page, {int? backgroundArgb}) {
     source += sourceRowBytes;
   }
 
-  return (rows: rows, hadTransparency: alphaOr != 0xFF);
+  return (rows: rows, hadTransparency: hadTransparency);
 }
 
 /// The background a premultiplied pixel lets through when composited with

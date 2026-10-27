@@ -130,6 +130,17 @@ void main() {
       expect(rgb[2], 0x80 + ((0xF7 * 0x80) >> 8));
     });
 
+    test('explicit compositing keeps red and blue channel order', () {
+      final transparent = pageOf(1, 1, [0, 0, 0, 0]);
+      final stream = encodePageImageWithCompositing(
+        transparent,
+        creamR: 0x12,
+        creamG: 0x34,
+        creamB: 0x56,
+      );
+      expect(readRgb(stream, 1, 1), [0x12, 0x34, 0x56]);
+    });
+
     test('the explicit compositing variant leaves opaque pixels alone', () {
       final opaque = pageOf(1, 1, [0x10, 0x20, 0x30, 0xFF]);
 
@@ -157,6 +168,13 @@ void main() {
       expect(
         filterPageRows(pageOf(1, 1, [0, 0, 0, 0])).hadTransparency,
         isTrue,
+      );
+      expect(
+        filterPageRows(
+          pageOf(2, 1, [1, 2, 3, 0xFF, 0, 0, 0, 0]),
+        ).hadTransparency,
+        isTrue,
+        reason: 'one opaque pixel must not hide a transparent neighbor',
       );
     });
 
