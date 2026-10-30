@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
@@ -27,7 +28,8 @@ CapturedPage tinyPage([int seed = 0]) {
 }
 
 /// Collects the document so the tests can assert on it.
-class _MemoryOutput implements PdfOutput {  final List<Uint8List> _chunks = [];
+class _MemoryOutput implements PdfOutput {
+  final List<Uint8List> _chunks = [];
   bool discarded = false;
 
   @override
@@ -144,8 +146,7 @@ PdfWorkerPool inlinePool({int workers = 2}) => PdfWorkerPool(
 );
 
 void main() {
-  test('captures the cover first, then every page, and builds the PDF',
-      () async {
+  test('captures the cover first, then every page, and builds the PDF', () async {
     final output = _MemoryOutput();
     final service = PdfExportService(
       _FakeRepository(buildSnapshot(pageCount: 2)),
@@ -173,14 +174,11 @@ void main() {
     expect(result.artifact.path, isNull);
 
     // One progress event per capture, then one per phase change.
-    expect(
-      progress.take(3).map((p) => (p.phase, p.completed, p.total)),
-      [
-        (ExportPhase.capturing, 1, 3),
-        (ExportPhase.capturing, 2, 3),
-        (ExportPhase.capturing, 3, 3),
-      ],
-    );
+    expect(progress.take(3).map((p) => (p.phase, p.completed, p.total)), [
+      (ExportPhase.capturing, 1, 3),
+      (ExportPhase.capturing, 2, 3),
+      (ExportPhase.capturing, 3, 3),
+    ]);
     expect(progress[3].phase, ExportPhase.compressing);
     expect(progress.last.phase, ExportPhase.writing);
     expect(progress.last.completed, 3);
@@ -194,45 +192,50 @@ void main() {
     expect(ratios, everyElement(closeTo(3.1, 0.01)));
   });
 
-  test('waits for compression before allocating the next captured page', () async {
-    final releaseFirstPage = Completer<void>();
-    var firstJob = true;
-    var captures = 0;
-    final pool = PdfWorkerPool(
-      maxWorkers: 2,
-      builder: (_) async => PdfCompressionWorker(
-        compress: (request) async {
-          if (firstJob) {
-            firstJob = false;
-            await releaseFirstPage.future;
-          }
-          return Uint8List.fromList([request.pageIndex]);
+  test(
+    'waits for compression before allocating the next captured page',
+    () async {
+      final releaseFirstPage = Completer<void>();
+      var firstJob = true;
+      var captures = 0;
+      final pool = PdfWorkerPool(
+        maxWorkers: 2,
+        builder: (_) async => PdfCompressionWorker(
+          compress: (request) async {
+            if (firstJob) {
+              firstJob = false;
+              await releaseFirstPage.future;
+            }
+            return Uint8List.fromList([request.pageIndex]);
+          },
+        ),
+      );
+      final service = PdfExportService(
+        _FakeRepository(buildSnapshot(pageCount: 2)),
+      );
+      final run = service.export(
+        agendaId: 'a1',
+        options: const ExportOptions(),
+        capture: (_, _) async {
+          captures++;
+          return tinyPage(captures);
         },
-      ),
-    );
-    final service = PdfExportService(_FakeRepository(buildSnapshot(pageCount: 2)));
-    final run = service.export(
-      agendaId: 'a1',
-      options: const ExportOptions(),
-      capture: (_, _) async {
-        captures++;
-        return tinyPage(captures);
-      },
-      pool: pool,
-      createOutput: _MemoryOutput.new,
-    );
+        pool: pool,
+        createOutput: _MemoryOutput.new,
+      );
 
-    for (var attempt = 0; attempt < 100 && captures == 0; attempt++) {
-      await Future<void>.delayed(const Duration(milliseconds: 1));
-    }
-    expect(captures, 1);
-    await Future<void>.delayed(const Duration(milliseconds: 30));
-    expect(captures, 1, reason: 'do not rasterize ahead of worker capacity');
+      for (var attempt = 0; attempt < 100 && captures == 0; attempt++) {
+        await Future<void>.delayed(const Duration(milliseconds: 1));
+      }
+      expect(captures, 1);
+      await Future<void>.delayed(const Duration(milliseconds: 30));
+      expect(captures, 1, reason: 'do not rasterize ahead of worker capacity');
 
-    releaseFirstPage.complete();
-    await run;
-    expect(captures, 3);
-  });
+      releaseFirstPage.complete();
+      await run;
+      expect(captures, 3);
+    },
+  );
 
   test('writes a document with one page per captured page', () async {
     final service = PdfExportService(
@@ -341,7 +344,9 @@ void main() {
     // final raster is in hand frees it while the pool is still compressing.
     final events = <String>[];
     final output = _CloseWatchingOutput(events);
-    final service = PdfExportService(_FakeRepository(buildSnapshot(pageCount: 2)));
+    final service = PdfExportService(
+      _FakeRepository(buildSnapshot(pageCount: 2)),
+    );
 
     await service.export(
       agendaId: 'a1',
@@ -357,14 +362,9 @@ void main() {
 
     expect(
       events,
-      [
-        'capture',
-        'capture',
-        'capture',
-        'captures-done',
-        'closed',
-      ],
-      reason: 'the host must be released after the last page is rasterized and '
+      ['capture', 'capture', 'capture', 'captures-done', 'closed'],
+      reason:
+          'the host must be released after the last page is rasterized and '
           'before the document is handed over',
     );
   });
