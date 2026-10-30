@@ -202,7 +202,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                 child: widget.isInteractive
                     ? TextFormField(
                         initialValue: displayDate,
-                        key: ValueKey('date_${widget.elementId}_$displayDate'),
+                        key: ValueKey('date_${widget.elementId}'),
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
@@ -219,7 +219,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                             borderSide: BorderSide(color: colorScheme.primary),
                           ),
                         ),
-                        onFieldSubmitted: _updateDate,
+                        onChanged: _updateDate,
                       )
                     : Text(
                         displayDate,

@@ -67,12 +67,10 @@ class CalendarHabitRow extends StatelessWidget {
                       ),
                       border: InputBorder.none,
                       focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(
-                          color: colorScheme.primary,
-                        ),
+                        borderSide: BorderSide(color: colorScheme.primary),
                       ),
                     ),
-                    onFieldSubmitted: onEditTitle,
+                    onChanged: onEditTitle,
                   )
                 : Text(
                     displayTitle,
@@ -148,9 +146,7 @@ class _CheckboxRow extends StatelessWidget {
                   : colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(6),
               border: Border.all(
-                color: isChecked
-                    ? colorScheme.primary
-                    : colorScheme.outline,
+                color: isChecked ? colorScheme.primary : colorScheme.outline,
                 width: 1.2,
               ),
             ),

@@ -34,8 +34,7 @@ class BudgetEntryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isIncome = entry.type == BudgetEntryType.income;
-    final entryColor =
-        isIncome ? AppColors.incomeGreen : AppColors.expenseRed;
+    final entryColor = isIncome ? AppColors.incomeGreen : AppColors.expenseRed;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
@@ -83,7 +82,7 @@ class BudgetEntryRow extends StatelessWidget {
                         borderSide: BorderSide(color: cs.primary),
                       ),
                     ),
-                    onFieldSubmitted: onUpdateDescription,
+                    onChanged: onUpdateDescription,
                   )
                 : Text(
                     displayDescription,
@@ -111,10 +110,7 @@ class BudgetEntryRow extends StatelessWidget {
                     decoration: InputDecoration(
                       isDense: true,
                       prefixText: currency,
-                      prefixStyle: TextStyle(
-                        fontSize: 11,
-                        color: cs.onSurface,
-                      ),
+                      prefixStyle: TextStyle(fontSize: 11, color: cs.onSurface),
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 4,
                         vertical: 4,
@@ -124,7 +120,7 @@ class BudgetEntryRow extends StatelessWidget {
                         borderSide: BorderSide(color: cs.primary),
                       ),
                     ),
-                    onFieldSubmitted: onUpdateAmount,
+                    onChanged: onUpdateAmount,
                   )
                 : Text(
                     '${isIncome ? '+' : '-'}$currency${formatNumber(entry.amount)}',

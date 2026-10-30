@@ -70,7 +70,7 @@ class JournalPriorityItemWidget extends StatelessWidget {
             child: isInteractive
                 ? TextFormField(
                     initialValue: localizedText,
-                    key: ValueKey('prio_${priority.id}_$localizedText'),
+                    key: ValueKey('prio_${priority.id}'),
                     style: TextStyle(
                       fontSize: 11,
                       color: priority.isDone
@@ -91,7 +91,7 @@ class JournalPriorityItemWidget extends StatelessWidget {
                         borderSide: BorderSide(color: colorScheme.primary),
                       ),
                     ),
-                    onFieldSubmitted: onTextChanged,
+                    onChanged: onTextChanged,
                   )
                 : Text(
                     localizedText,
