@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:honeyday/features/agendas/data/repositories/agenda_repository_provider.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
+import 'package:honeyday/features/canvas/domain/initial_element_position.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
@@ -14,10 +16,6 @@ import 'package:uuid/uuid.dart';
 // Agenda viewer controller constants (used only here)
 // ──────────────────────────────────────────────
 
-/// Default X position for newly added catalog elements.
-const double kNewElementDefaultX = 120;
-/// Default Y position for newly added catalog elements.
-const double kNewElementDefaultY = 100;
 /// Minimum offset when duplicating canvas elements.
 const double kDuplicateOffset = 24;
 
@@ -104,7 +102,10 @@ class AgendaViewerController {
       id: _uuid.v4(),
       pageId: pageId,
       widgetType: definition.id,
-      position: const Offset(kNewElementDefaultX, kNewElementDefaultY),
+      position: initialElementPosition(
+        elementSize: definition.defaultSize,
+        pageSize: const Size(kDefaultPageWidth, kDefaultPageHeight),
+      ),
       size: definition.defaultSize,
       configJson: definition.initialConfigJson,
     );

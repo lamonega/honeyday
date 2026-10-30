@@ -9,13 +9,15 @@ import 'package:honeyday/core/utils/haptics.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/agenda_viewer_controller.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/save_session.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/save_session_scope.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/viewer_app_bar.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/viewer_canvas_mode_toggle.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/viewer_catalog_sheet.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/viewer_page_navigator.dart';
-import 'package:honeyday/features/agendas/presentation/widgets/save_session_scope.dart';
+import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode_notifier.dart';
+import 'package:honeyday/features/canvas/domain/initial_element_position.dart';
 import 'package:honeyday/features/canvas/domain/writing_input.dart';
 import 'package:honeyday/features/canvas/presentation/pages/page_view_canvas.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/page_canvas_controller.dart';
@@ -93,7 +95,6 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
       unawaited(hapticLight());
     }
   }
-
 
   void _undo() {
     final controller = _currentPageController;
@@ -183,20 +184,29 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
       builder: (context, _) {
         final l10n = AppLocalizations.of(context);
         return switch (_saveSession.status) {
-          SaveStatus.saved => Tooltip(message: l10n.agendaSaved, child: const Icon(Icons.cloud_done_outlined)),
-          SaveStatus.saving => Tooltip(message: l10n.agendaSaving, child: const SizedBox.square(dimension: 18, child: CircularProgressIndicator(strokeWidth: 2))),
-          SaveStatus.failed => IconButton(
-              tooltip: l10n.agendaRetrySave,
-              icon: const Icon(Icons.error_outline),
-              onPressed: () async {
-                try {
-                  _saveSession.flushEditors();
-                  await _saveSession.retry();
-                } on Object catch (error) {
-                  if (context.mounted) _reportPersistError(context, error);
-                }
-              },
+          SaveStatus.saved => Tooltip(
+            message: l10n.agendaSaved,
+            child: const Icon(Icons.cloud_done_outlined),
+          ),
+          SaveStatus.saving => Tooltip(
+            message: l10n.agendaSaving,
+            child: const SizedBox.square(
+              dimension: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
             ),
+          ),
+          SaveStatus.failed => IconButton(
+            tooltip: l10n.agendaRetrySave,
+            icon: const Icon(Icons.error_outline),
+            onPressed: () async {
+              try {
+                _saveSession.flushEditors();
+                await _saveSession.retry();
+              } on Object catch (error) {
+                if (context.mounted) _reportPersistError(context, error);
+              }
+            },
+          ),
         };
       },
     );
@@ -208,9 +218,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
       builder: (context, busy, _) => IconButton(
         icon: const Icon(Icons.picture_as_pdf_outlined),
         tooltip: AppLocalizations.of(context).exportPdfTooltip,
-        onPressed: busy
-            ? null
-            : () => unawaited(_startExport(pagesCount)),
+        onPressed: busy ? null : () => unawaited(_startExport(pagesCount)),
       ),
     );
   }
@@ -347,7 +355,10 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
       id: _uuid.v4(),
       pageId: currentPageId,
       widgetType: selectedDef.id,
-      position: const Offset(120, 100),
+      position: initialElementPosition(
+        elementSize: selectedDef.defaultSize,
+        pageSize: const Size(kDefaultPageWidth, kDefaultPageHeight),
+      ),
       size: selectedDef.defaultSize,
       configJson: selectedDef.initialConfigJson,
     );
@@ -411,100 +422,103 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
       child: AbsorbPointer(
         absorbing: _exitInProgress || _exportPreparing,
         child: Scaffold(
-        backgroundColor: colorScheme.surface,
-        appBar: ViewerAppBar(
-          onBack: () => unawaited(_requestExit()),
-          actions: [_buildSaveStatus(), _buildExportButton(totalPages)],
-        ),
-        floatingActionButton: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (_canUndo)
-              FloatingActionButton.small(
-                heroTag: 'undo',
-                onPressed: _undo,
-                backgroundColor: colorScheme.secondaryContainer,
-                foregroundColor: colorScheme.onSecondaryContainer,
-                child: const Icon(Icons.undo_rounded, size: 20),
-              ),
-            if (_canUndo) const SizedBox(width: 8),
-            if (_canRedo)
-              FloatingActionButton.small(
-                heroTag: 'redo',
-                onPressed: _redo,
-                backgroundColor: colorScheme.secondaryContainer,
-                foregroundColor: colorScheme.onSecondaryContainer,
-                child: const Icon(Icons.redo_rounded, size: 20),
-              ),
-            if (_canRedo) const SizedBox(width: 8),
-            FloatingActionButton.small(
-              heroTag: 'toggle_strokes',
-              onPressed: _toggleStrokes,
-              backgroundColor: colorScheme.secondaryContainer,
-              foregroundColor: colorScheme.onSecondaryContainer,
-              child: Icon(
-                _strokesVisible ? Icons.draw_outlined : Icons.draw,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 8),
-            FloatingActionButton.small(
-              heroTag: 'page_manager',
-              onPressed: () => _showPageManager(pages),
-              backgroundColor: colorScheme.secondaryContainer,
-              foregroundColor: colorScheme.onSecondaryContainer,
-              child: const Icon(Icons.layers_outlined, size: 20),
-            ),
-            const SizedBox(width: 8),
-            FloatingActionButton(
-              heroTag: 'add_element',
-              onPressed: () async {
-                final def = await ViewerCatalogSheet.showElementPicker(context);
-                if (def == null || !mounted) return;
-                // `_currentPagePageId` is null while pages are still loading
-                // or when the index drifted past the end of the list.
-                final pageId = _currentPagePageId;
-                if (pageId == null) return;
-                await _addCatalogElement(pageId, def);
-              },
-              backgroundColor: colorScheme.primaryContainer,
-              foregroundColor: colorScheme.onPrimaryContainer,
-              child: const Icon(Icons.add_rounded),
-            ),
-          ],
-        ),
-        body: _buildPagesAsyncBody(
-          pagesAsync: pagesAsync,
-          builder: (pagesList) => Stack(
+          backgroundColor: colorScheme.surface,
+          appBar: ViewerAppBar(
+            onBack: () => unawaited(_requestExit()),
+            actions: [_buildSaveStatus(), _buildExportButton(totalPages)],
+          ),
+          floatingActionButton: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              PageView.builder(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: pagesList.length,
-                onPageChanged: (index) {
-                  setState(() => _currentPageIndex = index);
-                },
-                itemBuilder: (context, index) {
-                  final page = pagesList[index];
-                  return _PageContentLoader(
-                    key: ValueKey(page.id),
-                    page: page,
-                    currentMode: CanvasMode.edit,
-                    canvasControllers: _pageControllers,
-                    strokesVisible: _strokesVisible,
-                    onControllerCreated: (c) => _registerPageController(page.id, c),
-                  );
-                },
-              ),
-              if (totalPages > 1)
-                ViewerPageNavigator(
-                  childCount: totalPages,
-                  currentPage: _currentPageIndex,
-                  onGoToPage: (index) => _goToPage(index, totalPages),
+              if (_canUndo)
+                FloatingActionButton.small(
+                  heroTag: 'undo',
+                  onPressed: _undo,
+                  backgroundColor: colorScheme.secondaryContainer,
+                  foregroundColor: colorScheme.onSecondaryContainer,
+                  child: const Icon(Icons.undo_rounded, size: 20),
                 ),
+              if (_canUndo) const SizedBox(width: 8),
+              if (_canRedo)
+                FloatingActionButton.small(
+                  heroTag: 'redo',
+                  onPressed: _redo,
+                  backgroundColor: colorScheme.secondaryContainer,
+                  foregroundColor: colorScheme.onSecondaryContainer,
+                  child: const Icon(Icons.redo_rounded, size: 20),
+                ),
+              if (_canRedo) const SizedBox(width: 8),
+              FloatingActionButton.small(
+                heroTag: 'toggle_strokes',
+                onPressed: _toggleStrokes,
+                backgroundColor: colorScheme.secondaryContainer,
+                foregroundColor: colorScheme.onSecondaryContainer,
+                child: Icon(
+                  _strokesVisible ? Icons.draw_outlined : Icons.draw,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 8),
+              FloatingActionButton.small(
+                heroTag: 'page_manager',
+                onPressed: () => _showPageManager(pages),
+                backgroundColor: colorScheme.secondaryContainer,
+                foregroundColor: colorScheme.onSecondaryContainer,
+                child: const Icon(Icons.layers_outlined, size: 20),
+              ),
+              const SizedBox(width: 8),
+              FloatingActionButton(
+                heroTag: 'add_element',
+                onPressed: () async {
+                  final def = await ViewerCatalogSheet.showElementPicker(
+                    context,
+                  );
+                  if (def == null || !mounted) return;
+                  // `_currentPagePageId` is null while pages are still loading
+                  // or when the index drifted past the end of the list.
+                  final pageId = _currentPagePageId;
+                  if (pageId == null) return;
+                  await _addCatalogElement(pageId, def);
+                },
+                backgroundColor: colorScheme.primaryContainer,
+                foregroundColor: colorScheme.onPrimaryContainer,
+                child: const Icon(Icons.add_rounded),
+              ),
             ],
           ),
-        ),
+          body: _buildPagesAsyncBody(
+            pagesAsync: pagesAsync,
+            builder: (pagesList) => Stack(
+              children: [
+                PageView.builder(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: pagesList.length,
+                  onPageChanged: (index) {
+                    setState(() => _currentPageIndex = index);
+                  },
+                  itemBuilder: (context, index) {
+                    final page = pagesList[index];
+                    return _PageContentLoader(
+                      key: ValueKey(page.id),
+                      page: page,
+                      currentMode: CanvasMode.edit,
+                      canvasControllers: _pageControllers,
+                      strokesVisible: _strokesVisible,
+                      onControllerCreated: (c) =>
+                          _registerPageController(page.id, c),
+                    );
+                  },
+                ),
+                if (totalPages > 1)
+                  ViewerPageNavigator(
+                    childCount: totalPages,
+                    currentPage: _currentPageIndex,
+                    onGoToPage: (index) => _goToPage(index, totalPages),
+                  ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -526,124 +540,124 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
       child: AbsorbPointer(
         absorbing: _exitInProgress || _exportPreparing,
         child: Scaffold(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        appBar: ViewerAppBar(
-          onBack: () => unawaited(_requestExit()),
-          actions: [_buildSaveStatus(), _buildExportButton(totalPages)],
-        ),
-        floatingActionButton: ViewerCanvasModeToggle(
-          currentMode: currentMode,
-          onToggle: _toggleCanvasMode,
-        ),
-        body: _buildPagesAsyncBody(
-          pagesAsync: pagesAsync,
-          builder: (pagesList) {
-            final scrollPhysics = currentMode == CanvasMode.reading
-                ? const PageScrollPhysics()
-                : const NeverScrollableScrollPhysics();
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          appBar: ViewerAppBar(
+            onBack: () => unawaited(_requestExit()),
+            actions: [_buildSaveStatus(), _buildExportButton(totalPages)],
+          ),
+          floatingActionButton: ViewerCanvasModeToggle(
+            currentMode: currentMode,
+            onToggle: _toggleCanvasMode,
+          ),
+          body: _buildPagesAsyncBody(
+            pagesAsync: pagesAsync,
+            builder: (pagesList) {
+              final scrollPhysics = currentMode == CanvasMode.reading
+                  ? const PageScrollPhysics()
+                  : const NeverScrollableScrollPhysics();
 
-            return Stack(
-              children: [
-                PageView.builder(
-                  controller: _pageController,
-                  physics: scrollPhysics,
-                  itemCount: pagesList.length,
-                  onPageChanged: (index) {
-                    setState(() => _currentPageIndex = index);
-                    unawaited(hapticLight());
-                  },
-                  itemBuilder: (context, index) {
-                    final page = pagesList[index];
-                    // Keep the canvas under the same ancestors in every mode.
-                    return AnimatedBuilder(
-                      key: ValueKey(page.id),
-                      animation: _pageController,
-                      builder: (context, child) {
-                        // Swapping the canvas mode swaps the PageView physics,
-                        // so Scrollable recreates its ScrollPosition and
-                        // `haveDimensions` resets to false; this builder then
-                        // runs during layout, before applyContentDimensions.
-                        // The fallback must be page-relative so the active page
-                        // stays at rest — using the absolute item index leaves
-                        // the current page stuck mid-flip until the controller
-                        // notifies again on the next page turn.
-                        var position = (index - _currentPageIndex).toDouble();
-                        if (_pageController.hasClients &&
-                            _pageController.position.haveDimensions &&
-                            _pageController.page != null) {
-                          position = index - _pageController.page!;
-                        }
+              return Stack(
+                children: [
+                  PageView.builder(
+                    controller: _pageController,
+                    physics: scrollPhysics,
+                    itemCount: pagesList.length,
+                    onPageChanged: (index) {
+                      setState(() => _currentPageIndex = index);
+                      unawaited(hapticLight());
+                    },
+                    itemBuilder: (context, index) {
+                      final page = pagesList[index];
+                      // Keep the canvas under the same ancestors in every mode.
+                      return AnimatedBuilder(
+                        key: ValueKey(page.id),
+                        animation: _pageController,
+                        builder: (context, child) {
+                          // Swapping the canvas mode swaps the PageView physics,
+                          // so Scrollable recreates its ScrollPosition and
+                          // `haveDimensions` resets to false; this builder then
+                          // runs during layout, before applyContentDimensions.
+                          // The fallback must be page-relative so the active page
+                          // stays at rest — using the absolute item index leaves
+                          // the current page stuck mid-flip until the controller
+                          // notifies again on the next page turn.
+                          var position = (index - _currentPageIndex).toDouble();
+                          if (_pageController.hasClients &&
+                              _pageController.position.haveDimensions &&
+                              _pageController.page != null) {
+                            position = index - _pageController.page!;
+                          }
 
-                        final clamped = currentMode == CanvasMode.reading
-                            ? position.clamp(-1.0, 1.0)
-                            : 0.0;
-                        final isTurning = clamped.abs() > 0.001;
-                        final isLeft = clamped < 0;
-                        final rotationY = clamped * (math.pi / 3.5);
-                        final shadowOpacity = (clamped.abs() * 0.4).clamp(
-                          0.0,
-                          0.45,
-                        );
+                          final clamped = currentMode == CanvasMode.reading
+                              ? position.clamp(-1.0, 1.0)
+                              : 0.0;
+                          final isTurning = clamped.abs() > 0.001;
+                          final isLeft = clamped < 0;
+                          final rotationY = clamped * (math.pi / 3.5);
+                          final shadowOpacity = (clamped.abs() * 0.4).clamp(
+                            0.0,
+                            0.45,
+                          );
 
-                        return Transform(
-                          alignment: isLeft
-                              ? Alignment.centerRight
-                              : Alignment.centerLeft,
-                          transform: Matrix4.identity()
-                            ..setEntry(3, 2, 0.0008)
-                            ..rotateY(rotationY),
-                          child: Stack(
-                            children: [
-                              child!,
-                              if (isTurning)
-                                Positioned.fill(
-                                  child: IgnorePointer(
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                        gradient: LinearGradient(
-                                          begin: isLeft
-                                              ? Alignment.centerRight
-                                              : Alignment.centerLeft,
-                                          end: isLeft
-                                              ? Alignment.centerLeft
-                                              : Alignment.centerRight,
-                                          colors: [
-                                            Colors.black.withValues(
-                                              alpha: shadowOpacity,
-                                            ),
-                                            Colors.transparent,
-                                          ],
+                          return Transform(
+                            alignment: isLeft
+                                ? Alignment.centerRight
+                                : Alignment.centerLeft,
+                            transform: Matrix4.identity()
+                              ..setEntry(3, 2, 0.0008)
+                              ..rotateY(rotationY),
+                            child: Stack(
+                              children: [
+                                child!,
+                                if (isTurning)
+                                  Positioned.fill(
+                                    child: IgnorePointer(
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: isLeft
+                                                ? Alignment.centerRight
+                                                : Alignment.centerLeft,
+                                            end: isLeft
+                                                ? Alignment.centerLeft
+                                                : Alignment.centerRight,
+                                            colors: [
+                                              Colors.black.withValues(
+                                                alpha: shadowOpacity,
+                                              ),
+                                              Colors.transparent,
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
                                   ),
-                                ),
-                            ],
-                          ),
-                        );
-                      },
-                      child: _PageContentLoader(
-                        key: ValueKey(page.id),
-                        page: page,
-                        currentMode: currentMode,
-                        canvasControllers: _pageControllers,
-                        strokesVisible: _strokesVisible,
-                        onControllerCreated: (c) =>
-                            _registerPageController(page.id, c),
-                      ),
-                    );
-                  },
-                ),
-                if (totalPages > 1)
-                  ViewerPageNavigator(
-                    childCount: totalPages,
-                    currentPage: _currentPageIndex,
-                    onGoToPage: (index) => _goToPage(index, totalPages),
+                              ],
+                            ),
+                          );
+                        },
+                        child: _PageContentLoader(
+                          key: ValueKey(page.id),
+                          page: page,
+                          currentMode: currentMode,
+                          canvasControllers: _pageControllers,
+                          strokesVisible: _strokesVisible,
+                          onControllerCreated: (c) =>
+                              _registerPageController(page.id, c),
+                        ),
+                      );
+                    },
                   ),
-              ],
-            );
-          },
-        ),
+                  if (totalPages > 1)
+                    ViewerPageNavigator(
+                      childCount: totalPages,
+                      currentPage: _currentPageIndex,
+                      onGoToPage: (index) => _goToPage(index, totalPages),
+                    ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -709,9 +723,11 @@ class _PageContentLoader extends ConsumerWidget {
         unawaited(_guardPersist(context, write()));
         return;
       }
-      unawaited(session.enqueue(write).catchError((Object error) {
-        if (context.mounted) _reportPersistError(context, error);
-      }));
+      unawaited(
+        session.enqueue(write).catchError((Object error) {
+          if (context.mounted) _reportPersistError(context, error);
+        }),
+      );
     }
 
     return PageViewCanvas(
@@ -723,7 +739,8 @@ class _PageContentLoader extends ConsumerWidget {
       strokesVisible: strokesVisible,
       onControllerCreated: onControllerCreated,
       elementBuilder: (context, elementData) {
-        final isInteractive = currentMode == CanvasMode.writing &&
+        final isInteractive =
+            currentMode == CanvasMode.writing &&
             writingInput == WritingInput.content;
 
         return CatalogRegistry.buildWidget(
@@ -745,8 +762,7 @@ class _PageContentLoader extends ConsumerWidget {
       },
       onElementUpdated: (updatedData) =>
           persist(() => controller.updateElementTransform(updatedData)),
-      onElementDeleted: (id) =>
-          persist(() => controller.deleteElement(id)),
+      onElementDeleted: (id) => persist(() => controller.deleteElement(id)),
       onElementRestored: (element) =>
           persist(() => controller.restoreElement(element)),
       onStrokesChanged: (newStrokes) =>
