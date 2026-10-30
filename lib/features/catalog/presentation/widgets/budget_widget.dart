@@ -151,11 +151,16 @@ class _BudgetWidgetState extends State<BudgetWidget> {
 
   void _updateAmount(int index, String rawAmount) {
     if (!widget.isInteractive) return;
-    final parsed = double.tryParse(rawAmount.replaceAll(',', '.')) ?? 0.0;
+    if (index < 0 || index >= _config.entries.length) return;
+    final normalized = rawAmount.trim().replaceAll(',', '.');
+    final parsed = double.tryParse(normalized);
+    if (parsed == null || !parsed.isFinite || parsed < 0) return;
+
     final updated = List<BudgetEntryItem>.from(_config.entries);
     updated[index] = updated[index].copyWith(amount: parsed);
-    final newConfig = _config.copyWith(entries: updated);
-    setState(() => _configHelper.updateConfig(newConfig));
+    setState(() {
+      _configHelper.updateConfig(_config.copyWith(entries: updated));
+    });
   }
 
   String _formatNumber(double val) {
