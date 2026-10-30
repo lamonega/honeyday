@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 
@@ -33,6 +35,44 @@ class ElementHistory {
     if (_redoStack.isEmpty) return null;
     _undoStack.add(List.from(currentElements));
     return _redoStack.removeLast();
+  }
+
+  /// Keeps non-undoable content edits in existing design snapshots.
+  void rebaseConfig({
+    required String elementId,
+    required String beforeJson,
+    required String afterJson,
+  }) {
+    final before = jsonDecode(beforeJson) as Map<String, dynamic>;
+    final after = jsonDecode(afterJson) as Map<String, dynamic>;
+    final changedKeys = <String>{...before.keys, ...after.keys}
+        .where(
+          (key) =>
+              jsonEncode(before[key]) != jsonEncode(after[key]) ||
+              before.containsKey(key) != after.containsKey(key),
+        )
+        .toList();
+
+    void rebaseStack(List<List<CanvasWidgetData>> stack) {
+      for (final snapshot in stack) {
+        for (var i = 0; i < snapshot.length; i++) {
+          final element = snapshot[i];
+          if (element.id != elementId) continue;
+          final config = jsonDecode(element.configJson) as Map<String, dynamic>;
+          for (final key in changedKeys) {
+            if (after.containsKey(key)) {
+              config[key] = after[key];
+            } else {
+              config.remove(key);
+            }
+          }
+          snapshot[i] = element.copyWith(configJson: jsonEncode(config));
+        }
+      }
+    }
+
+    rebaseStack(_undoStack);
+    rebaseStack(_redoStack);
   }
 
   void clear() {

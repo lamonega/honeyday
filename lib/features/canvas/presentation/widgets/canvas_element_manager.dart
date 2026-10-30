@@ -12,9 +12,8 @@ class CanvasElementManager {
   CanvasElementManager({
     required List<CanvasWidgetData> initialElements,
     required this.pageSize,
-  })  : _elements = List.from(initialElements),
-        _cachedSiblingRects =
-            initialElements.map((e) => e.boundingBox).toList();
+  }) : _elements = List.from(initialElements),
+       _cachedSiblingRects = initialElements.map((e) => e.boundingBox).toList();
 
   final Size pageSize;
   List<CanvasWidgetData> _elements;
@@ -49,10 +48,15 @@ class CanvasElementManager {
   /// prevents those writes from reverting the edit. No undo entry is
   /// recorded — config edits have never been part of element undo.
   void handleConfigChanged(String elementId, String configJson) {
-    final index = _elements.indexWhere((e) => e.id == elementId);
-    if (index != -1) {
-      _elements[index] = _elements[index].copyWith(configJson: configJson);
-    }
+    final index = _elements.indexWhere((element) => element.id == elementId);
+    if (index == -1) return;
+    final current = _elements[index];
+    elementHistory.rebaseConfig(
+      elementId: elementId,
+      beforeJson: current.configJson,
+      afterJson: configJson,
+    );
+    _elements[index] = current.copyWith(configJson: configJson);
   }
 
   void handleTransformChanged(
@@ -154,8 +158,7 @@ class CanvasElementManager {
     if (restored != null) {
       _elements = restored;
       _updateCache();
-      selectedElementId =
-          _elements.isNotEmpty ? _elements.first.id : null;
+      selectedElementId = _elements.isNotEmpty ? _elements.first.id : null;
     }
     return restored;
   }
@@ -165,8 +168,7 @@ class CanvasElementManager {
     if (restored != null) {
       _elements = restored;
       _updateCache();
-      selectedElementId =
-          _elements.isNotEmpty ? _elements.first.id : null;
+      selectedElementId = _elements.isNotEmpty ? _elements.first.id : null;
     }
     return restored;
   }

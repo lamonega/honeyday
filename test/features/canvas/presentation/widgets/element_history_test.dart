@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
@@ -13,6 +15,50 @@ CanvasWidgetData _el(String id, {double x = 0}) => CanvasWidgetData(
 
 void main() {
   group('ElementHistory', () {
+    test('content rebasing preserves geometry and style undo', () {
+      final history = ElementHistory();
+      final original = _el('a')
+          .copyWith(configJson: '{"text":"old","color":"red"}');
+      final moved = original.copyWith(position: const Offset(50, 0));
+      history.push([original]);
+      history.push([moved]);
+      final blue = moved.copyWith(configJson: '{"text":"old","color":"blue"}');
+      final current = history.undo([blue])!;
+      history.rebaseConfig(
+        elementId: 'a',
+        beforeJson: original.configJson,
+        afterJson: '{"text":"new","color":"red"}',
+      );
+      final updated = current.single.copyWith(
+        configJson: '{"text":"new","color":"red"}',
+      );
+      final redone = history.redo([updated])!;
+      expect(jsonDecode(redone.single.configJson), {
+        'text': 'new',
+        'color': 'blue',
+      });
+      final undoneStyle = history.undo(redone)!;
+      expect(jsonDecode(undoneStyle.single.configJson), {
+        'text': 'new',
+        'color': 'red',
+      });
+      final undoneMove = history.undo(undoneStyle)!;
+      expect(undoneMove.single.position, Offset.zero);
+      expect(jsonDecode(undoneMove.single.configJson)['text'], 'new');
+    });
+
+    test('rebasing removes deleted config keys from snapshots', () {
+      final history = ElementHistory();
+      final original = _el('a').copyWith(configJson: '{"text":"old"}');
+      history.push([original]);
+      history.rebaseConfig(
+        elementId: 'a',
+        beforeJson: original.configJson,
+        afterJson: '{}',
+      );
+      expect(jsonDecode(history.undo([original])!.single.configJson), isEmpty);
+    });
+
     test('starts with canUndo=false and canRedo=false', () {
       final history = ElementHistory();
       expect(history.canUndo, isFalse);
