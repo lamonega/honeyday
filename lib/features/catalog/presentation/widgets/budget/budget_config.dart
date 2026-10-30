@@ -79,30 +79,26 @@ class BudgetConfig {
   });
 
   factory BudgetConfig.fromJsonString(String rawJson) {
-    if (rawJson.trim().isEmpty) {
+    try {
+      final decoded = jsonDecode(rawJson);
+      if (decoded is! Map<String, dynamic>) return BudgetConfig.defaultConfig();
+      final rawEntries = decoded['entries'];
+      if (rawEntries != null && rawEntries is! List) {
+        return BudgetConfig.defaultConfig();
+      }
+      return BudgetConfig(
+        title: decoded['title']?.toString() ?? '',
+        currency: decoded['currency']?.toString() ?? r'$',
+        entries: rawEntries == null
+            ? BudgetConfig.defaultConfig().entries
+            : (rawEntries as List)
+                  .whereType<Map<String, dynamic>>()
+                  .map(BudgetEntryItem.fromJson)
+                  .toList(),
+      );
+    } on Object {
       return BudgetConfig.defaultConfig();
     }
-    try {
-      final dynamic decoded = jsonDecode(rawJson);
-      if (decoded is Map<String, dynamic>) {
-        final title = decoded['title']?.toString() ?? '';
-        final currency = decoded['currency']?.toString() ?? r'$';
-        final rawEntries = decoded['entries'] as List<dynamic>? ?? const [];
-        final entries = rawEntries
-            .whereType<Map<String, dynamic>>()
-            .map(BudgetEntryItem.fromJson)
-            .toList();
-
-        return BudgetConfig(
-          title: title,
-          currency: currency,
-          entries: entries.isNotEmpty
-              ? entries
-              : BudgetConfig.defaultConfig().entries,
-        );
-      }
-    } on Object catch (_) {}
-    return BudgetConfig.defaultConfig();
   }
 
   factory BudgetConfig.defaultConfig() {

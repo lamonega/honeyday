@@ -60,28 +60,27 @@ class CalendarGridConfig {
   /// Returns [CalendarGridConfig.defaultConfig] if the string is empty or
   /// cannot be decoded.
   factory CalendarGridConfig.fromJsonString(String rawJson) {
-    if (rawJson.trim().isEmpty) {
+    try {
+      final decoded = jsonDecode(rawJson);
+      if (decoded is! Map<String, dynamic>) {
+        return CalendarGridConfig.defaultConfig();
+      }
+      final rawHabits = decoded['habits'];
+      if (rawHabits != null && rawHabits is! List) {
+        return CalendarGridConfig.defaultConfig();
+      }
+      return CalendarGridConfig(
+        title: decoded['title']?.toString() ?? '',
+        habits: rawHabits == null
+            ? CalendarGridConfig.defaultConfig().habits
+            : (rawHabits as List)
+                  .whereType<Map<String, dynamic>>()
+                  .map(HabitRowItem.fromJson)
+                  .toList(),
+      );
+    } on Object {
       return CalendarGridConfig.defaultConfig();
     }
-    try {
-      final dynamic decoded = jsonDecode(rawJson);
-      if (decoded is Map<String, dynamic>) {
-        final title = decoded['title']?.toString() ?? '';
-        final rawList = decoded['habits'] as List<dynamic>? ?? const [];
-        final habits = rawList
-            .whereType<Map<String, dynamic>>()
-            .map(HabitRowItem.fromJson)
-            .toList();
-
-        return CalendarGridConfig(
-          title: title,
-          habits: habits.isNotEmpty
-              ? habits
-              : CalendarGridConfig.defaultConfig().habits,
-        );
-      }
-    } on Object catch (_) {}
-    return CalendarGridConfig.defaultConfig();
   }
 
   /// The default configuration with three sample habits.
