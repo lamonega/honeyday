@@ -306,14 +306,17 @@ Uint8List _syntheticPage() {
 
 void _hline(Uint8List rgba, int y, int from, int to, int thickness, int r,
     int g, int b) {
+  final startX = from.clamp(0, _width).toInt();
+  final endX = to.clamp(0, _width).toInt();
   for (var dy = 0; dy < thickness; dy++) {
-    final row = (y + dy) * _width;
-    if (row < 0 || row >= _height) continue;
-    for (var x = from; x < to; x++) {
-      final i = (row + x) * 4;
-      rgba[i] = r;
-      rgba[i + 1] = g;
-      rgba[i + 2] = b;
+    final rowY = y + dy;
+    if (rowY < 0 || rowY >= _height) continue;
+    final rowOffset = rowY * _width;
+    for (var x = startX; x < endX; x++) {
+      final index = (rowOffset + x) * 4;
+      rgba[index] = r;
+      rgba[index + 1] = g;
+      rgba[index + 2] = b;
     }
   }
 }
