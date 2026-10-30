@@ -10,6 +10,14 @@ import 'package:honeyday/features/canvas/presentation/widgets/toolbar/toolbar_un
 /// Border radius of the floating ink toolbar.
 const double kToolbarBorderRadius = 28;
 
+Widget horizontallyScrollableInkControls(Widget controls) {
+  return SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    primary: false,
+    child: controls,
+  );
+}
+
 /// Minimal floating toolbar for ink tools.
 ///
 /// Composes the tool selector, colour palette, stroke-width slider and
@@ -41,45 +49,47 @@ class CanvasFloatingToolbar extends ConsumerWidget {
           borderRadius: BorderRadius.circular(kToolbarBorderRadius),
           border: Border.all(color: colorScheme.outline.withValues(alpha: 0.5)),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ToolbarToolSelector(
-              selectedTool: inkState.tool,
-              onToolSelected: (tool) =>
-                  ref.read(inkToolProvider.notifier).selectTool(tool),
-            ),
-
-            if (showWidthSlider) ...[
-              const ToolbarDivider(),
-              ToolbarStrokeWidthSlider(
-                strokeWidth: inkState.strokeWidth,
-                tool: inkState.tool,
-                onChanged: (w) =>
-                    ref.read(inkToolProvider.notifier).setStrokeWidth(w),
+        child: horizontallyScrollableInkControls(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ToolbarToolSelector(
+                selectedTool: inkState.tool,
+                onToolSelected: (tool) =>
+                    ref.read(inkToolProvider.notifier).selectTool(tool),
               ),
-            ],
 
-            const ToolbarDivider(),
+              if (showWidthSlider) ...[
+                const ToolbarDivider(),
+                ToolbarStrokeWidthSlider(
+                  strokeWidth: inkState.strokeWidth,
+                  tool: inkState.tool,
+                  onChanged: (w) =>
+                      ref.read(inkToolProvider.notifier).setStrokeWidth(w),
+                ),
+              ],
 
-            ToolbarColorPalette(
-              selectedColor: inkState.color,
-              onColorSelected: (c) =>
-                  ref.read(inkToolProvider.notifier).setColor(c),
-            ),
-
-            const ToolbarDivider(),
-
-            ToolbarUndoRedo(inkController: inkController),
-
-            if (onCloseWriting != null) ...[
               const ToolbarDivider(),
-              ToolbarToolBtn(
-                icon: Icons.check_rounded,
-                onTap: onCloseWriting,
+
+              ToolbarColorPalette(
+                selectedColor: inkState.color,
+                onColorSelected: (c) =>
+                    ref.read(inkToolProvider.notifier).setColor(c),
               ),
+
+              const ToolbarDivider(),
+
+              ToolbarUndoRedo(inkController: inkController),
+
+              if (onCloseWriting != null) ...[
+                const ToolbarDivider(),
+                ToolbarToolBtn(
+                  icon: Icons.check_rounded,
+                  onTap: onCloseWriting,
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
