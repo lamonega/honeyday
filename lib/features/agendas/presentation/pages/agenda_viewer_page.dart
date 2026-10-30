@@ -73,6 +73,10 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
 
   @override
   void dispose() {
+    for (final controller in _pageControllers.values) {
+      controller.removeListener(_onPageHistoryChanged);
+    }
+    _pageControllers.clear();
     _pageController.dispose();
     _saveSession.dispose();
     super.dispose();
@@ -128,6 +132,20 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     final pages = pagesAsync.value;
     if (pages == null || _currentPageIndex >= pages.length) return null;
     return pages[_currentPageIndex].id;
+  }
+
+  void _onPageHistoryChanged() {
+    if (mounted) setState(() {});
+  }
+
+  void _registerPageController(String pageId, PageCanvasController controller) {
+    if (!mounted) return;
+    final previous = _pageControllers[pageId];
+    if (identical(previous, controller)) return;
+    previous?.removeListener(_onPageHistoryChanged);
+    _pageControllers[pageId] = controller;
+    controller.addListener(_onPageHistoryChanged);
+    setState(() {});
   }
 
   bool get _canUndo => _currentPageController?.canUndo ?? false;
@@ -477,7 +495,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                     currentMode: CanvasMode.edit,
                     canvasControllers: _pageControllers,
                     strokesVisible: _strokesVisible,
-                    onControllerCreated: (c) => _pageControllers[page.id] = c,
+                    onControllerCreated: (c) => _registerPageController(page.id, c),
                   );
                 },
               ),
@@ -551,7 +569,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                         // Register in every mode: writing-mode config
                         // edits need the controller to sync the manager.
                         onControllerCreated: (c) =>
-                            _pageControllers[page.id] = c,
+                            _registerPageController(page.id, c),
                       );
                     }
 
@@ -625,7 +643,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                         canvasControllers: _pageControllers,
                         strokesVisible: _strokesVisible,
                         onControllerCreated: (c) =>
-                            _pageControllers[page.id] = c,
+                            _registerPageController(page.id, c),
                       ),
                     );
                   },

@@ -5,9 +5,9 @@ import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode_notifier.dart';
 import 'package:honeyday/features/canvas/domain/ink_tool.dart';
-import 'package:honeyday/features/canvas/domain/writing_input.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
+import 'package:honeyday/features/canvas/domain/writing_input.dart';
 import 'package:honeyday/features/canvas/presentation/canvas/snapping.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/canvas/canvas_gesture_layer.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/canvas/canvas_grid_overlay.dart';
@@ -98,8 +98,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
     _pageController.undoElementsCallback = undoElements;
     _pageController.redoElementsCallback = redoElements;
     _pageController.addElementCallback = _addElement;
-    _pageController.configSyncCallback =
-        _elementManager.handleConfigChanged;
+    _pageController.configSyncCallback = _elementManager.handleConfigChanged;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onControllerCreated?.call(_pageController);
     });
@@ -129,6 +128,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
 
   void _handleTransformEnded() {
     _transformActive = false;
+    _pageController.notifyElementHistoryChanged();
   }
 
   void _handleTransformChanged(
@@ -154,6 +154,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
     });
     widget.onElementDeleted?.call(elementId);
     widget.onDirty?.call();
+    _pageController.notifyElementHistoryChanged();
   }
 
   void _handleAdaptToPage(String elementId) {
@@ -195,12 +196,11 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
   /// concurrent deletion), matching the guards used before the manager
   /// extraction.
   void _notifyElementUpdated(String elementId) {
-    final index = _elementManager.elements.indexWhere(
-      (e) => e.id == elementId,
-    );
+    final index = _elementManager.elements.indexWhere((e) => e.id == elementId);
     if (index != -1) {
       widget.onElementUpdated?.call(_elementManager.elements[index]);
       widget.onDirty?.call();
+      _pageController.notifyElementHistoryChanged();
     }
   }
 
@@ -210,6 +210,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
     });
     widget.onElementUpdated?.call(element);
     widget.onDirty?.call();
+    _pageController.notifyElementHistoryChanged();
   }
 
   void _persistHistoryTransition(
@@ -240,6 +241,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
     _persistHistoryTransition(before, after);
     setState(() {});
     widget.onDirty?.call();
+    _pageController.notifyElementHistoryChanged();
   }
 
   void redoElements() {
@@ -249,13 +251,17 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
     _persistHistoryTransition(before, after);
     setState(() {});
     widget.onDirty?.call();
+    _pageController.notifyElementHistoryChanged();
   }
 
   void _duplicateElement(CanvasWidgetData source) {
-    _addElement(source.copyWith(
-      id: _uuid.v4(),
-      position: source.position + const Offset(kDuplicateOffset, kDuplicateOffset),
-    ));
+    _addElement(
+      source.copyWith(
+        id: _uuid.v4(),
+        position:
+            source.position + const Offset(kDuplicateOffset, kDuplicateOffset),
+      ),
+    );
   }
 
   List<Widget> _buildElementLayers(CanvasMode mode) {
@@ -296,13 +302,11 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
         onDuplicate: () => _duplicateElement(element),
         onColorChanged: (fill, border) =>
             _handleColorChanged(element.id, fill, border),
-        currentColor:
-            ElementConfig.fromJsonString(element.configJson).fillColor,
-        child: widget.elementBuilder?.call(context, element) ??
-            _buildDefaultElementCard(
-              element,
-              Theme.of(context).colorScheme,
-            ),
+        currentColor: ElementConfig.fromJsonString(element.configJson)
+            .fillColor,
+        child:
+            widget.elementBuilder?.call(context, element) ??
+            _buildDefaultElementCard(element, Theme.of(context).colorScheme),
       );
     }).toList();
   }
@@ -324,8 +328,9 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                 Center(
                   child: MediaQuery(
                     data: MediaQuery.of(context).copyWith(
-                      gestureSettings:
-                          const DeviceGestureSettings(touchSlop: kCanvasTouchSlop),
+                      gestureSettings: const DeviceGestureSettings(
+                        touchSlop: kCanvasTouchSlop,
+                      ),
                     ),
                     child: CanvasPageShadow(
                       pageSize: widget.pageSize,
@@ -374,7 +379,9 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
                           CanvasFloatingToolbar(
                             inkController: _pageController.ink,
                             onCloseWriting: () {
-                              ref.read(canvasModeProvider.notifier).setReading();
+                              ref
+                                  .read(canvasModeProvider.notifier)
+                                  .setReading();
                             },
                           ),
                         ],

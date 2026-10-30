@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode_notifier.dart';
 import 'package:honeyday/features/canvas/presentation/pages/page_view_canvas.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/page_canvas_controller.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/page_surface.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/transformable_box.dart';
 
@@ -11,6 +12,42 @@ import '../../../../helpers/pump_app.dart';
 
 void main() {
   group('PageViewCanvas Multi-Layer Stack Tests', () {
+    testWidgets('element mutations notify history listeners', (tester) async {
+      PageCanvasController? controller;
+      await tester.pumpWidget(
+        ProviderScope(
+          child: testMaterialApp(
+            home: Scaffold(
+              body: PageViewCanvas(
+                pageId: 'page-1',
+                onControllerCreated: (value) => controller = value,
+              ),
+            ),
+          ),
+        ),
+      );
+      var changes = 0;
+      controller!.addListener(() => changes++);
+      controller!.addElement(
+        const CanvasWidgetData(
+          id: 'element',
+          pageId: 'page-1',
+          widgetType: 'text_box',
+          position: Offset.zero,
+          size: Size(200, 150),
+        ),
+      );
+      expect(changes, 1);
+      expect(controller!.canUndoElements, isTrue);
+      controller!.undoElements();
+      expect(changes, 2);
+      expect(controller!.canRedoElements, isTrue);
+      controller!.redoElements();
+      expect(changes, 3);
+      expect(controller!.canUndoElements, isTrue);
+      await tester.pump();
+    });
+
     testWidgets(
       'renders all 3 primary layers (PageSurface, Modular Widgets, InkCanvas)',
       (tester) async {

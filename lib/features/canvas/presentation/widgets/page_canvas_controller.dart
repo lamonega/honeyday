@@ -39,6 +39,9 @@ class PageCanvasController extends ChangeNotifier {
 
   // --- Element undo/redo ---
 
+  /// Notifies listeners after the canvas completes an element history change.
+  void notifyElementHistoryChanged() => notifyListeners();
+
   bool get canUndoElements => _elementHistory.canUndo;
   bool get canRedoElements => _elementHistory.canRedo;
 
@@ -46,7 +49,8 @@ class PageCanvasController extends ChangeNotifier {
   void redoElements() => redoElementsCallback?.call();
 
   /// Adds an element to the local canvas state (with undo history).
-  void addElement(CanvasWidgetData element) => addElementCallback?.call(element);
+  void addElement(CanvasWidgetData element) =>
+      addElementCallback?.call(element);
 
   /// Pushes a widget-level config edit into the element manager so later
   /// full-row transform writes (drags, color changes) don't revert it.
