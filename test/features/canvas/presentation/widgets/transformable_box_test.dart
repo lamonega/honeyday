@@ -1,13 +1,58 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/static_element_box.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/transform/transform_handles.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/transformable_box.dart';
 
 import '../../../../helpers/pump_app.dart';
 
 void main() {
   group('TransformableBox Tests', () {
+    testWidgets('rotation keeps content corners fixed across modes', (
+      tester,
+    ) async {
+      const contentKey = ValueKey('rotation-content');
+      Future<List<Offset>> corners(CanvasMode mode) async {
+        await tester.pumpWidget(
+          testMaterialApp(
+            home: Scaffold(
+              body: Stack(
+                children: [
+                  TransformableBox(
+                    position: const Offset(150, 150),
+                    size: const Size(200, 150),
+                    rotation: math.pi / 2,
+                    canvasMode: mode,
+                    child: const SizedBox.expand(key: contentKey),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+        final box = tester.renderObject<RenderBox>(
+          mode == CanvasMode.edit
+              ? find.byType(SelectionOutline)
+              : find.byKey(contentKey),
+        );
+        return [
+          box.localToGlobal(Offset.zero),
+          box.localToGlobal(Offset(box.size.width, 0)),
+          box.localToGlobal(Offset(0, box.size.height)),
+          box.localToGlobal(Offset(box.size.width, box.size.height)),
+        ];
+      }
+
+      final editing = await corners(CanvasMode.edit);
+      final reading = await corners(CanvasMode.reading);
+      for (var i = 0; i < editing.length; i++) {
+        expect((editing[i] - reading[i]).distance, lessThan(0.001));
+      }
+    });
+
     testWidgets(
       'renders pure child without transform handles in writing mode',
       (tester) async {

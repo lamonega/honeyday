@@ -129,8 +129,7 @@ class _TransformableBoxState extends State<TransformableBox>
     }
 
     final pageHeight = widget.pageSize?.height ?? kDefaultPageHeight;
-    final isLarge =
-        widget.size.height > (pageHeight * kLargeElementThreshold);
+    final isLarge = widget.size.height > (pageHeight * kLargeElementThreshold);
     final isNearBottom =
         (widget.position.dy + widget.size.height) >
         (pageHeight - kNearBottomThreshold);
@@ -141,17 +140,22 @@ class _TransformableBoxState extends State<TransformableBox>
     } else if (isNearBottom) {
       barTop = kTransformTopMargin + kBarTopOffsetNearBottom;
     } else {
-      barTop =
-          kTransformTopMargin + widget.size.height + kBarTopOffsetDefault;
+      barTop = kTransformTopMargin + widget.size.height + kBarTopOffsetDefault;
     }
+
+    final rotationOrigin = Offset(
+      kTransformHMargin + widget.size.width / 2,
+      kTransformTopMargin + widget.size.height / 2,
+    );
 
     return Positioned(
       left: widget.position.dx - kTransformHMargin,
       top: widget.position.dy - kTransformTopMargin,
       width: widget.size.width + kTransformHMargin * 2,
       height: widget.size.height + kTransformTopMargin + kTransformBottomMargin,
-      child: Transform.rotate(
-        angle: widget.rotation,
+      child: Transform(
+        transform: Matrix4.rotationZ(widget.rotation),
+        origin: rotationOrigin,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -184,13 +188,16 @@ class _TransformableBoxState extends State<TransformableBox>
                 child: const SelectionStem(),
               ),
               Positioned(
-                left: kTransformHMargin +
+                left:
+                    kTransformHMargin +
                     widget.size.width / 2 -
                     kHandleCircleSize / 2,
                 top: kTransformTopMargin - kRotationHandleTopOffset,
                 child: RotationHandle(
                   onPanStart: (_) {
-                    updateGlobalCenter(context.findRenderObject() as RenderBox?);
+                    updateGlobalCenter(
+                      context.findRenderObject() as RenderBox?,
+                    );
                     widget.onTransformStarted?.call();
                   },
                   onPanUpdate: handleRotationPanUpdate,
@@ -204,7 +211,8 @@ class _TransformableBoxState extends State<TransformableBox>
               // dot (which sits on the element's top-right corner and is
               // painted above it), swallowing taps meant for deletion.
               Positioned(
-                left: kTransformHMargin +
+                left:
+                    kTransformHMargin +
                     widget.size.width -
                     kHandleCircleSize / 2,
                 top: kTransformTopMargin - kRotationHandleTopOffset,
@@ -216,7 +224,8 @@ class _TransformableBoxState extends State<TransformableBox>
                 left: 0,
                 top: 0,
                 width: widget.size.width + kTransformHMargin * 2,
-                height: widget.size.height +
+                height:
+                    widget.size.height +
                     kTransformTopMargin +
                     kTransformBottomMargin,
                 child: ResizeHandles(
@@ -244,9 +253,10 @@ class _TransformableBoxState extends State<TransformableBox>
                     child: CanvasActionBar(
                       showColorPalette: _transformState.showColorPalette,
                       onTogglePalette: () {
-                        setState(() =>
-                            _transformState.showColorPalette =
-                                !_transformState.showColorPalette);
+                        setState(
+                          () => _transformState.showColorPalette =
+                              !_transformState.showColorPalette,
+                        );
                       },
                       currentColor: widget.currentColor,
                       onColorChanged: widget.onColorChanged,
