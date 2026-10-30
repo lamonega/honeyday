@@ -167,17 +167,14 @@ class _BudgetWidgetState extends State<BudgetWidget> {
     return val.toStringAsFixed(val.truncateToDouble() == val ? 0 : 2);
   }
 
-  String _localizedDescription(String desc, AppLocalizations l10n) {
-    if (desc.isEmpty || desc == l10n.catalogBudgetDefaultIncome) {
-      return l10n.catalogBudgetDefaultIncome;
-    }
-    if (desc == l10n.catalogBudgetDefaultExpense1) {
-      return l10n.catalogBudgetDefaultExpense1;
-    }
-    if (desc == l10n.catalogBudgetDefaultExpense2) {
-      return l10n.catalogBudgetDefaultExpense2;
-    }
-    return desc;
+  String _localizedDescription(BudgetEntryItem entry, AppLocalizations l10n) {
+    if (entry.description.isNotEmpty) return entry.description;
+    return switch (entry.id) {
+      '1' => l10n.catalogBudgetDefaultIncome,
+      '2' => l10n.catalogBudgetDefaultExpense1,
+      '3' => l10n.catalogBudgetDefaultExpense2,
+      _ => '',
+    };
   }
 
   @override
@@ -237,10 +234,7 @@ class _BudgetWidgetState extends State<BudgetWidget> {
               itemCount: _config.entries.length,
               itemBuilder: (context, index) {
                 final entry = _config.entries[index];
-                final displayDesc = _localizedDescription(
-                  entry.description,
-                  l10n,
-                );
+                final displayDesc = _localizedDescription(entry, l10n);
 
                 return BudgetEntryRow(
                   entry: entry,

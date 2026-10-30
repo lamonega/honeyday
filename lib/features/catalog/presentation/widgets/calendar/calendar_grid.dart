@@ -53,10 +53,7 @@ class CalendarGrid extends StatelessWidget {
             itemCount: habits.length,
             itemBuilder: (context, habitIndex) {
               final habit = habits[habitIndex];
-              final displayHabitTitle = _localizedHabitTitle(
-                habit.title,
-                l10n,
-              );
+              final displayHabitTitle = _localizedHabitTitle(habit, l10n);
 
               return CalendarHabitRow(
                 habit: habit,
@@ -64,8 +61,7 @@ class CalendarGrid extends StatelessWidget {
                 displayTitle: displayHabitTitle,
                 onToggleCheck: (dayIndex) =>
                     onToggleCheck(habitIndex, dayIndex),
-                onEditTitle: (newTitle) =>
-                    onEditTitle(habitIndex, newTitle),
+                onEditTitle: (newTitle) => onEditTitle(habitIndex, newTitle),
                 onRemove: () => onRemoveHabit(habitIndex),
               );
             },
@@ -100,16 +96,13 @@ class CalendarGrid extends StatelessWidget {
   }
 
   /// Resolves a habit title against known localized defaults.
-  String _localizedHabitTitle(String title, AppLocalizations l10n) {
-    if (title.isEmpty || title == l10n.catalogHabitsDefault1) {
-      return l10n.catalogHabitsDefault1;
-    }
-    if (title == l10n.catalogHabitsDefault2) {
-      return l10n.catalogHabitsDefault2;
-    }
-    if (title == l10n.catalogHabitsDefault3) {
-      return l10n.catalogHabitsDefault3;
-    }
-    return title;
+  String _localizedHabitTitle(HabitRowItem habit, AppLocalizations l10n) {
+    if (habit.title.isNotEmpty) return habit.title;
+    return switch (habit.id) {
+      '1' => l10n.catalogHabitsDefault1,
+      '2' => l10n.catalogHabitsDefault2,
+      '3' => l10n.catalogHabitsDefault3,
+      _ => '',
+    };
   }
 }

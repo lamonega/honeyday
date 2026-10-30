@@ -156,17 +156,17 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
     return date;
   }
 
-  String _localizedPriorityText(String text, AppLocalizations l10n) {
-    if (text.isEmpty || text == l10n.catalogJournalPriority1) {
-      return l10n.catalogJournalPriority1;
-    }
-    if (text == l10n.catalogJournalPriority2) {
-      return l10n.catalogJournalPriority2;
-    }
-    if (text == l10n.catalogJournalPriority3) {
-      return l10n.catalogJournalPriority3;
-    }
-    return text;
+  String _localizedPriorityText(
+    JournalPriorityItem priority,
+    AppLocalizations l10n,
+  ) {
+    if (priority.text.isNotEmpty) return priority.text;
+    return switch (priority.id) {
+      '1' => l10n.catalogJournalPriority1,
+      '2' => l10n.catalogJournalPriority2,
+      '3' => l10n.catalogJournalPriority3,
+      _ => '',
+    };
   }
 
   String _localizedNotes(String notes, AppLocalizations l10n) {
@@ -248,7 +248,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
             isInteractive: widget.isInteractive,
             onToggle: _togglePriority,
             onTextChanged: _editPriorityText,
-            localizeText: (text) => _localizedPriorityText(text, l10n),
+            localizeText: (priority) => _localizedPriorityText(priority, l10n),
             headerText: l10n.catalogJournalPrioritiesHeader,
           ),
           const SizedBox(height: 8),

@@ -29,8 +29,8 @@ class JournalPriorityList extends StatelessWidget {
   /// Called when a priority text is edited. Receives the item index and new text.
   final void Function(int index, String text) onTextChanged;
 
-  /// Returns the localized display text for a given raw priority text.
-  final String Function(String text) localizeText;
+  /// Returns the localized display text for a priority's identity and text.
+  final String Function(JournalPriorityItem priority) localizeText;
 
   /// The header label displayed above the priority items.
   final String headerText;
@@ -59,7 +59,7 @@ class JournalPriorityList extends StatelessWidget {
             isInteractive: isInteractive,
             onToggle: () => onToggle(index),
             onTextChanged: (val) => onTextChanged(index, val),
-            localizedText: localizeText(priority.text),
+            localizedText: localizeText(priority),
           );
         }),
       ],
