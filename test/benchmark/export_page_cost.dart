@@ -70,14 +70,22 @@ Future<void> main() async {
   await _matrix(raster);
 
   stdout
-    ..writeln('\nRead these as: CPU per page, and how often the UI isolate '
-        'could run a callback.')
-    ..writeln('The page is a flat cream sheet with rules and 900 hard-edged '
-        'strokes, so')
-    ..writeln('the KiB are smaller than a real page carrying antialiased text '
-        'and ink;')
-    ..writeln('the ratio between the two pipelines is the number that '
-        'transfers.');
+    ..writeln(
+      '\nRead these as: CPU per page, and how often the UI isolate '
+      'could run a callback.',
+    )
+    ..writeln(
+      'The page is a flat cream sheet with rules and 900 hard-edged '
+      'strokes, so',
+    )
+    ..writeln(
+      'the KiB are smaller than a real page carrying antialiased text '
+      'and ink;',
+    )
+    ..writeln(
+      'the ratio between the two pipelines is the number that '
+      'transfers.',
+    );
 }
 
 /// ---------------------------------------------------------------------------
@@ -117,8 +125,8 @@ Future<void> _before(Uint8List rgba) async {
   ticks.stop();
   saveWatch.stop();
 
-  final perPage = (saveWatch.elapsedMilliseconds + encodeWatch.elapsedMilliseconds) ~/
-      _pages;
+  final perPage =
+      encodeWatch.elapsedMilliseconds + saveWatch.elapsedMilliseconds ~/ _pages;
   _report('BEFORE document.save', saveWatch, bytes.length);
   stdout
     ..writeln(
@@ -146,7 +154,6 @@ Future<void> _after(Uint8List rgba) async {
   );
   workerWatch.stop();
   _report('AFTER  encodePageImage', workerWatch, stream.length);
-
 
   // The same work repeated per page, with the UI isolate kept alive by a probe,
   // is the shape of the real export: the pool parks the capture loop while a
@@ -186,8 +193,10 @@ Future<void> _matrix(Uint8List rgba) async {
   final stripped = filterPageRows(page).rows;
   final up = _upFilter(stripped, _width, _height);
 
-  stdout.writeln('\nImage stream size, one page, by PNG row filter and '
-      'deflate level');
+  stdout.writeln(
+    '\nImage stream size, one page, by PNG row filter and '
+    'deflate level',
+  );
   for (final level in const [1, 3, 6]) {
     for (final entry in <({String name, Uint8List rows})>[
       (name: 'none', rows: stripped),
@@ -203,8 +212,10 @@ Future<void> _matrix(Uint8List rgba) async {
       );
     }
   }
-  stdout.writeln('  (level 6 + none is what ships: same size the old '
-      'pipeline produced, none of it on the UI isolate)');
+  stdout.writeln(
+    '  (level 6 + none is what ships: same size the old '
+    'pipeline produced, none of it on the UI isolate)',
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -273,8 +284,11 @@ Uint8List _syntheticPage() {
   final right = (_width * (1 - margin)).round();
 
   // Ruled lines, every 3.5% of the height, 2 px, in a muted pencil tone.
-  for (var y = (_height * 0.14).round(); y < _height * 0.94; y +=
-      (_height * 0.035).round()) {
+  for (
+    var y = (_height * 0.14).round();
+    y < _height * 0.94;
+    y += (_height * 0.035).round()
+  ) {
     _hline(rgba, y, left, right, 2, 0xB9, 0xA9, 0x8C);
   }
   // Header block.
@@ -304,8 +318,16 @@ Uint8List _syntheticPage() {
   return rgba;
 }
 
-void _hline(Uint8List rgba, int y, int from, int to, int thickness, int r,
-    int g, int b) {
+void _hline(
+  Uint8List rgba,
+  int y,
+  int from,
+  int to,
+  int thickness,
+  int r,
+  int g,
+  int b,
+) {
   final startX = from.clamp(0, _width).toInt();
   final endX = to.clamp(0, _width).toInt();
   for (var dy = 0; dy < thickness; dy++) {
@@ -322,8 +344,17 @@ void _hline(Uint8List rgba, int y, int from, int to, int thickness, int r,
 }
 
 /// Thick Bresenham line; a real pen stroke, near enough for the histogram.
-void _line(Uint8List rgba, int x0, int y0, int x1, int y1, int thickness,
-    int r, int g, int b) {
+void _line(
+  Uint8List rgba,
+  int x0,
+  int y0,
+  int x1,
+  int y1,
+  int thickness,
+  int r,
+  int g,
+  int b,
+) {
   final steps = (x1 - x0).abs() > (y1 - y0).abs()
       ? (x1 - x0).abs()
       : (y1 - y0).abs();
@@ -357,8 +388,12 @@ void _line(Uint8List rgba, int x0, int y0, int x1, int y1, int thickness,
 /// What: signature + IHDR + IDAT + IEND, CRC32 per chunk, zlib container on the
 /// filtered rows. Skia emits the same shape for this pipeline, which is why the
 /// old code could hand it straight to `package:image`'s decoder.
-Uint8List _encodePng(Uint8List rgba, int width, int height,
-    {int deflateLevel = 6}) {
+Uint8List _encodePng(
+  Uint8List rgba,
+  int width,
+  int height, {
+  int deflateLevel = 6,
+}) {
   final stride = width * 3;
   final rows = Uint8List(height * (stride + 1));
   final previous = Uint8List(stride);
@@ -383,9 +418,7 @@ Uint8List _encodePng(Uint8List rgba, int width, int height,
     ..add(_be32(width))
     ..add(_be32(height))
     ..add(const <int>[8, 2, 0, 0, 0]); // 8-bit, truecolour RGB.
-  final idat = Uint8List.fromList(
-    ZLibCodec(level: deflateLevel).encode(rows),
-  );
+  final idat = Uint8List.fromList(ZLibCodec(level: deflateLevel).encode(rows));
   chunks
     ..add(_chunk('IHDR', ihdr.takeBytes()))
     ..add(_chunk('IDAT', idat))
