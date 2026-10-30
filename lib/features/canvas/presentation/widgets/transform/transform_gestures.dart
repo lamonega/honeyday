@@ -114,8 +114,7 @@ mixin TransformGestureMixin {
         isCurrentlySnapped:
             transformState.lastSnapResult?.guides.isNotEmpty == true,
       );
-      transformState.lastSnapResult =
-          snap.guides.isNotEmpty ? snap : null;
+      transformState.lastSnapResult = snap.guides.isNotEmpty ? snap : null;
       onTransformChanged?.call(
         snap.snappedPosition,
         currentSize,
@@ -124,11 +123,7 @@ mixin TransformGestureMixin {
       onSnapGuidesChanged?.call(snap.guides);
     } else {
       transformState.lastSnapResult = null;
-      onTransformChanged?.call(
-        rawCandidate,
-        currentSize,
-        currentRotation,
-      );
+      onTransformChanged?.call(rawCandidate, currentSize, currentRotation);
       onSnapGuidesChanged?.call(const []);
     }
   }
@@ -155,78 +150,59 @@ mixin TransformGestureMixin {
 
   // ── Resize (corner handlers) ──
 
-  /// Handles resize from the **south-east** corner (width/height grow).
-  void handleResizeSE(DragUpdateDetails details) {
-    final newWidth = math.max(
+  void _resizeCorner(
+    DragUpdateDetails details, {
+    required bool fromLeft,
+    required bool fromTop,
+  }) {
+    // The gesture delta is already in the rotated element's local axes.
+    final oldSize = currentSize;
+    final width = math.max(
       minWidth,
-      currentSize.width + details.delta.dx,
+      oldSize.width + (fromLeft ? -details.delta.dx : details.delta.dx),
     );
-    final newHeight = math.max(
+    final height = math.max(
       minHeight,
-      currentSize.height + details.delta.dy,
+      oldSize.height + (fromTop ? -details.delta.dy : details.delta.dy),
     );
-    onTransformChanged?.call(
-      currentPosition,
-      Size(newWidth, newHeight),
-      currentRotation,
+    final newSize = Size(width, height);
+    final dw = width - oldSize.width;
+    final dh = height - oldSize.height;
+    final localCenterShift = Offset(
+      (fromLeft ? -dw : dw) / 2,
+      (fromTop ? -dh : dh) / 2,
     );
+    final cosine = math.cos(currentRotation);
+    final sine = math.sin(currentRotation);
+    final pageCenterShift = Offset(
+      localCenterShift.dx * cosine - localCenterShift.dy * sine,
+      localCenterShift.dx * sine + localCenterShift.dy * cosine,
+    );
+    final oldCenter =
+        currentPosition + Offset(oldSize.width / 2, oldSize.height / 2);
+    final newPosition =
+        oldCenter +
+        pageCenterShift -
+        Offset(newSize.width / 2, newSize.height / 2);
+    onTransformChanged?.call(newPosition, newSize, currentRotation);
   }
+
+  /// Handles resize from the south-east corner.
+  void handleResizeSE(DragUpdateDetails details) =>
+      _resizeCorner(details, fromLeft: false, fromTop: false);
 
   /// Handles resize from the **south-west** corner (width shrinks from left,
   /// height grows downward).
-  void handleResizeSW(DragUpdateDetails details) {
-    final newWidth = math.max(
-      minWidth,
-      currentSize.width - details.delta.dx,
-    );
-    final newHeight = math.max(
-      minHeight,
-      currentSize.height + details.delta.dy,
-    );
-    final deltaX = currentSize.width - newWidth;
-    onTransformChanged?.call(
-      currentPosition + Offset(deltaX, 0),
-      Size(newWidth, newHeight),
-      currentRotation,
-    );
-  }
+  void handleResizeSW(DragUpdateDetails details) =>
+      _resizeCorner(details, fromLeft: true, fromTop: false);
 
   /// Handles resize from the **north-east** corner (width grows rightward,
   /// height shrinks from top).
-  void handleResizeNE(DragUpdateDetails details) {
-    final newWidth = math.max(
-      minWidth,
-      currentSize.width + details.delta.dx,
-    );
-    final newHeight = math.max(
-      minHeight,
-      currentSize.height - details.delta.dy,
-    );
-    final deltaY = currentSize.height - newHeight;
-    onTransformChanged?.call(
-      currentPosition + Offset(0, deltaY),
-      Size(newWidth, newHeight),
-      currentRotation,
-    );
-  }
+  void handleResizeNE(DragUpdateDetails details) =>
+      _resizeCorner(details, fromLeft: false, fromTop: true);
 
   /// Handles resize from the **north-west** corner (width shrinks from left,
   /// height shrinks from top — both edges move).
-  void handleResizeNW(DragUpdateDetails details) {
-    final newWidth = math.max(
-      minWidth,
-      currentSize.width - details.delta.dx,
-    );
-    final newHeight = math.max(
-      minHeight,
-      currentSize.height - details.delta.dy,
-    );
-    final deltaX = currentSize.width - newWidth;
-    final deltaY = currentSize.height - newHeight;
-    onTransformChanged?.call(
-      currentPosition + Offset(deltaX, deltaY),
-      Size(newWidth, newHeight),
-      currentRotation,
-    );
-  }
+  void handleResizeNW(DragUpdateDetails details) =>
+      _resizeCorner(details, fromLeft: true, fromTop: true);
 }
