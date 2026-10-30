@@ -1,9 +1,36 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:honeyday/features/catalog/domain/element_config.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
+
+/// An icon that scales with the canvas element's finite bounds.
+class ScalableStickerIcon extends StatelessWidget {
+  const ScalableStickerIcon({
+    required this.icon,
+    required this.color,
+    this.angle = 0,
+    super.key,
+  });
+
+  final IconData icon;
+  final Color color;
+  final double angle;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.biggest.shortestSide * 0.8;
+        return Center(
+          child: Transform.rotate(
+            angle: angle,
+            child: Icon(icon, color: color, size: size),
+          ),
+        );
+      },
+    );
+  }
+}
 
 /// Definition for a heart sticker.
 class StickerHeartDefinition extends AgendaWidgetDefinition {
@@ -13,10 +40,12 @@ class StickerHeartDefinition extends AgendaWidgetDefinition {
   String get id => 'sticker_heart';
 
   @override
-  String name(BuildContext context) => AppLocalizations.of(context).catalogStickerHeart;
+  String name(BuildContext context) =>
+      AppLocalizations.of(context).catalogStickerHeart;
 
   @override
-  String description(BuildContext context) => AppLocalizations.of(context).catalogStickerHeartDesc;
+  String description(BuildContext context) =>
+      AppLocalizations.of(context).catalogStickerHeartDesc;
 
   @override
   ElementCategory get category => ElementCategory.stickers;
@@ -42,12 +71,9 @@ class StickerHeartDefinition extends AgendaWidgetDefinition {
     required ValueChanged<String> onConfigChanged,
   }) {
     final config = ElementConfig.fromJsonString(configJson);
-    return Center(
-      child: Icon(
-        Icons.favorite_rounded,
-        size: math.min(100, 64),
-        color: config.borderColor,
-      ),
+    return ScalableStickerIcon(
+      icon: Icons.favorite_rounded,
+      color: config.borderColor,
     );
   }
 }
@@ -60,10 +86,12 @@ class StickerStarDefinition extends AgendaWidgetDefinition {
   String get id => 'sticker_star';
 
   @override
-  String name(BuildContext context) => AppLocalizations.of(context).catalogStickerStar;
+  String name(BuildContext context) =>
+      AppLocalizations.of(context).catalogStickerStar;
 
   @override
-  String description(BuildContext context) => AppLocalizations.of(context).catalogStickerStarDesc;
+  String description(BuildContext context) =>
+      AppLocalizations.of(context).catalogStickerStarDesc;
 
   @override
   ElementCategory get category => ElementCategory.stickers;
@@ -86,12 +114,9 @@ class StickerStarDefinition extends AgendaWidgetDefinition {
     required ValueChanged<String> onConfigChanged,
   }) {
     final config = ElementConfig.fromJsonString(configJson);
-    return Center(
-      child: Icon(
-        Icons.star_rounded,
-        size: math.min(100, 64),
-        color: config.borderColor,
-      ),
+    return ScalableStickerIcon(
+      icon: Icons.star_rounded,
+      color: config.borderColor,
     );
   }
 }
@@ -104,10 +129,12 @@ class StickerCoffeeDefinition extends AgendaWidgetDefinition {
   String get id => 'sticker_coffee';
 
   @override
-  String name(BuildContext context) => AppLocalizations.of(context).catalogStickerCoffee;
+  String name(BuildContext context) =>
+      AppLocalizations.of(context).catalogStickerCoffee;
 
   @override
-  String description(BuildContext context) => AppLocalizations.of(context).catalogStickerCoffeeDesc;
+  String description(BuildContext context) =>
+      AppLocalizations.of(context).catalogStickerCoffeeDesc;
 
   @override
   ElementCategory get category => ElementCategory.stickers;
@@ -133,12 +160,9 @@ class StickerCoffeeDefinition extends AgendaWidgetDefinition {
     required ValueChanged<String> onConfigChanged,
   }) {
     final config = ElementConfig.fromJsonString(configJson);
-    return Center(
-      child: Icon(
-        Icons.coffee_rounded,
-        size: math.min(100, 64),
-        color: config.borderColor,
-      ),
+    return ScalableStickerIcon(
+      icon: Icons.coffee_rounded,
+      color: config.borderColor,
     );
   }
 }
@@ -151,10 +175,12 @@ class StickerPinDefinition extends AgendaWidgetDefinition {
   String get id => 'sticker_pin';
 
   @override
-  String name(BuildContext context) => AppLocalizations.of(context).catalogStickerPin;
+  String name(BuildContext context) =>
+      AppLocalizations.of(context).catalogStickerPin;
 
   @override
-  String description(BuildContext context) => AppLocalizations.of(context).catalogStickerPinDesc;
+  String description(BuildContext context) =>
+      AppLocalizations.of(context).catalogStickerPinDesc;
 
   @override
   ElementCategory get category => ElementCategory.stickers;
@@ -180,15 +206,10 @@ class StickerPinDefinition extends AgendaWidgetDefinition {
     required ValueChanged<String> onConfigChanged,
   }) {
     final config = ElementConfig.fromJsonString(configJson);
-    return Center(
-      child: Transform.rotate(
-        angle: 0.3,
-        child: Icon(
-          Icons.push_pin_rounded,
-          size: math.min(80, 56),
-          color: config.borderColor,
-        ),
-      ),
+    return ScalableStickerIcon(
+      icon: Icons.push_pin_rounded,
+      color: config.borderColor,
+      angle: 0.3,
     );
   }
 }
