@@ -240,7 +240,7 @@
   "@onboardingStep1Title": {
     "description": "Onboarding step 1 title"
   },
-  "onboardingStep1Desc": "Create personalized agendas for every area of your life:\\nfinances, habits, projects, and more.",
+  "onboardingStep1Desc": "Create personalized agendas for every area of your life:\nfinances, habits, projects, and more.",
   "@onboardingStep1Desc": {
     "description": "Create personalized agendas for every area of your life:\\nfinances, habits, projects, and more."
   },
@@ -248,7 +248,7 @@
   "@onboardingStep2Title": {
     "description": "Onboarding step 2 title"
   },
-  "onboardingStep2Desc": "Write by hand, draw, highlight, and use ink tools\\nwith pressure precision.",
+  "onboardingStep2Desc": "Write by hand, draw, highlight, and use ink tools\nwith pressure precision.",
   "@onboardingStep2Desc": {
     "description": "Write by hand, draw, highlight, and use ink tools\\nwith pressure precision."
   },
@@ -256,7 +256,7 @@
   "@onboardingStep3Title": {
     "description": "Onboarding step 3 title"
   },
-  "onboardingStep3Desc": "Add templates, stickers, shapes, and elements\\nto create the perfect agenda.",
+  "onboardingStep3Desc": "Add templates, stickers, shapes, and elements\nto create the perfect agenda.",
   "@onboardingStep3Desc": {
     "description": "Add templates, stickers, shapes, and elements\\nto create the perfect agenda."
   },
@@ -608,7 +608,7 @@
   "@catalogColorTransparent": {
     "description": "Transparent"
   },
-  "catalogTextboxDefaultContent": "Important note!\\nWrite your ideas or reminders here.",
+  "catalogTextboxDefaultContent": "Important note!\nWrite your ideas or reminders here.",
   "@catalogTextboxDefaultContent": {
     "description": "Important note!\\nWrite your ideas or reminders here."
   },
@@ -726,8 +726,23 @@
     "description": "Snackbar shown when the export stalls because the window stopped producing frames"
   },
   "agendaSaved": "Saved",
+  "@agendaSaved": {
+    "description": "Tooltip shown when all agenda changes have been saved"
+  },
   "agendaSaving": "Saving…",
+  "@agendaSaving": {
+    "description": "Tooltip shown while agenda changes are being saved"
+  },
   "agendaRetrySave": "Save failed. Retry",
+  "@agendaRetrySave": {
+    "description": "Tooltip of the action that retries failed agenda writes"
+  },
   "canvasInputContent": "Content",
-  "canvasInputInk": "Ink"
+  "@canvasInputContent": {
+    "description": "Writing input option for editing typed widget content"
+  },
+  "canvasInputInk": "Ink",
+  "@canvasInputInk": {
+    "description": "Writing input option for drawing freehand ink strokes"
+  }
 }

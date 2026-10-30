@@ -208,21 +208,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingStep1Desc =>
-      'Create personalized agendas for every area of your life:\\nfinances, habits, projects, and more.';
+      'Create personalized agendas for every area of your life:\nfinances, habits, projects, and more.';
 
   @override
   String get onboardingStep2Title => 'Draw freely';
 
   @override
   String get onboardingStep2Desc =>
-      'Write by hand, draw, highlight, and use ink tools\\nwith pressure precision.';
+      'Write by hand, draw, highlight, and use ink tools\nwith pressure precision.';
 
   @override
   String get onboardingStep3Title => 'Customize everything';
 
   @override
   String get onboardingStep3Desc =>
-      'Add templates, stickers, shapes, and elements\\nto create the perfect agenda.';
+      'Add templates, stickers, shapes, and elements\nto create the perfect agenda.';
 
   @override
   String get onboardingSkip => 'Skip';
@@ -499,7 +499,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get catalogTextboxDefaultContent =>
-      'Important note!\\nWrite your ideas or reminders here.';
+      'Important note!\nWrite your ideas or reminders here.';
 
   @override
   String get catalogTextboxName => 'Text Note';

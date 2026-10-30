@@ -461,7 +461,7 @@ abstract class AppLocalizations {
   /// Create personalized agendas for every area of your life:\nfinances, habits, projects, and more.
   ///
   /// In en, this message translates to:
-  /// **'Create personalized agendas for every area of your life:\\nfinances, habits, projects, and more.'**
+  /// **'Create personalized agendas for every area of your life:\nfinances, habits, projects, and more.'**
   String get onboardingStep1Desc;
 
   /// Onboarding step 2 title
@@ -473,7 +473,7 @@ abstract class AppLocalizations {
   /// Write by hand, draw, highlight, and use ink tools\nwith pressure precision.
   ///
   /// In en, this message translates to:
-  /// **'Write by hand, draw, highlight, and use ink tools\\nwith pressure precision.'**
+  /// **'Write by hand, draw, highlight, and use ink tools\nwith pressure precision.'**
   String get onboardingStep2Desc;
 
   /// Onboarding step 3 title
@@ -485,7 +485,7 @@ abstract class AppLocalizations {
   /// Add templates, stickers, shapes, and elements\nto create the perfect agenda.
   ///
   /// In en, this message translates to:
-  /// **'Add templates, stickers, shapes, and elements\\nto create the perfect agenda.'**
+  /// **'Add templates, stickers, shapes, and elements\nto create the perfect agenda.'**
   String get onboardingStep3Desc;
 
   /// Skip button on onboarding
@@ -1013,7 +1013,7 @@ abstract class AppLocalizations {
   /// Important note!\nWrite your ideas or reminders here.
   ///
   /// In en, this message translates to:
-  /// **'Important note!\\nWrite your ideas or reminders here.'**
+  /// **'Important note!\nWrite your ideas or reminders here.'**
   String get catalogTextboxDefaultContent;
 
   /// Text Note
@@ -1166,10 +1166,34 @@ abstract class AppLocalizations {
   /// **'Honeyday could not render the pages because the window was in the background. Bring it to the front and try again.'**
   String get exportErrorBackground;
 
+  /// Tooltip shown when all agenda changes have been saved
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
   String get agendaSaved;
+
+  /// Tooltip shown while agenda changes are being saved
+  ///
+  /// In en, this message translates to:
+  /// **'Saving…'**
   String get agendaSaving;
+
+  /// Tooltip of the action that retries failed agenda writes
+  ///
+  /// In en, this message translates to:
+  /// **'Save failed. Retry'**
   String get agendaRetrySave;
+
+  /// Writing input option for editing typed widget content
+  ///
+  /// In en, this message translates to:
+  /// **'Content'**
   String get canvasInputContent;
+
+  /// Writing input option for drawing freehand ink strokes
+  ///
+  /// In en, this message translates to:
+  /// **'Ink'**
   String get canvasInputInk;
 }
 
