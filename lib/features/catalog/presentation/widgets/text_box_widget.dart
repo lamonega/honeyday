@@ -76,6 +76,7 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
   static const List<double> _fontSizes = [12.0, 14.0, 17.0, 21.0];
 
   late CatalogConfigHelper<TextBoxConfig> _configHelper;
+  late final TextEditingController _textController;
   SaveSession? _saveSession;
 
   TextBoxConfig get _config => _configHelper.config;
@@ -88,6 +89,7 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
       configToJson: (c) => c.toJsonString(),
       initialJson: widget.configJson,
     )..onConfigChanged = widget.onConfigChanged;
+    _textController = TextEditingController(text: _config.text);
   }
 
   @override
@@ -106,6 +108,13 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
     _configHelper.onConfigChanged = widget.onConfigChanged;
     if (oldWidget.configJson != widget.configJson) {
       _configHelper.updateFromJson(widget.configJson);
+      final text = _config.text;
+      if (_textController.text != text) {
+        _textController.value = TextEditingValue(
+          text: text,
+          selection: TextSelection.collapsed(offset: text.length),
+        );
+      }
     }
   }
 
@@ -113,6 +122,7 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
   void dispose() {
     _saveSession?.unregisterEditor(_configHelper.flush);
     _configHelper.dispose();
+    _textController.dispose();
     super.dispose();
   }
 
@@ -208,7 +218,7 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
           Expanded(
             child: widget.isInteractive
                 ? TextFormField(
-                    initialValue: currentText,
+                    controller: _textController,
                     key: ValueKey('text_${widget.elementId}'),
                     maxLines: null,
                     expands: true,

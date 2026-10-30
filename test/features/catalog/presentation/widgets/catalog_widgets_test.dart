@@ -307,6 +307,42 @@ void main() {
       expect(config.color, TextBoxColor.honey);
     });
 
+    testWidgets('external text updates synchronize the mounted editor', (
+      tester,
+    ) async {
+      Future<void> pumpText(String text) => tester.pumpWidget(
+        testMaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              width: 250,
+              height: 200,
+              child: TextBoxWidget(
+                elementId: 'text-1',
+                configJson: TextBoxConfig.defaultConfig()
+                    .copyWith(text: text)
+                    .toJsonString(),
+                isInteractive: true,
+                onConfigChanged: (_) {},
+              ),
+            ),
+          ),
+        ),
+      );
+      await pumpText('Original');
+      final originalState = tester.state(find.byType(TextBoxWidget));
+      await pumpText('Replacement');
+      expect(tester.state(find.byType(TextBoxWidget)), same(originalState));
+      expect(
+        tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+        'Replacement',
+      );
+      await pumpText('');
+      expect(
+        tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+        isEmpty,
+      );
+    });
+
     testWidgets('Renders text and allows editing in interactive mode', (
       tester,
     ) async {
