@@ -269,14 +269,11 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
           _goToPage(before.length - 2, before.length - 1);
         }
       },
-      onChangePaperStyle: (style) async {
-        final current = currentPages();
-        if (_currentPageIndex >= current.length) return;
+      onChangePaperStyle: (pageId, style) async {
         try {
-          await _saveSession.enqueue(() => controller.updatePageBackground(
-            current[_currentPageIndex].id,
-            style,
-          ));
+          await _saveSession.enqueue(
+            () => controller.updatePageBackground(pageId, style),
+          );
         } on Object catch (error) {
           if (mounted) {
             _reportPersistError(context, error);

@@ -19,7 +19,7 @@ class ViewerCatalogSheet {
     required int currentPageIndex,
     required ValueChanged<int> onSelectPage,
     required ValueChanged<String> onDeletePage,
-    required ValueChanged<String> onChangePaperStyle,
+    required void Function(String pageId, String style) onChangePaperStyle,
     required ValueChanged<List<String>> onReorderPages,
     required VoidCallback onAddPage,
   }) {

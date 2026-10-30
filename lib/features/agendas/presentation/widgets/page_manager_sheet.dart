@@ -22,7 +22,7 @@ class PageManagerSheet extends StatefulWidget {
   final int currentPageIndex;
   final ValueChanged<int> onSelectPage;
   final ValueChanged<String> onDeletePage;
-  final ValueChanged<String> onChangePaperStyle;
+  final void Function(String pageId, String style) onChangePaperStyle;
   final ValueChanged<List<String>> onReorderPages;
   final VoidCallback onAddPage;
 
@@ -70,11 +70,12 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
   }
 
   void _onChangePaperStyle(String style) {
+    if (_currentPageIndex < 0 || _currentPageIndex >= _pages.length) return;
+    final selected = _pages[_currentPageIndex];
     setState(() {
-      _pages[_currentPageIndex] = _pages[_currentPageIndex]
-          .copyWith(backgroundStyle: style);
+      _pages[_currentPageIndex] = selected.copyWith(backgroundStyle: style);
     });
-    widget.onChangePaperStyle(style);
+    widget.onChangePaperStyle(selected.id, style);
   }
 
   void _onAddPage() {
@@ -96,9 +97,7 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.agendaPageDeleteTitle),
-        content: Text(
-          l10n.agendaPageDeleteContent(_currentPageIndex + 1),
-        ),
+        content: Text(l10n.agendaPageDeleteContent(_currentPageIndex + 1)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -124,8 +123,9 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final currentPage =
-        _currentPageIndex < _pages.length ? _pages[_currentPageIndex] : null;
+    final currentPage = _currentPageIndex < _pages.length
+        ? _pages[_currentPageIndex]
+        : null;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
