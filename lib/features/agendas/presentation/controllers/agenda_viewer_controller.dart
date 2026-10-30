@@ -12,13 +12,6 @@ import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:uuid/uuid.dart';
 
-// ──────────────────────────────────────────────
-// Agenda viewer controller constants (used only here)
-// ──────────────────────────────────────────────
-
-/// Minimum offset when duplicating canvas elements.
-const double kDuplicateOffset = 24;
-
 /// Exposes the reactive list of pages for a given agenda ID.
 // ignore: specify_nonobvious_property_types
 final agendaPagesProvider = StreamProvider.family<List<AgendaPage>, String>((
@@ -147,7 +140,10 @@ class AgendaViewerController {
       id: _uuid.v4(),
       pageId: source.pageId,
       widgetType: source.widgetType,
-      position: Offset(source.position.dx + kDuplicateOffset, source.position.dy + kDuplicateOffset),
+      position: Offset(
+        source.position.dx + kDuplicateOffset,
+        source.position.dy + kDuplicateOffset,
+      ),
       size: source.size,
       rotation: source.rotation,
       configJson: source.configJson,

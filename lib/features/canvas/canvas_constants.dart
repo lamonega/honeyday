@@ -20,6 +20,9 @@ const double kDefaultPageWidth = 800;
 /// Referenced by: page_view_canvas.dart, transformable_box.dart
 const double kDefaultPageHeight = 1100;
 
+/// Offset applied when duplicating a canvas element.
+const double kDuplicateOffset = 24;
+
 /// Maximum number of undo states retained for strokes and elements.
 /// Referenced by: element_history.dart, ink_canvas.dart
 const int kMaxUndoSize = 50;
