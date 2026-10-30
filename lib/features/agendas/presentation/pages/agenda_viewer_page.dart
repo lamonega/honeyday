@@ -557,23 +557,9 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                   },
                   itemBuilder: (context, index) {
                     final page = pagesList[index];
-                    final isAdjacent = (index - _currentPageIndex).abs() <= 1;
-
-                    if (!isAdjacent || currentMode != CanvasMode.reading) {
-                      return _PageContentLoader(
-                        key: ValueKey(page.id),
-                        page: page,
-                        currentMode: currentMode,
-                        canvasControllers: _pageControllers,
-                        strokesVisible: _strokesVisible,
-                        // Register in every mode: writing-mode config
-                        // edits need the controller to sync the manager.
-                        onControllerCreated: (c) =>
-                            _registerPageController(page.id, c),
-                      );
-                    }
-
+                    // Keep the canvas under the same ancestors in every mode.
                     return AnimatedBuilder(
+                      key: ValueKey(page.id),
                       animation: _pageController,
                       builder: (context, child) {
                         // Swapping the canvas mode swaps the PageView physics,
@@ -585,12 +571,15 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                         // the current page stuck mid-flip until the controller
                         // notifies again on the next page turn.
                         var position = (index - _currentPageIndex).toDouble();
-                        if (_pageController.position.haveDimensions &&
+                        if (_pageController.hasClients &&
+                            _pageController.position.haveDimensions &&
                             _pageController.page != null) {
                           position = index - _pageController.page!;
                         }
 
-                        final clamped = position.clamp(-1.0, 1.0);
+                        final clamped = currentMode == CanvasMode.reading
+                            ? position.clamp(-1.0, 1.0)
+                            : 0.0;
                         final isTurning = clamped.abs() > 0.001;
                         final isLeft = clamped < 0;
                         final rotationY = clamped * (math.pi / 3.5);
