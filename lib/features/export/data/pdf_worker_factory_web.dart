@@ -7,6 +7,11 @@ import 'package:honeyday/features/export/domain/export_cancellation.dart';
 import 'package:web/web.dart' as web;
 
 @JS()
+extension type _TransferableBytes(JSUint8Array _) implements JSUint8Array {
+  external JSArrayBuffer get buffer;
+}
+
+@JS()
 extension type _WorkerRequest._(JSObject _) implements JSObject {
   external factory _WorkerRequest({
     required int pageIndex,
@@ -33,12 +38,12 @@ PdfWorkerBuilder get defaultPdfWorkerBuilder =>
 
 class _BrowserPdfWorker {
   _BrowserPdfWorker()
-      : _worker = web.Worker(
-          Uri.parse(web.document.baseURI)
-              .resolve('pdf_export_worker.js')
-              .toString()
-              .toJS,
-        ) {
+    : _worker = web.Worker(
+        Uri.parse(web.document.baseURI)
+            .resolve('pdf_export_worker.js')
+            .toString()
+            .toJS,
+      ) {
     _worker.onmessage = ((web.MessageEvent event) {
       final pending = _pending;
       if (pending == null || pending.isCompleted) return;
@@ -92,10 +97,8 @@ class _BrowserPdfWorker {
   Object? _failure;
   bool _closed = false;
 
-  PdfCompressionWorker get handle => PdfCompressionWorker(
-    compress: _compress,
-    shutdown: _shutdown,
-  );
+  PdfCompressionWorker get handle =>
+      PdfCompressionWorker(compress: _compress, shutdown: _shutdown);
 
   Future<Uint8List> _compress(PdfWorkerRequest request) async {
     if (_closed) throw const ExportCancelled();
@@ -112,7 +115,7 @@ class _BrowserPdfWorker {
     try {
       // `toJS` creates an owned JS typed array; transfer its backing buffer so
       // browser-to-worker delivery does not clone another full page raster.
-      final rgba = request.page.rgba.toJS;
+      final rgba = _TransferableBytes(request.page.rgba.toJS);
       _worker.postMessage(
         _WorkerRequest(
           pageIndex: request.pageIndex,
