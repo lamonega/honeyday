@@ -22,6 +22,9 @@ Priorizar un **cuaderno/planner local y personalizable** que se pueda usar a
 - [x] [Fuentes empaquetadas](fonts.md): variantes utilizadas, licencias,
   checksums, precarga y descargas en runtime desactivadas. Revisar y actualizar
   únicamente los golden de portadas afectados por las métricas de Fraunces.
+- [x] Empaquetar también Roboto de respaldo: Chrome reveló que el motor Web lo
+  descargaba antes de `main()`. Comprobar el arranque con dominios de fuentes
+  bloqueados y caché HTTP desactivada, sin modificar más golden.
 - [x] [PDF con tinta](pdf-export.md), lectura consistente, geometría decodificada
   por página y opciones independientes de texto/tinta para plantillas.
 - [x] Pruebas de capas, resaltador, recorte y contenido del archivo PDF final;
@@ -53,7 +56,8 @@ No crear un tag de release basándose únicamente en análisis y pruebas de widg
 ### 2. Fuentes realmente offline
 
 Fraunces y Plus Jakarta Sans ya se distribuyen como assets, con precarga y sin
-peticiones de fuentes a Google. Las pruebas comprueban integridad, licencias,
+fetching de `google_fonts`. Roboto también se declara en el manifiesto del motor
+para eliminar su descarga inicial en Web. Las pruebas comprueban integridad, licencias,
 renderizado real y captura PDF. Se revisaron las referencias Windows y CI:
 solo cambiaron los títulos de las portadas. Ver [alcance y mantenimiento](fonts.md).
 

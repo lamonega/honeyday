@@ -20,8 +20,8 @@ void main() {
           .cast<Map<String, dynamic>>();
       final assets = (await AssetManifest.loadFromAssetBundle(rootBundle))
           .listAssets();
-      expect(files, hasLength(10));
-      expect(files.map((file) => file['file']).toSet(), hasLength(10));
+      expect(files, hasLength(17));
+      expect(files.map((file) => file['file']).toSet(), hasLength(17));
 
       for (final file in files) {
         final path = 'assets/fonts/${file['file']}';
@@ -36,6 +36,20 @@ void main() {
       }
     },
   );
+
+  test('Roboto fallback is declared in the engine font manifest', () async {
+    final manifest = (jsonDecode(
+      await rootBundle.loadString('FontManifest.json'),
+    ) as List<dynamic>).cast<Map<String, dynamic>>();
+    final roboto = manifest.singleWhere((entry) => entry['family'] == 'Roboto');
+    final fonts = (roboto['fonts'] as List<dynamic>)
+        .cast<Map<String, dynamic>>();
+    expect(fonts.map((font) => font['weight']), [100, 300, 400, 500, 700, 900]);
+    expect(
+      fonts.map((font) => font['asset']),
+      contains('assets/fonts/Roboto-Regular.ttf'),
+    );
+  });
 
   test(
     'font loading is idempotent and runtime fetching stays disabled',
@@ -52,12 +66,18 @@ void main() {
     AppFonts.configure();
     AppFonts.configure();
     final entries = await LicenseRegistry.licenses.toList();
-    for (final family in ['Fraunces', 'PlusJakartaSans']) {
-      final matches = entries.where((entry) => entry.packages.contains(family));
+    for (final entry in const {
+      'Fraunces': 'SIL OPEN FONT LICENSE Version 1.1',
+      'PlusJakartaSans': 'SIL OPEN FONT LICENSE Version 1.1',
+      'Roboto': 'Apache License',
+    }.entries) {
+      final matches = entries.where(
+        (license) => license.packages.contains(entry.key),
+      );
       expect(matches, hasLength(1));
       expect(
         matches.single.paragraphs.map((paragraph) => paragraph.text).join('\n'),
-        contains('SIL OPEN FONT LICENSE Version 1.1'),
+        contains(entry.value),
       );
     }
   });

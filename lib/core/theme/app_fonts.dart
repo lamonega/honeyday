@@ -14,16 +14,22 @@ abstract final class AppFonts {
     _licensesRegistered = true;
 
     LicenseRegistry.addLicense(() async* {
-      for (final family in ['Fraunces', 'PlusJakartaSans']) {
+      for (final entry in const {
+        'Fraunces': 'OFL-Fraunces.txt',
+        'PlusJakartaSans': 'OFL-PlusJakartaSans.txt',
+        'Roboto': 'LICENSE-Roboto.txt',
+      }.entries) {
         final license = await rootBundle.loadString(
-          'assets/fonts/OFL-$family.txt',
+          'assets/fonts/${entry.value}',
         );
-        yield LicenseEntryWithLineBreaks([family], license);
+        yield LicenseEntryWithLineBreaks([entry.key], license);
       }
     });
   }
 
-  /// Loads all bundled variants before rendering, avoiding first-frame swaps.
+  /// Preloads app typography before rendering, avoiding first-frame swaps.
+  ///
+  /// Roboto fallback is registered separately through Flutter's font manifest.
   ///
   /// Flutter bindings must be initialized before calling this method. Font
   /// files are resolved from assets, not from a previous device cache.

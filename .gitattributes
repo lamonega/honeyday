@@ -25,6 +25,7 @@
 
 # Preserve upstream font licenses verbatim and keep checksums reproducible.
 assets/fonts/OFL-*.txt text eol=lf whitespace=-blank-at-eol
+assets/fonts/LICENSE-*.txt text eol=lf whitespace=-blank-at-eol
 
 # Other
 *.md text diff=markdown
