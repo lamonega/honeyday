@@ -80,6 +80,11 @@ lib/
 └── main.dart               # Entry point
 ```
 
+## Development status
+
+See the [continuation roadmap and manual release checklist](docs/roadmap.md) for
+completed reliability work, known limitations and suggested next steps.
+
 ## Getting Started
 
 ### Prerequisites

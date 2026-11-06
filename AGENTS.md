@@ -16,13 +16,22 @@ Desde la raíz, según README y CI:
 - Instala dependencias: `flutter pub get`.
 - Genera código Drift cuando corresponda: `dart run build_runner build --delete-conflicting-outputs` (puede sobrescribir archivos generados).
 - Ejecuta la aplicación: `flutter run`.
-- Analiza: `dart analyze`.
+- Analiza: `dart analyze --fatal-infos` (CI también rechaza avisos informativos).
 - Ejecuta pruebas: `flutter test`.
-- Formatea: `dart format .` (sin verificar contra CI o scripts; la guía original lo propone y modifica archivos).
+- Compila Web (JavaScript, como CI): `flutter build web --no-pub --no-wasm-dry-run` después de instalar dependencias.
+- Formatea los archivos modificados: `dart format <rutas>`. Evita reformatear archivos ajenos al cambio.
 
-No hay un comando de build de aplicación confirmado en README o CI; la generación anterior no equivale a compilar la aplicación.
+La generación Drift no equivale a compilar la aplicación. No hay builds nativos de release verificados en CI.
 
-CI usa Windows y Flutter 3.47.5; los golden tienen variantes para Windows y CI. Los benchmarks de exportación están excluidos de la ejecución normal; consulta README para ejecutarlos explícitamente.
+CI usa Flutter 3.47.5: análisis y pruebas en Windows, build JavaScript Web en Linux. Los golden tienen variantes para Windows y CI; no actualices sus imágenes sin revisión visual. Los benchmarks de exportación están excluidos de la ejecución normal; consulta README para ejecutarlos explícitamente.
+
+En entornos con recursos limitados, ejecuta análisis, pruebas y build de forma secuencial. `flutter test --concurrency=2` reduce la presión de recursos.
+
+## Estado funcional y continuidad
+
+- `docs/backups.md`: formato, alcance y privacidad de los backups editables; importar crea copias sin reemplazar datos existentes.
+- `docs/roadmap.md`: entregas incorporadas, límites conocidos y próximos trabajos. PDF todavía no incluye tinta; backup sí.
+- Antes de una release, verifica manualmente los diálogos de archivos, compartir, lápiz y cierre en las plataformas objetivo.
 
 ## Convenciones y límites
 
