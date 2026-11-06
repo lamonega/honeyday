@@ -85,10 +85,10 @@ lib/
 - [Flutter SDK](https://flutter.dev/docs/get-started/install), stable channel. CI is pinned to **Flutter 3.47.5**; use the same version for reproducible checks.
 - Dart SDK (bundled with Flutter), compatible with `pubspec.yaml` (`^3.13.3`).
 
-Platform folders exist for Android, iOS, Web, Linux, macOS and Windows, but CI
-currently runs analysis and tests on Windows only. A platform listing is not a
-guarantee that its native file dialogs, pen input or release packaging have
-been verified.
+Platform folders exist for Android, iOS, Web, Linux, macOS and Windows. CI runs
+analysis and tests on Windows and builds the JavaScript Web target on Linux.
+A platform listing is not a guarantee that its native file dialogs, pen input
+or release packaging have been verified.
 
 ### Installation
 
