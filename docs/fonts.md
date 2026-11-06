@@ -35,7 +35,8 @@ by that package's asset-loading integration.
 
 PDF offscreen capture uses the same theme and loaded fonts, and still waits for
 any pending font loads before rasterizing. PDFs embed rasterized page imagery,
-not selectable text/font resources. This change does not add handwriting to PDF.
+not selectable text/font resources. Saved handwriting is included by default
+and can be disabled independently in the [PDF export options](pdf-export.md).
 
 Only the normal variants above are bundled. Before introducing a new family,
 weight or italic variant, include its file, license/provenance and preload it;

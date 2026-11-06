@@ -1237,6 +1237,18 @@ abstract class AppLocalizations {
   /// **'Include typed text'**
   String get exportIncludeContentLabel;
 
+  /// Checkbox to include saved ink in the PDF
+  ///
+  /// In en, this message translates to:
+  /// **'Include handwriting'**
+  String get exportIncludeInkLabel;
+
+  /// Explains how to export without personal writing
+  ///
+  /// In en, this message translates to:
+  /// **'For a reusable template, turn off both content options.'**
+  String get exportTemplateHint;
+
   /// Summary line with the total page count and raster resolution
   ///
   /// In en, this message translates to:

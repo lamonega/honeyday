@@ -1,8 +1,14 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda_snapshot.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/notebook_cover.dart';
+import 'package:honeyday/features/canvas/domain/ink_tool.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
+import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
+import 'package:honeyday/features/canvas/domain/models/stroke_point.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/static_page_view.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
 import 'package:honeyday/features/export/data/export_page_builder.dart';
 import 'package:honeyday/features/export/domain/export_options.dart';
@@ -59,6 +65,56 @@ void main() {
       final resolved = resolveExportElement(element, options);
 
       expect(resolved.configJson, '{"keep":"me"}');
+    });
+  });
+
+  group('buildExportPage ink policy', () {
+    var decodes = 0;
+    Iterable<InkStroke> strokes() sync* {
+      decodes++;
+      yield InkStroke(
+        id: 's1',
+        pageId: 'p1',
+        tool: InkToolType.pen,
+        colorHex: '#FF000000',
+        strokeWidth: 3,
+        points: const [StrokePoint(10, 20), StrokePoint(100, 20)],
+        createdAt: DateTime.utc(2026),
+      );
+    }
+
+    AgendaPageSnapshot snapshot() => AgendaPageSnapshot(
+      page: AgendaPage(
+        id: 'p1',
+        agendaId: 'a1',
+        pageNumber: 1,
+        backgroundStyle: 'blank',
+        createdAt: DateTime.utc(2026),
+        updatedAt: DateTime.utc(2026),
+      ),
+      elements: const [],
+      strokes: strokes(),
+    );
+
+    setUp(() => decodes = 0);
+
+    test('default export decodes the current page ink once', () {
+      final captured = snapshot();
+      expect(decodes, 0);
+      final page =
+          buildExportPage(captured, const ExportOptions()) as StaticPageView;
+      expect(decodes, 1);
+      expect(page.strokes.single.id, 's1');
+      expect(page.strokes.single.points, hasLength(2));
+    });
+
+    test('omitting handwriting never consumes lazy geometry', () {
+      final page = buildExportPage(
+        snapshot(),
+        const ExportOptions(includeInk: false),
+      ) as StaticPageView;
+      expect(page.strokes, isEmpty);
+      expect(decodes, 0);
     });
   });
 

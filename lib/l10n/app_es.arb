@@ -189,6 +189,8 @@
   "exportFormatLabel": "Tamaño de página",
   "exportFormatLetter": "Carta",
   "exportIncludeContentLabel": "Incluir texto escrito",
+  "exportIncludeInkLabel": "Incluir tinta manuscrita",
+  "exportTemplateHint": "Para una plantilla reutilizable, desactiva ambas opciones de contenido.",
   "exportPagesSummary": "{count} páginas · 300 dpi",
   "exportStart": "Exportar",
   "exportProgressTitle": "Exportando…",

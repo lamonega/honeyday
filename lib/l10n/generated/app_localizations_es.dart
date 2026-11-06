@@ -637,6 +637,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get exportIncludeContentLabel => 'Incluir texto escrito';
 
   @override
+  String get exportIncludeInkLabel => 'Incluir tinta manuscrita';
+
+  @override
+  String get exportTemplateHint =>
+      'Para una plantilla reutilizable, desactiva ambas opciones de contenido.';
+
+  @override
   String exportPagesSummary(int count) {
     return '$count páginas · 300 dpi';
   }

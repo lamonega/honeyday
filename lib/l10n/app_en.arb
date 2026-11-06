@@ -723,6 +723,14 @@
   "@exportIncludeContentLabel": {
     "description": "Checkbox label: include the text typed inside widgets"
   },
+  "exportIncludeInkLabel": "Include handwriting",
+  "@exportIncludeInkLabel": {
+    "description": "Checkbox to include saved ink in the PDF"
+  },
+  "exportTemplateHint": "For a reusable template, turn off both content options.",
+  "@exportTemplateHint": {
+    "description": "Explains how to export without personal writing"
+  },
   "exportPagesSummary": "{count} pages · 300 dpi",
   "@exportPagesSummary": {
     "description": "Summary line with the total page count and raster resolution",

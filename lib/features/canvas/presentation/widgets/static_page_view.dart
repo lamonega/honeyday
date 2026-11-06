@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/models/canvas_widget_data.dart';
+import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/ink_painter.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/page_surface.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/static_element_box.dart';
 
-/// Pure, non-interactive composition of an agenda page: paper + elements.
+/// Pure, non-interactive composition of a page: paper + elements + ink.
 ///
 /// What: Renders [PaperStyle] paper and every canvas element positioned via
 /// [StaticElementBox], with no Scaffold, no gestures, no selection chrome,
-/// no snap guides, no toolbar and no ink layer.
+/// no snap guides, no toolbar and no transient active stroke.
 /// Why: Single rendering path shared by the future PDF export and other
 /// static consumers (thumbnails, previews). The parent controls the final
 /// size (e.g. `SizedBox(width: kDefaultPageWidth, height: kDefaultPageHeight, …)`);
@@ -19,6 +21,7 @@ class StaticPageView extends StatelessWidget {
     required this.paperStyle,
     super.key,
     this.elements = const [],
+    this.strokes = const [],
     this.elementBuilder,
     this.pageSize = const Size(kDefaultPageWidth, kDefaultPageHeight),
   });
@@ -28,6 +31,9 @@ class StaticPageView extends StatelessWidget {
 
   /// Elements to render, in stack order (later = painted on top).
   final List<CanvasWidgetData> elements;
+
+  /// Completed handwriting painted above elements, as in the viewer.
+  final List<InkStroke> strokes;
 
   /// Builds the widget for one element (same contract as
   /// `PageViewCanvas.elementBuilder`). Consumers render read-only content by
@@ -57,6 +63,14 @@ class StaticPageView extends StatelessWidget {
             child:
                 elementBuilder?.call(context, element) ??
                 const SizedBox.expand(),
+          ),
+        if (strokes.isNotEmpty)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: ClipRect(
+                child: CustomPaint(painter: InkPainter(strokes: strokes)),
+              ),
+            ),
           ),
       ],
     );

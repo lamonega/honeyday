@@ -81,7 +81,10 @@ class _FakeRepository implements FullAgendaRepository {
   final AgendaSnapshot? snapshot;
 
   @override
-  Future<AgendaSnapshot?> getAgendaSnapshot(String agendaId) async => snapshot;
+  Future<AgendaSnapshot?> getAgendaSnapshot(
+    String agendaId, {
+    bool includeInk = true,
+  }) async => snapshot;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

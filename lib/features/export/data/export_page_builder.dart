@@ -41,9 +41,8 @@ Widget buildExportCover(Agenda agenda) {
 /// Read-only widget tree for one snapshot page.
 ///
 /// What: A [StaticPageView] with the page's paper style and elements in
-/// z-order, honoring [ExportOptions.includeTypedContent].
-/// Why: Widget = single source of truth: the PDF renders exactly what the
-/// reader sees (minus ink, which never reaches this tree).
+/// z-order, honoring typed-content and handwriting options.
+/// Why: Paper, elements and ink reuse the reader's rendering primitives.
 Widget buildExportPage(AgendaPageSnapshot snapshot, ExportOptions options) {
   final elements = [
     for (final element in snapshot.elements)
@@ -52,6 +51,9 @@ Widget buildExportPage(AgendaPageSnapshot snapshot, ExportOptions options) {
   return StaticPageView(
     paperStyle: PaperStyle.fromString(snapshot.page.backgroundStyle),
     elements: elements,
+    strokes: options.includeInk
+        ? snapshot.strokes.toList(growable: false)
+        : const [],
     elementBuilder: _buildElement,
   );
 }

@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:honeyday/core/database/app_database.dart' hide Agenda, AgendaPage;
+import 'package:honeyday/core/database/app_database.dart'
+    hide Agenda, AgendaPage;
 import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 
 /// Data Access Object for ink stroke operations.
@@ -18,24 +19,60 @@ class StrokeDao {
           ..where(
             (tbl) => tbl.pageId.equals(pageId) & tbl.isDeleted.equals(false),
           )
-          ..orderBy([(t) => OrderingTerm.asc(t.createdAt)]))
+          ..orderBy([
+            (t) => OrderingTerm.asc(t.createdAt),
+            (t) => OrderingTerm.asc(t.rowId),
+          ]))
         .watch()
-        .map(
-          (rows) => rows
-              .map(
-                (s) => InkStroke.fromDb(
-                  id: s.id,
-                  pageId: s.pageId,
-                  brushType: s.brushType,
-                  colorHex: s.colorHex,
-                  strokeWidth: s.strokeWidth,
-                  pointsJson: s.pointsJson,
-                  createdAt: s.createdAt,
-                ),
-              )
-              .toList(),
-        );
+        .map((rows) => rows.map(_strokeFromRow).toList());
   }
+
+  /// Captures ink rows for live pages without decoding point arrays yet.
+  ///
+  /// Call within the agenda snapshot transaction. Each returned iterable
+  /// maps immutable captured rows on demand, not another database query.
+  Future<Map<String, Iterable<InkStroke>>> getStrokesForAgenda(
+    String agendaId,
+  ) async {
+    final strokes = _db.strokes;
+    final pages = _db.pages;
+    final query =
+        _db.select(strokes).join([
+            innerJoin(
+              pages,
+              pages.id.equalsExp(strokes.pageId),
+              useColumns: false,
+            ),
+          ])
+          ..where(
+            pages.agendaId.equals(agendaId) &
+                pages.isDeleted.equals(false) &
+                strokes.isDeleted.equals(false),
+          )
+          // Preserve insertion order for equal timestamps, as in the viewer.
+          ..orderBy([
+            OrderingTerm.asc(strokes.createdAt),
+            OrderingTerm.asc(strokes.rowId),
+          ]);
+    final byPage = <String, List<Stroke>>{};
+    for (final result in await query.get()) {
+      final row = result.readTable(strokes);
+      byPage.putIfAbsent(row.pageId, () => []).add(row);
+    }
+    return byPage.map(
+      (pageId, rows) => MapEntry(pageId, rows.map(_strokeFromRow)),
+    );
+  }
+
+  static InkStroke _strokeFromRow(Stroke row) => InkStroke.fromDb(
+    id: row.id,
+    pageId: row.pageId,
+    brushType: row.brushType,
+    colorHex: row.colorHex,
+    strokeWidth: row.strokeWidth,
+    pointsJson: row.pointsJson,
+    createdAt: row.createdAt,
+  );
 
   /// Converts an [InkStroke] domain model to a Drift [StrokesCompanion].
   StrokesCompanion _strokeToCompanion(InkStroke stroke) {

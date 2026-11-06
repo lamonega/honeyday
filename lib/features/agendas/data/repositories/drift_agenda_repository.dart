@@ -125,7 +125,10 @@ class DriftAgendaRepository implements FullAgendaRepository {
       _strokeDao.replaceStrokes(pageId, strokes);
 
   @override
-  Future<AgendaSnapshot?> getAgendaSnapshot(String agendaId) {
+  Future<AgendaSnapshot?> getAgendaSnapshot(
+    String agendaId, {
+    bool includeInk = true,
+  }) {
     // One SQLite transaction ⇒ consistent view (SQLite gives a consistent
     // read inside a transaction; safe even while the viewer keeps writing
     // during an export).
@@ -137,6 +140,10 @@ class DriftAgendaRepository implements FullAgendaRepository {
       final elements = await _canvasElementDao.getCanvasElementsForAgenda(
         agendaId,
       );
+
+      final strokesByPage = includeInk
+          ? await _strokeDao.getStrokesForAgenda(agendaId)
+          : const <String, Iterable<InkStroke>>{};
 
       // Group the single flat, already-ordered read by page without
       // reordering, then attach each group to its page.
@@ -152,6 +159,7 @@ class DriftAgendaRepository implements FullAgendaRepository {
             AgendaPageSnapshot(
               page: page,
               elements: elementsByPage[page.id] ?? const [],
+              strokes: strokesByPage[page.id] ?? const [],
             ),
         ],
       );

@@ -8,6 +8,7 @@ import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_snapshot.dart';
 import 'package:honeyday/features/agendas/domain/repositories/repository_interfaces.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/notebook_cover.dart';
+import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/export/data/pdf_export_service.dart';
 import 'package:honeyday/features/export/data/pdf_sink.dart';
 import 'package:honeyday/features/export/data/pdf_worker_pool.dart';
@@ -102,9 +103,16 @@ class _FakeRepository implements FullAgendaRepository {
   _FakeRepository(this.snapshot);
 
   final AgendaSnapshot? snapshot;
+  bool? requestedInk;
 
   @override
-  Future<AgendaSnapshot?> getAgendaSnapshot(String agendaId) async => snapshot;
+  Future<AgendaSnapshot?> getAgendaSnapshot(
+    String agendaId, {
+    bool includeInk = true,
+  }) async {
+    requestedInk = includeInk;
+    return snapshot;
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -191,6 +199,61 @@ void main() {
     // A4 at 300 dpi ⇒ pixelRatio ≈ 3.10 on every capture.
     expect(ratios, everyElement(closeTo(3.1, 0.01)));
   });
+
+  test('decodes ink only when its page is about to be captured', () async {
+    final decodedPages = <String>[];
+    Iterable<InkStroke> inkFor(String pageId) sync* {
+      decodedPages.add(pageId);
+      yield* const <InkStroke>[];
+    }
+
+    final original = buildSnapshot(pageCount: 2);
+    final repository = _FakeRepository(
+      AgendaSnapshot(
+        agenda: original.agenda,
+        pages: [
+          for (final page in original.pages)
+            AgendaPageSnapshot(
+              page: page.page,
+              elements: page.elements,
+              strokes: inkFor(page.page.id),
+            ),
+        ],
+      ),
+    );
+    var captures = 0;
+    await PdfExportService(repository).export(
+      agendaId: 'a1',
+      options: const ExportOptions(),
+      capture: (_, _) async {
+        expect(decodedPages, [
+          if (captures >= 1) 'p1',
+          if (captures >= 2) 'p2',
+        ]);
+        captures++;
+        return tinyPage();
+      },
+      pool: inlinePool(),
+      createOutput: _MemoryOutput.new,
+    );
+    expect(captures, 3);
+    expect(repository.requestedInk, isTrue);
+  });
+
+  test(
+    'omitting ink is passed to the repository before snapshot reads',
+    () async {
+      final repository = _FakeRepository(buildSnapshot());
+      await PdfExportService(repository).export(
+        agendaId: 'a1',
+        options: const ExportOptions(includeInk: false),
+        capture: (_, _) async => tinyPage(),
+        pool: inlinePool(),
+        createOutput: _MemoryOutput.new,
+      );
+      expect(repository.requestedInk, isFalse);
+    },
+  );
 
   test(
     'waits for compression before allocating the next captured page',

@@ -34,7 +34,9 @@ Future<void> pumpHost(
 }
 
 void main() {
-  testWidgets('defaults to A4 with typed content included', (tester) async {
+  testWidgets('defaults to A4 with typed content and handwriting included', (
+    tester,
+  ) async {
     var resolved = false;
     ExportOptions? chosen;
     await pumpHost(
@@ -52,10 +54,11 @@ void main() {
       find.byType(SegmentedButton<PdfExportFormat>),
     );
     expect(segmented.selected, {PdfExportFormat.a4});
-    final checkbox = tester.widget<CheckboxListTile>(
+    final checkboxes = tester.widgetList<CheckboxListTile>(
       find.byType(CheckboxListTile),
     );
-    expect(checkbox.value, isTrue);
+    expect(checkboxes.map((checkbox) => checkbox.value), [true, true]);
+    expect(find.text('Incluir tinta manuscrita'), findsOneWidget);
     expect(find.text('5 páginas · 300 dpi'), findsOneWidget);
     expect(resolved, isFalse); // still open
     expect(chosen, isNull); // nothing resolved yet
@@ -75,7 +78,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Carta'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(Checkbox));
+    await tester.tap(find.text('Incluir texto escrito'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Exportar'));
     await tester.pumpAndSettle();
@@ -84,6 +87,47 @@ void main() {
     expect(chosen, isNotNull);
     expect(chosen!.format, PdfExportFormat.letter);
     expect(chosen!.includeTypedContent, isFalse);
+    expect(chosen!.includeInk, isTrue);
+  });
+
+  testWidgets('a reusable template disables typed content and handwriting', (
+    tester,
+  ) async {
+    ExportOptions? chosen;
+    await pumpHost(
+      tester,
+      pageCount: 3,
+      onResolved: (result) => chosen = result,
+      markResolved: () {},
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Incluir texto escrito'));
+    await tester.tap(find.text('Incluir tinta manuscrita'));
+    await tester.tap(find.text('Exportar'));
+    await tester.pumpAndSettle();
+    expect(chosen!.includeTypedContent, isFalse);
+    expect(chosen!.includeInk, isFalse);
+  });
+
+  testWidgets('content scrolls on a small window with enlarged text', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(360, 480));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    await tester.pumpWidget(
+      testMaterialApp(
+        home: const MediaQuery(
+          data: MediaQueryData(textScaler: TextScaler.linear(1.5)),
+          child: ExportOptionsDialog(pageCount: 20),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.byType(SingleChildScrollView), findsWidgets);
+    await tester.ensureVisible(find.text('Incluir tinta manuscrita'));
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('returns null on Cancelar', (tester) async {

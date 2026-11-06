@@ -26,6 +26,7 @@ class ExportOptions {
   const ExportOptions({
     this.format = PdfExportFormat.a4,
     this.includeTypedContent = true,
+    this.includeInk = true,
   });
 
   /// Target paper size; content is contained and centered on it.
@@ -34,4 +35,8 @@ class ExportOptions {
   /// When `false`, every element is rendered with its definition's default
   /// config (blank template: no typed text, default colors).
   final bool includeTypedContent;
+
+  /// Includes saved handwriting. Turn this and [includeTypedContent] off
+  /// for a reusable template without personal writing.
+  final bool includeInk;
 }

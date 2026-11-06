@@ -68,7 +68,13 @@ abstract interface class FullAgendaRepository
         PageRepository,
         CanvasElementRepository,
         StrokeRepository {
-  /// One-shot, consistent read of [agendaId] with all live pages and elements.
+  /// One-shot consistent read of live pages, elements and optional ink.
+  ///
+  /// Ink geometry may be decoded lazily from captured data, never from a
+  /// later database read. Set [includeInk] to false to skip ink entirely.
   /// Returns null when the agenda does not exist or is soft-deleted.
-  Future<AgendaSnapshot?> getAgendaSnapshot(String agendaId);
+  Future<AgendaSnapshot?> getAgendaSnapshot(
+    String agendaId, {
+    bool includeInk = true,
+  });
 }

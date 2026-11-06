@@ -36,7 +36,7 @@
 - **Local storage** — SQLite persistence via Drift. No account or cloud synchronization is required or currently implemented.
 - **Bundled typography** — Fraunces and Plus Jakarta Sans ship with the app, with runtime font downloads disabled. See [variants, licenses and offline behavior](docs/fonts.md).
 - **Editable backups** — Export/import all active agendas, page elements and handwriting as a portable `.honeyday` file. Imports create independent copies without overwriting existing agendas. See [backup scope, privacy and limitations](docs/backups.md).
-- **PDF templates** — Export covers and page elements to PDF; handwritten ink is not currently included in PDF export (use editable backups to preserve it).
+- **PDF export** — Export the cover, page elements, typed content and handwriting. Turn off text and ink independently for reusable templates. PDFs are rasterized documents, not editable backups. See [scope, memory behavior and verification](docs/pdf-export.md).
 - **Responsive layout** — Adaptive navigation (bottom bar on mobile, rail on desktop).
 
 ## Tech Stack

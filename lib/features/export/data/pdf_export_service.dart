@@ -79,7 +79,10 @@ class PdfExportService {
   }) async {
     final cancelled = isCancelled ?? () => false;
     if (cancelled()) throw const ExportCancelled();
-    final snapshot = await _repository.getAgendaSnapshot(agendaId);
+    final snapshot = await _repository.getAgendaSnapshot(
+      agendaId,
+      includeInk: options.includeInk,
+    );
     if (snapshot == null) {
       throw StateError('Agenda $agendaId not found for export.');
     }
@@ -131,6 +134,8 @@ class PdfExportService {
         checkCancelled();
         await Future<void>.delayed(Duration.zero);
 
+        // Build one page at a time: its lazy ink is decoded here, not while
+        // taking the snapshot or constructing widgets for the whole agenda.
         final pageWidget = index == 0
             ? buildExportCover(snapshot.agenda)
             : buildExportPage(snapshot.pages[index - 1], options);

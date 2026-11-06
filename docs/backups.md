@@ -1,8 +1,9 @@
 # Editable backups
 
 Honeyday's **Settings → Editable backups** section can export and import all
-active agendas. Unlike PDF export, a backup includes editable elements **and
-handwritten ink**, so it can be used to move a library to another installation.
+active agendas. A [PDF](pdf-export.md) can display elements and handwriting,
+but only a backup preserves **editable elements and vector ink** for moving a
+library to another installation.
 
 ## Create a backup
 

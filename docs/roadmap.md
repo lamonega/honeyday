@@ -22,6 +22,10 @@ Priorizar un **cuaderno/planner local y personalizable** que se pueda usar a
 - [x] [Fuentes empaquetadas](fonts.md): variantes utilizadas, licencias,
   checksums, precarga y descargas en runtime desactivadas. Revisar y actualizar
   únicamente los golden de portadas afectados por las métricas de Fraunces.
+- [x] [PDF con tinta](pdf-export.md), lectura consistente, geometría decodificada
+  por página y opciones independientes de texto/tinta para plantillas.
+- [x] Pruebas de capas, resaltador, recorte y contenido del archivo PDF final;
+  golden nuevos de agenda completa frente a plantilla y benchmark de memoria.
 
 ## Próximos trabajos, en orden sugerido
 
@@ -59,15 +63,23 @@ sin conexión: también intervienen el hosting, el renderer y la caché del nave
 
 ### 3. Exportación PDF de la agenda completa
 
-El PDF actual exporta portada y elementos; **no incluye tinta manuscrita**.
-El backup sí la conserva. Antes de cambiarlo:
+El PDF ya incluye portada, elementos y tinta guardada por defecto. Para una
+plantilla, desactivar texto y tinta en el diálogo; también se pueden elegir de
+forma independiente. El PDF no sustituye al backup editable.
 
-- Definir opciones explícitas para agenda completa y plantilla reutilizable.
-- Mantener una lectura consistente entre texto, geometría y tinta.
-- Reutilizar el pintor de tinta existente y probar su orden de capas.
-- Medir memoria con páginas cargadas: decodificar todos los puntos de toda una
-  agenda simultáneamente puede anular las mejoras del pipeline de exportación.
-- Probar resultados visuales, cancelación y respuesta de la interfaz en Web y nativo.
+La instantánea captura las filas de tinta en la misma transacción que páginas
+y elementos, pero solo decodifica los puntos de la página que se está preparando.
+Las pruebas cubren capas, transparencia, recorte, datos borrados, cambios
+posteriores en la base y el contenido comprimido del archivo final.
+
+Pendiente en plataformas reales:
+
+- [ ] Revisar A4/Carta, portada y fidelidad de tinta/texto en un visor PDF externo.
+- [ ] Exportar con un campo enfocado y recién editado; comprobar texto y trazo final.
+- [ ] Cancelar una agenda grande y repetir la exportación sin dejar archivos temporales.
+- [ ] Medir memoria y respuesta con páginas de mucha tinta en Web y dispositivos
+  de poca RAM. Los JSON capturados siguen en memoria; no se promete memoria
+  constante para una biblioteca arbitrariamente grande.
 
 ### 4. Uso diario y recuperación
 
