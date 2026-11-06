@@ -157,6 +157,7 @@ void main() {
         produced = path != null
             ? File(path).lengthSync() > 0
             : (result.artifact.bytes?.isNotEmpty ?? false);
+        if (path != null) await File(path).delete();
       } on Object catch (error) {
         failure = error;
       } finally {
@@ -178,7 +179,8 @@ void main() {
     expect(
       ticks,
       greaterThanOrEqualTo(5),
-      reason: 'the event loop went unserved while the PDF was being produced; '
+      reason:
+          'the event loop went unserved while the PDF was being produced; '
           'the compression is back on the UI isolate',
     );
   }, timeout: const Timeout(Duration(minutes: 2)));
@@ -197,20 +199,28 @@ void main() {
 
     Object? failure;
     var done = false;
-    final run = service
-        .export(
-          agendaId: 'a1',
-          options: const ExportOptions(),
-          capture: (_, _) async => syntheticPage(pages),
-          createOutput: _MemoryOutput.new,
-        )
-        .then<void>(
-          (_) => done = true,
-          onError: (Object error) {
-            failure = error;
-            done = true;
-          },
-        );
+    var cancelled = false;
+    late Future<void> run;
+    // Create the export in the real async zone. Starting it in the test's
+    // fake zone also creates its timers/worker callbacks there, so crossing
+    // runAsync/pump boundaries can leave it waiting forever on CI.
+    await tester.runAsync(() async {
+      run = service
+          .export(
+            agendaId: 'a1',
+            options: const ExportOptions(),
+            capture: (_, _) async => syntheticPage(pages),
+            createOutput: _MemoryOutput.new,
+            isCancelled: () => cancelled,
+          )
+          .then<void>(
+            (_) => done = true,
+            onError: (Object error) {
+              failure = error;
+              done = true;
+            },
+          );
+    });
 
     var pumped = 0;
     // The cap is a runaway guard, not an expectation: the real bar is the
@@ -225,13 +235,22 @@ void main() {
         () => Future<void>.delayed(const Duration(milliseconds: 1)),
       );
     }
-    await run;
+    final completedWithinBudget = done;
+    if (!done) cancelled = true;
+    // Never await an unfinished export without a bound after the pump cap.
+    await tester.runAsync(() => run.timeout(const Duration(seconds: 10)));
 
+    expect(
+      completedWithinBudget,
+      isTrue,
+      reason: 'export exceeded the pump budget',
+    );
     expect(failure, isNull, reason: 'the export must succeed');
     expect(
       pumped,
       greaterThanOrEqualTo(5),
-      reason: 'the export finished after only $pumped frames; the frame '
+      reason:
+          'the export finished after only $pumped frames; the frame '
           'pipeline is being starved again',
     );
   }, timeout: const Timeout(Duration(minutes: 2)));
