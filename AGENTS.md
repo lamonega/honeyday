@@ -18,6 +18,9 @@ Desde la raíz, según README y CI:
 - Ejecuta la aplicación: `flutter run`.
 - Analiza: `dart analyze`.
 - Ejecuta pruebas: `flutter test`.
+- Formatea: `dart format .` (sin verificar contra CI o scripts; la guía original lo propone y modifica archivos).
+
+No hay un comando de build de aplicación confirmado en README o CI; la generación anterior no equivale a compilar la aplicación.
 
 CI usa Windows y Flutter 3.47.5; los golden tienen variantes para Windows y CI. Los benchmarks de exportación están excluidos de la ejecución normal; consulta README para ejecutarlos explícitamente.
 
