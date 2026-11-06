@@ -59,9 +59,9 @@ class AgendaViewerController {
 
   /// Adds a new page to the given [agendaId].
   Future<AgendaPage> addPage({
-    String? id,
     required String agendaId,
     required int pageNumber,
+    String? id,
     String backgroundStyle = 'dotted',
   }) {
     return _repository.createPage(
@@ -76,6 +76,10 @@ class AgendaViewerController {
   Future<void> deletePage(String pageId) {
     return _repository.deletePage(pageId);
   }
+
+  /// Duplicates a page with its content and ink in a single transaction.
+  Future<AgendaPage> duplicatePage(String pageId, {String? id}) =>
+      _repository.duplicatePage(pageId, id: id);
 
   /// Reorders pages according to the provided list of [pageIdsInOrder].
   Future<void> reorderPages(List<String> pageIdsInOrder) =>

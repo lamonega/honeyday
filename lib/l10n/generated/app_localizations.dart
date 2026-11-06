@@ -505,6 +505,18 @@ abstract class AppLocalizations {
   /// **'Pages ({count})'**
   String agendaPageCount(Object count);
 
+  /// Copy the selected page with its editable content and ink
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate page'**
+  String get agendaPageDuplicate;
+
+  /// Confirmation after an atomic page copy
+  ///
+  /// In en, this message translates to:
+  /// **'Page duplicated after the original.'**
+  String get agendaPageDuplicated;
+
   /// Add page
   ///
   /// In en, this message translates to:

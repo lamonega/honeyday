@@ -20,13 +20,18 @@ abstract interface class AgendaRepository {
 abstract interface class PageRepository {
   Stream<List<AgendaPage>> watchPages(String agendaId);
   Future<AgendaPage> createPage({
-    String? id,
     required String agendaId,
     required int pageNumber,
+    String? id,
     String backgroundStyle = 'dotted',
   });
   Future<void> updatePageBackground(String pageId, String backgroundStyle);
   Future<void> deletePage(String pageId);
+
+  /// Copies a live page and all its live elements/ink immediately after it.
+  /// A caller-supplied [id] makes a retry idempotent.
+  Future<AgendaPage> duplicatePage(String pageId, {String? id});
+
   Future<void> reorderPages(List<String> pageIdsInOrder);
 }
 

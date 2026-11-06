@@ -15,6 +15,7 @@ class PageManagerSheet extends StatefulWidget {
     required this.onChangePaperStyle,
     required this.onReorderPages,
     required this.onAddPage,
+    this.onDuplicatePage,
     super.key,
   });
 
@@ -25,6 +26,7 @@ class PageManagerSheet extends StatefulWidget {
   final void Function(String pageId, String style) onChangePaperStyle;
   final ValueChanged<List<String>> onReorderPages;
   final VoidCallback onAddPage;
+  final ValueChanged<String>? onDuplicatePage;
 
   @override
   State<PageManagerSheet> createState() => _PageManagerSheetState();
@@ -81,6 +83,13 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
   void _onAddPage() {
     Navigator.of(context).pop();
     widget.onAddPage();
+  }
+
+  void _onDuplicatePage() {
+    if (_currentPageIndex < 0 || _currentPageIndex >= _pages.length) return;
+    final pageId = _pages[_currentPageIndex].id;
+    Navigator.of(context).pop();
+    widget.onDuplicatePage?.call(pageId);
   }
 
   Future<void> _confirmDelete() async {
@@ -173,6 +182,9 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
             onChangePaperStyle: _onChangePaperStyle,
             onDeletePage: _confirmDelete,
             onAddPage: _onAddPage,
+            onDuplicatePage: widget.onDuplicatePage == null
+                ? null
+                : _onDuplicatePage,
           ),
         ],
       ),

@@ -239,6 +239,10 @@
   "@agendaPageCount": {
     "description": "Pages ({count})"
   },
+  "agendaPageDuplicate": "Duplicate page",
+  "@agendaPageDuplicate": {"description": "Copy the selected page with its editable content and ink"},
+  "agendaPageDuplicated": "Page duplicated after the original.",
+  "@agendaPageDuplicated": {"description": "Confirmation after an atomic page copy"},
   "agendaPageAdd": "Add page",
   "@agendaPageAdd": {
     "description": "Add page"

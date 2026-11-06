@@ -242,6 +242,13 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get agendaPageDuplicate => 'Duplicar página';
+
+  @override
+  String get agendaPageDuplicated =>
+      'Se duplicó la página después de la original.';
+
+  @override
   String get agendaPageAdd => 'Añadir página';
 
   @override

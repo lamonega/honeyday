@@ -22,6 +22,7 @@ class ViewerCatalogSheet {
     required void Function(String pageId, String style) onChangePaperStyle,
     required ValueChanged<List<String>> onReorderPages,
     required VoidCallback onAddPage,
+    ValueChanged<String>? onDuplicatePage,
   }) {
     return showModalBottomSheet<void>(
       context: context,
@@ -35,6 +36,7 @@ class ViewerCatalogSheet {
         onChangePaperStyle: onChangePaperStyle,
         onReorderPages: onReorderPages,
         onAddPage: onAddPage,
+        onDuplicatePage: onDuplicatePage,
       ),
     );
   }

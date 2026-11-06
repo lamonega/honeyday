@@ -363,6 +363,31 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
           }
         }
       },
+      onDuplicatePage: (pageId) async {
+        // Flush the currently focused field before taking the persisted copy.
+        // Keep the operation's ID stable if the save queue retries it.
+        final copyId = _uuid.v4();
+        FocusManager.instance.primaryFocus?.unfocus();
+        try {
+          _saveSession.flushEditors();
+          await _saveSession.drain();
+          if (!mounted) return;
+          await _saveSession.enqueue(() async {
+            await controller.duplicatePage(pageId, id: copyId);
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  AppLocalizations.of(context).agendaPageDuplicated,
+                ),
+              ),
+            );
+          }
+        } on Object catch (error) {
+          if (mounted) _reportPersistError(context, error);
+        }
+      },
       onAddPage: () async {
         final style = await ViewerCatalogSheet.showNewPageDesign(context);
         if (style == null || !mounted) return;

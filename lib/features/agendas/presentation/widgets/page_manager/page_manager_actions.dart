@@ -16,6 +16,7 @@ class PageManagerActions extends StatelessWidget {
     required this.onChangePaperStyle,
     required this.onDeletePage,
     required this.onAddPage,
+    this.onDuplicatePage,
     super.key,
   });
 
@@ -36,6 +37,8 @@ class PageManagerActions extends StatelessWidget {
 
   /// Called when the user taps the add-page button.
   final VoidCallback onAddPage;
+
+  final VoidCallback? onDuplicatePage;
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +67,12 @@ class PageManagerActions extends StatelessWidget {
                 },
               ),
               const Spacer(),
+              if (onDuplicatePage != null)
+                IconButton(
+                  icon: const Icon(Icons.copy_all_outlined, size: 20),
+                  tooltip: l10n.agendaPageDuplicate,
+                  onPressed: onDuplicatePage,
+                ),
               if (canDeletePage)
                 IconButton(
                   icon: Icon(

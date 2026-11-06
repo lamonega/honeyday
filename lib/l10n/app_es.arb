@@ -67,6 +67,8 @@
   "agendaPageDeleteTitle": "¿Eliminar página?",
   "agendaPageDeleteContent": "Se eliminará la página {index}. Esta acción no se puede deshacer.",
   "agendaPageCount": "Páginas ({count})",
+  "agendaPageDuplicate": "Duplicar página",
+  "agendaPageDuplicated": "Se duplicó la página después de la original.",
   "agendaPageAdd": "Añadir página",
   "agendaModeRead": "Modo lectura",
   "agendaModeEdit": "Modo edición",

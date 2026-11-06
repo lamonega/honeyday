@@ -30,6 +30,7 @@ void main() {
       void Function(String, String)? onChangePaperStyle,
       ValueChanged<List<String>>? onReorderPages,
       VoidCallback? onAddPage,
+      ValueChanged<String>? onDuplicatePage,
     }) => tester.pumpWidget(
       testMaterialApp(
         home: Scaffold(
@@ -41,6 +42,7 @@ void main() {
             onChangePaperStyle: onChangePaperStyle ?? (_, _) {},
             onReorderPages: onReorderPages ?? (_) {},
             onAddPage: onAddPage ?? () {},
+            onDuplicatePage: onDuplicatePage,
           ),
         ),
       ),
@@ -68,6 +70,28 @@ void main() {
       await tester.tap(find.text('Añadir página'));
       await tester.pumpAndSettle();
       expect(added, isTrue);
+    });
+
+    testWidgets('duplicates the selected page by identity after reorder', (
+      tester,
+    ) async {
+      String? duplicated;
+      await pumpSheet(tester, onDuplicatePage: (id) => duplicated = id);
+      tester
+          .widget<PageManagerGrid>(find.byType(PageManagerGrid))
+          .onReorder(0, 1);
+      await tester.pump();
+      await tester.tap(find.byTooltip('Duplicar página'));
+      await tester.pumpAndSettle();
+      expect(duplicated, 'page-1');
+    });
+
+    testWidgets('duplicate controls fit a narrow sheet', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(320, 600));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await pumpSheet(tester, onDuplicatePage: (_) {});
+      expect(find.byTooltip('Duplicar página'), findsOneWidget);
+      expect(tester.takeException(), isNull);
     });
 
     testWidgets('delete button shown when more than 1 page', (tester) async {

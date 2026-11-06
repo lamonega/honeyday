@@ -1,4 +1,5 @@
-import 'package:honeyday/core/database/app_database.dart' hide Agenda, AgendaPage;
+import 'package:honeyday/core/database/app_database.dart'
+    hide Agenda, AgendaPage;
 import 'package:honeyday/features/agendas/data/repositories/agenda_dao.dart';
 import 'package:honeyday/features/agendas/data/repositories/canvas_element_dao.dart';
 import 'package:honeyday/features/agendas/data/repositories/page_dao.dart';
@@ -18,11 +19,11 @@ import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 class DriftAgendaRepository implements FullAgendaRepository {
   /// Constructs a [DriftAgendaRepository] using the provided [AppDatabase].
   DriftAgendaRepository(AppDatabase db)
-      : _db = db,
-        _agendaDao = AgendaDao(db),
-        _pageDao = PageDao(db),
-        _canvasElementDao = CanvasElementDao(db),
-        _strokeDao = StrokeDao(db);
+    : _db = db,
+      _agendaDao = AgendaDao(db),
+      _pageDao = PageDao(db),
+      _canvasElementDao = CanvasElementDao(db),
+      _strokeDao = StrokeDao(db);
 
   final AppDatabase _db;
   final AgendaDao _agendaDao;
@@ -40,8 +41,7 @@ class DriftAgendaRepository implements FullAgendaRepository {
   Future<Agenda> createAgenda({
     required String title,
     String coverStyle = 'honey',
-  }) =>
-      _agendaDao.createAgenda(title: title, coverStyle: coverStyle);
+  }) => _agendaDao.createAgenda(title: title, coverStyle: coverStyle);
 
   @override
   Future<void> updateAgendaTitle(String id, String newTitle) =>
@@ -56,17 +56,16 @@ class DriftAgendaRepository implements FullAgendaRepository {
 
   @override
   Future<AgendaPage> createPage({
-    String? id,
     required String agendaId,
     required int pageNumber,
+    String? id,
     String backgroundStyle = 'dotted',
-  }) =>
-      _pageDao.createPage(
-        id: id,
-        agendaId: agendaId,
-        pageNumber: pageNumber,
-        backgroundStyle: backgroundStyle,
-      );
+  }) => _pageDao.createPage(
+    id: id,
+    agendaId: agendaId,
+    pageNumber: pageNumber,
+    backgroundStyle: backgroundStyle,
+  );
 
   @override
   Future<void> updatePageBackground(String pageId, String backgroundStyle) =>
@@ -74,6 +73,10 @@ class DriftAgendaRepository implements FullAgendaRepository {
 
   @override
   Future<void> deletePage(String pageId) => _pageDao.deletePage(pageId);
+
+  @override
+  Future<AgendaPage> duplicatePage(String pageId, {String? id}) =>
+      _pageDao.duplicatePage(pageId, id: id);
 
   @override
   Future<void> reorderPages(List<String> pageIdsInOrder) =>
