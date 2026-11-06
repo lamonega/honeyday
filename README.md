@@ -112,7 +112,7 @@ flutter run
 ### Verification
 
 ```bash
-dart analyze
+dart analyze --fatal-infos
 flutter test
 flutter build web
 ```

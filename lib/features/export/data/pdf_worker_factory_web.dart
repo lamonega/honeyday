@@ -50,7 +50,7 @@ class _BrowserPdfWorker {
 
       final JSObject data;
       try {
-        data = event.data as JSObject;
+        data = event.data! as JSObject;
       } on Object catch (error) {
         _fail(error);
         return;
@@ -103,7 +103,9 @@ class _BrowserPdfWorker {
   Future<Uint8List> _compress(PdfWorkerRequest request) async {
     if (_closed) throw const ExportCancelled();
     final failure = _failure;
-    if (failure != null) throw failure;
+    if (failure != null) {
+      Error.throwWithStackTrace(failure, StackTrace.current);
+    }
     if (_pending != null) {
       throw StateError('Overlapping browser PDF compression jobs.');
     }
@@ -129,7 +131,7 @@ class _BrowserPdfWorker {
       _fail(error);
     }
 
-    return pending.future.timeout(
+    return await pending.future.timeout(
       const Duration(seconds: 60),
       onTimeout: () {
         final error = TimeoutException('PDF Web Worker timed out.');

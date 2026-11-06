@@ -37,7 +37,7 @@ class _ResizeHarness with TransformGestureMixin {
     currentSize = s;
   };
 
-  Offset corner(bool left, bool top) {
+  Offset corner({required bool left, required bool top}) {
     final center =
         currentPosition + Offset(currentSize.width / 2, currentSize.height / 2);
     final local = Offset(
@@ -60,7 +60,7 @@ void main() {
       for (final top in [false, true]) {
         test('resize keeps opposite corner fixed ($angle, $left, $top)', () {
           final harness = _ResizeHarness(angle);
-          final fixed = harness.corner(!left, !top);
+          final fixed = harness.corner(left: !left, top: !top);
           final handler = left
               ? (top ? harness.handleResizeNW : harness.handleResizeSW)
               : (top ? harness.handleResizeNE : harness.handleResizeSE);
@@ -71,7 +71,7 @@ void main() {
             ),
           );
           expect(
-            (harness.corner(!left, !top) - fixed).distance,
+            (harness.corner(left: !left, top: !top) - fixed).distance,
             lessThan(0.001),
           );
           handler(
@@ -81,7 +81,7 @@ void main() {
             ),
           );
           expect(
-            (harness.corner(!left, !top) - fixed).distance,
+            (harness.corner(left: !left, top: !top) - fixed).distance,
             lessThan(0.001),
           );
           expect(harness.currentSize.width, greaterThanOrEqualTo(24));

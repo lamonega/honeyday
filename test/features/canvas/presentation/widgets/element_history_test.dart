@@ -20,8 +20,9 @@ void main() {
       final original = _el('a')
           .copyWith(configJson: '{"text":"old","color":"red"}');
       final moved = original.copyWith(position: const Offset(50, 0));
-      history.push([original]);
-      history.push([moved]);
+      history
+        ..push([original])
+        ..push([moved]);
       final blue = moved.copyWith(configJson: '{"text":"old","color":"blue"}');
       final current = history.undo([blue])!;
       history.rebaseConfig(
@@ -44,18 +45,21 @@ void main() {
       });
       final undoneMove = history.undo(undoneStyle)!;
       expect(undoneMove.single.position, Offset.zero);
-      expect(jsonDecode(undoneMove.single.configJson)['text'], 'new');
+      final config =
+          jsonDecode(undoneMove.single.configJson) as Map<String, dynamic>;
+      expect(config['text'], 'new');
     });
 
     test('rebasing removes deleted config keys from snapshots', () {
       final history = ElementHistory();
       final original = _el('a').copyWith(configJson: '{"text":"old"}');
-      history.push([original]);
-      history.rebaseConfig(
-        elementId: 'a',
-        beforeJson: original.configJson,
-        afterJson: '{}',
-      );
+      history
+        ..push([original])
+        ..rebaseConfig(
+          elementId: 'a',
+          beforeJson: original.configJson,
+          afterJson: '{}',
+        );
       expect(jsonDecode(history.undo([original])!.single.configJson), isEmpty);
     });
 

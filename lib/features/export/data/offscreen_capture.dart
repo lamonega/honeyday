@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -14,10 +13,6 @@ import 'package:honeyday/l10n/generated/app_localizations.dart';
 /// The tree is never inserted into an app Overlay or presented by the window,
 /// so page-sized content cannot cover UI or intercept input.
 class OffscreenCaptureHost {
-  static Future<void> _loadPendingFonts() async {
-    await GoogleFonts.pendingFonts();
-  }
-
   OffscreenCaptureHost(
     BuildContext context, {
     Future<void> Function()? waitForFonts,
@@ -37,12 +32,15 @@ class OffscreenCaptureHost {
           width: kDefaultPageWidth,
           height: kDefaultPageHeight,
         ),
-        devicePixelRatio: 1,
       ),
       child: _boundary,
     );
     _pipelineOwner.rootNode = _renderView;
     _renderView.prepareInitialFrame();
+  }
+
+  static Future<void> _loadPendingFonts() async {
+    await GoogleFonts.pendingFonts();
   }
 
   final Future<void> Function() _waitForFonts;
@@ -72,7 +70,6 @@ class OffscreenCaptureHost {
         child: MediaQuery(
           data: const MediaQueryData(
             size: Size(kDefaultPageWidth, kDefaultPageHeight),
-            devicePixelRatio: 1,
             textScaler: TextScaler.noScaling,
           ),
           child: Theme(
@@ -84,10 +81,7 @@ class OffscreenCaptureHost {
                 child: SizedBox(
                   width: kDefaultPageWidth,
                   height: kDefaultPageHeight,
-                  child: KeyedSubtree(
-                    key: UniqueKey(),
-                    child: page,
-                  ),
+                  child: KeyedSubtree(key: UniqueKey(), child: page),
                 ),
               ),
             ),
@@ -129,7 +123,9 @@ class OffscreenCaptureHost {
     } on TimeoutException {
       debugPrint('Honeyday: export font loading timed out; using fallback.');
     } on Object catch (error) {
-      debugPrint('Honeyday: export font loading failed; using fallback: $error');
+      debugPrint(
+        'Honeyday: export font loading failed; using fallback: $error',
+      );
     }
 
     _checkAlive();
@@ -147,17 +143,12 @@ class OffscreenCaptureHost {
 
     final image = await _boundary.toImage(pixelRatio: pixelRatio);
     try {
-      final data = await image.toByteData(
-        format: ui.ImageByteFormat.rawRgba,
-      );
+      final data = await image.toByteData();
       if (data == null) {
         throw StateError('Failed to read exported page pixels.');
       }
       return CapturedPage(
-        rgba: data.buffer.asUint8List(
-          data.offsetInBytes,
-          data.lengthInBytes,
-        ),
+        rgba: data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes),
         width: image.width,
         height: image.height,
       );
@@ -192,11 +183,11 @@ class OffscreenCaptureHost {
 
     final root = _root;
     if (root != null) {
-      RenderObjectToWidgetAdapter<RenderBox>(
-        container: _boundary,
-      ).attachToRenderTree(_buildOwner, root);
-      _buildOwner.buildScope(root);
-      _buildOwner.finalizeTree();
+      RenderObjectToWidgetAdapter<RenderBox>(container: _boundary)
+          .attachToRenderTree(_buildOwner, root);
+      _buildOwner
+        ..buildScope(root)
+        ..finalizeTree();
       _root = null;
     }
 

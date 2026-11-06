@@ -6,10 +6,11 @@ class WritingInputNotifier extends Notifier<WritingInput> {
   @override
   WritingInput build() => WritingInput.ink;
 
-  void select(WritingInput input) => state = input;
+  WritingInput get selected => state;
+  set selected(WritingInput input) => state = input;
 }
 
 final writingInputProvider =
     NotifierProvider<WritingInputNotifier, WritingInput>(
-  WritingInputNotifier.new,
-);
+      WritingInputNotifier.new,
+    );

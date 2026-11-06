@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/catalog/domain/catalog_registry.dart';
-import 'package:honeyday/features/catalog/presentation/widgets/stickers/sticker_definitions.dart';
 
 import '../../../../helpers/pump_app.dart';
 

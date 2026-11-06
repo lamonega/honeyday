@@ -328,8 +328,8 @@ void _hline(
   int g,
   int b,
 ) {
-  final startX = from.clamp(0, _width).toInt();
-  final endX = to.clamp(0, _width).toInt();
+  final startX = from.clamp(0, _width);
+  final endX = to.clamp(0, _width);
   for (var dy = 0; dy < thickness; dy++) {
     final rowY = y + dy;
     if (rowY < 0 || rowY >= _height) continue;

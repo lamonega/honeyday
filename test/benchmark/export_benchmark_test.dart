@@ -338,7 +338,7 @@ void main() {
 
       // The cover is a full image too, so the per-image figure has to divide by
       // pages + 1 or every size comes out understated by a page.
-      final images = kBenchPages + 1;
+      const images = kBenchPages + 1;
 
       _log('pages            $kBenchPages (+1 cover) at '
           '$_benchWidth×$_benchHeight');

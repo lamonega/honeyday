@@ -27,7 +27,7 @@ class WritingInputSelector extends ConsumerWidget {
       selected: {selected},
       onSelectionChanged: (values) {
         FocusManager.instance.primaryFocus?.unfocus();
-        ref.read(writingInputProvider.notifier).select(values.single);
+        ref.read(writingInputProvider.notifier).selected = values.single;
       },
     );
   }

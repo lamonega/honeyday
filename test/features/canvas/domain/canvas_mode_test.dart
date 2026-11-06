@@ -4,8 +4,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode_notifier.dart';
 import 'package:honeyday/features/canvas/domain/ink_tool.dart';
+import 'package:honeyday/features/canvas/domain/writing_input.dart';
 
 void main() {
+  test('writing input selection switches between ink and editable content', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    expect(container.read(writingInputProvider), WritingInput.ink);
+    container.read(writingInputProvider.notifier).selected =
+        WritingInput.content;
+    expect(container.read(writingInputProvider), WritingInput.content);
+    container.read(writingInputProvider.notifier).selected = WritingInput.ink;
+    expect(container.read(writingInputProvider), WritingInput.ink);
+  });
+
   group('CanvasMode and Providers Tests', () {
     test('CanvasMode enum values exist and default is writing', () {
       final container = ProviderContainer();

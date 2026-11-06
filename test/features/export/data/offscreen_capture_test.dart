@@ -21,10 +21,7 @@ void main() {
         ),
       );
 
-      final host = OffscreenCaptureHost(
-        appContext,
-        waitForFonts: () async {},
-      );
+      final host = OffscreenCaptureHost(appContext, waitForFonts: () async {});
       try {
         final page = await tester.runAsync(
           () => host.capture(
@@ -65,10 +62,7 @@ void main() {
       ),
     );
 
-    final host = OffscreenCaptureHost(
-      appContext,
-      waitForFonts: () async {},
-    );
+    final host = OffscreenCaptureHost(appContext, waitForFonts: () async {});
     try {
       final first = await tester.runAsync(
         () => host.capture(const ColoredBox(color: Colors.red), 1),
@@ -100,10 +94,7 @@ void main() {
       ),
     );
 
-    final host = OffscreenCaptureHost(
-      appContext,
-      waitForFonts: () async {},
-    );
+    final host = OffscreenCaptureHost(appContext, waitForFonts: () async {});
     try {
       await expectLater(host.rasterize(1), throwsStateError);
     } finally {
@@ -124,12 +115,9 @@ void main() {
       ),
     );
 
-    final host = OffscreenCaptureHost(
-      appContext,
-      waitForFonts: () async {},
-    );
-    host.dispose();
-    host.dispose();
+    OffscreenCaptureHost(appContext, waitForFonts: () async {})
+      ..dispose()
+      ..dispose();
     expect(tester.takeException(), isNull);
   });
 }

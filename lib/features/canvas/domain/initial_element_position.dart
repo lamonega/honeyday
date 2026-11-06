@@ -7,10 +7,7 @@ Offset initialElementPosition({
   required Size pageSize,
   Offset preferred = const Offset(120, 100),
 }) {
-  final maxX = math.max(0.0, pageSize.width - elementSize.width);
-  final maxY = math.max(0.0, pageSize.height - elementSize.height);
-  return Offset(
-    preferred.dx.clamp(0.0, maxX).toDouble(),
-    preferred.dy.clamp(0.0, maxY).toDouble(),
-  );
+  final maxX = math.max<double>(0, pageSize.width - elementSize.width);
+  final maxY = math.max<double>(0, pageSize.height - elementSize.height);
+  return Offset(preferred.dx.clamp(0.0, maxX), preferred.dy.clamp(0.0, maxY));
 }

@@ -104,9 +104,7 @@ class IsolatePdfWorker {
         onExit: exits.sendPort,
         debugName: 'honeyday-export-$index',
       );
-      final commands = await ready.future.timeout(
-        const Duration(seconds: 10),
-      );
+      final commands = await ready.future.timeout(const Duration(seconds: 10));
       worker = _IsolateBackedWorker(
         IsolatePdfWorker._(isolate, commands, answers, errors, exits),
       );
@@ -143,10 +141,8 @@ class _IsolateBackedWorker {
   StackTrace? _failureStack;
   bool _shutdown = false;
 
-  PdfCompressionWorker get handle => PdfCompressionWorker(
-    compress: _compress,
-    shutdown: _shutdownWorker,
-  );
+  PdfCompressionWorker get handle =>
+      PdfCompressionWorker(compress: _compress, shutdown: _shutdownWorker);
 
   Future<Uint8List> _compress(PdfWorkerRequest request) {
     if (_shutdown) return Future<Uint8List>.error(const ExportCancelled());
@@ -198,7 +194,7 @@ class _IsolateBackedWorker {
     _pending = null;
     _pageIndex = null;
     if (pending != null && !pending.isCompleted) {
-      pending.completeError(_failure!, _failureStack!);
+      pending.completeError(_failure!, _failureStack);
     }
   }
 
