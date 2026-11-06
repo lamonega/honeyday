@@ -23,6 +23,9 @@
 *.woff binary
 *.woff2 binary
 
+# Preserve upstream font licenses verbatim and keep checksums reproducible.
+assets/fonts/OFL-*.txt text eol=lf whitespace=-blank-at-eol
+
 # Other
 *.md text diff=markdown
 *.yaml text

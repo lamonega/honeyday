@@ -34,6 +34,7 @@
 - **Customizable themes** — System / light / dark mode, 8 accent color presets, warm paper-and-honey aesthetic.
 - **Onboarding flow** — Clean 3-step onboarding carousel.
 - **Local storage** — SQLite persistence via Drift. No account or cloud synchronization is required or currently implemented.
+- **Bundled typography** — Fraunces and Plus Jakarta Sans ship with the app, with runtime font downloads disabled. See [variants, licenses and offline behavior](docs/fonts.md).
 - **Editable backups** — Export/import all active agendas, page elements and handwriting as a portable `.honeyday` file. Imports create independent copies without overwriting existing agendas. See [backup scope, privacy and limitations](docs/backups.md).
 - **PDF templates** — Export covers and page elements to PDF; handwritten ink is not currently included in PDF export (use editable backups to preserve it).
 - **Responsive layout** — Adaptive navigation (bottom bar on mobile, rail on desktop).
@@ -46,7 +47,7 @@
 | State Management | [Riverpod](https://riverpod.dev) |
 | Routing | [GoRouter](https://pub.dev/packages/go_router) |
 | Local Database | [Drift](https://drift.simonbinder.eu) (SQLite) |
-| Fonts | [Google Fonts](https://fonts.google.com) (Fraunces + Plus Jakarta Sans) |
+| Fonts | Bundled Fraunces + Plus Jakarta Sans via [google_fonts](https://pub.dev/packages/google_fonts), no runtime fetching |
 | Animations | [flutter_animate](https://pub.dev/packages/flutter_animate) |
 | Ink Engine | [perfect_freehand](https://pub.dev/packages/perfect_freehand) |
 | Linting | [Very Good Analysis](https://pub.dev/packages/very_good_analysis) |
@@ -138,6 +139,7 @@ flutter test test/benchmark --run-skipped              # full pipeline, end to e
 ## License
 
 This project is licensed under the **GNU General Public License v3.0** — see the [LICENSE](LICENSE) file for details.
+Bundled fonts retain their **SIL Open Font License 1.1**; see [font provenance and licenses](docs/fonts.md).
 
 ---
 

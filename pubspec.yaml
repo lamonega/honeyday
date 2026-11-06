@@ -46,6 +46,7 @@ dependencies:
 dev_dependencies:
   alchemist: ^0.14.0
   build_runner: ^2.16.1
+  crypto: ^3.0.7
   drift_dev: ^2.35.0
   flutter_test:
     sdk: flutter
@@ -57,5 +58,6 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/fonts/
     - assets/icons/
     - assets/images/

@@ -19,6 +19,9 @@ Priorizar un **cuaderno/planner local y personalizable** que se pueda usar a
 - [x] Corregir el timeout de la prueba de respuesta de exportación.
 - [x] Análisis sin incidencias y CI que rechaza también los avisos informativos.
 - [x] Compilar el target JavaScript Web en CI, además de las pruebas en Windows.
+- [x] [Fuentes empaquetadas](fonts.md): variantes utilizadas, licencias,
+  checksums, precarga y descargas en runtime desactivadas. Revisar y actualizar
+  únicamente los golden de portadas afectados por las métricas de Fraunces.
 
 ## Próximos trabajos, en orden sugerido
 
@@ -45,11 +48,14 @@ No crear un tag de release basándose únicamente en análisis y pruebas de widg
 
 ### 2. Fuentes realmente offline
 
-Actualmente `google_fonts` descarga fuentes en runtime y los golden existentes
-utilizan su configuración de prueba. Empaquetar Fraunces y Plus Jakarta Sans con
-sus licencias y variantes utilizadas. Verificar un primer arranque sin red,
-la captura PDF y los cambios visuales. No regenerar golden sin revisar imágenes:
-incorporar fuentes reales puede cambiar medidas, saltos de línea y portadas.
+Fraunces y Plus Jakarta Sans ya se distribuyen como assets, con precarga y sin
+peticiones de fuentes a Google. Las pruebas comprueban integridad, licencias,
+renderizado real y captura PDF. Se revisaron las referencias Windows y CI:
+solo cambiaron los títulos de las portadas. Ver [alcance y mantenimiento](fonts.md).
+
+Queda validar un primer arranque **nativo** sin red en dispositivos reales.
+En Web, empaquetar fuentes no garantiza que toda la aplicación esté disponible
+sin conexión: también intervienen el hosting, el renderer y la caché del navegador.
 
 ### 3. Exportación PDF de la agenda completa
 

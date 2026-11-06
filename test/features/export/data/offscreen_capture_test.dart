@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
@@ -75,6 +76,61 @@ void main() {
       expect(second, isNotNull);
       expect(first!.width, kDefaultPageWidth);
       expect(second!.height, kDefaultPageHeight);
+      expect(tester.takeException(), isNull);
+    } finally {
+      host.dispose();
+    }
+  });
+
+  testWidgets('PDF capture uses bundled fonts with the real font wait', (
+    tester,
+  ) async {
+    late BuildContext appContext;
+    await tester.pumpWidget(
+      testMaterialApp(
+        home: Builder(
+          builder: (context) {
+            appContext = context;
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
+
+    // Do not override waitForFonts: exercise the production loading path.
+    final host = OffscreenCaptureHost(appContext);
+    Widget page({required bool useFallback}) => ColoredBox(
+      color: Colors.white,
+      child: Builder(
+        builder: (context) {
+          final theme = Theme.of(context).textTheme;
+          TextStyle style(TextStyle base) => useFallback
+              ? base.copyWith(fontFamily: 'Ahem', fontFamilyFallback: [])
+              : base;
+          return Column(
+            children: [
+              Text('Miércoles, ¿cómo estás?', style: style(theme.titleLarge!)),
+              Text(
+                'Una agenda para cada día.',
+                style: style(theme.bodyMedium!),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    try {
+      final bundled = await tester.runAsync(
+        () => host.capture(page(useFallback: false), 0.5),
+      );
+      final fallback = await tester.runAsync(
+        () => host.capture(page(useFallback: true), 0.5),
+      );
+      expect(bundled, isNotNull);
+      expect(fallback, isNotNull);
+      expect(bundled!.byteLength, fallback!.byteLength);
+      expect(listEquals(bundled.rgba, fallback.rgba), isFalse);
       expect(tester.takeException(), isNull);
     } finally {
       host.dispose();
