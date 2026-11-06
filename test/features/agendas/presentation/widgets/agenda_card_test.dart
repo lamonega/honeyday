@@ -6,11 +6,16 @@ import 'package:honeyday/features/agendas/presentation/widgets/agenda_card.dart'
 import '../../../../helpers/pump_app.dart';
 
 /// Builds an [AgendaCard] sized like the home grid card.
-Widget _card(int pageCount) {
+Widget _card(
+  int pageCount, {
+  VoidCallback? onRename,
+  VoidCallback? onOpenWriting,
+  double width = 300,
+}) {
   return Scaffold(
     body: Center(
       child: SizedBox(
-        width: 300,
+        width: width,
         height: 360,
         child: AgendaCard(
           agenda: Agenda(
@@ -21,7 +26,8 @@ Widget _card(int pageCount) {
             createdAt: DateTime(2026, 9, 11),
             updatedAt: DateTime(2026, 9, 11),
           ),
-          onOpenWriting: () {},
+          onOpenWriting: onOpenWriting ?? () {},
+          onRename: onRename,
           onOpenReading: () {},
           onOpenEdit: () {},
           onDelete: () {},
@@ -32,6 +38,28 @@ Widget _card(int pageCount) {
 }
 
 void main() {
+  testWidgets('rename is accessible without opening the agenda', (
+    tester,
+  ) async {
+    var renames = 0;
+    var opens = 0;
+    await tester.pumpWidget(
+      testMaterialApp(
+        home: _card(
+          123,
+          width: 260,
+          onRename: () => renames++,
+          onOpenWriting: () => opens++,
+        ),
+      ),
+    );
+    await tester.tap(find.byTooltip('Renombrar agenda'));
+    await tester.pumpAndSettle();
+    expect(renames, 1);
+    expect(opens, 0);
+    expect(tester.takeException(), isNull);
+  });
+
   group('AgendaCard page-count badge', () {
     // gen_l10n does not substitute the ICU `#` character: it only selects the
     // plural branch. The ARB must interpolate {count}, otherwise the badge

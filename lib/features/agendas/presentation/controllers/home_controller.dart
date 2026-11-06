@@ -50,6 +50,15 @@ class HomeController {
     return agenda;
   }
 
+  /// Renames an agenda without allowing an empty or whitespace-only title.
+  Future<void> renameAgenda(String id, String title) async {
+    final trimmed = title.trim();
+    if (trimmed.isEmpty) {
+      throw ArgumentError.value(title, 'title', 'An agenda needs a title.');
+    }
+    await _repository.updateAgendaTitle(id, trimmed);
+  }
+
   /// Deletes an agenda by soft-deleting it in persistence.
   Future<void> deleteAgenda(String id) {
     return _repository.deleteAgenda(id);

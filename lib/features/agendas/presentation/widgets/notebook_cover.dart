@@ -12,6 +12,7 @@ class NotebookCover extends StatelessWidget {
     required this.coverStyle,
     super.key,
     this.onDelete,
+    this.onRename,
   });
 
   final String title;
@@ -21,6 +22,9 @@ class NotebookCover extends StatelessWidget {
   ///
   /// Null hides the delete button (static previews such as PDF export).
   final VoidCallback? onDelete;
+
+  /// Null hides the rename action in static previews.
+  final VoidCallback? onRename;
 
   static LinearGradient _getCoverGradient(String style) {
     // Try parsing as hex color first
@@ -86,7 +90,20 @@ class NotebookCover extends StatelessWidget {
           const _BookmarkRibbon(),
           const _PageEdges(),
           _CoverTitle(title: title),
-          if (onDelete != null) _DeleteButton(onDelete: onDelete!),
+          if (onDelete != null)
+            _CoverActionButton(
+              onPressed: onDelete!,
+              icon: Icons.delete_outline_rounded,
+              tooltip: AppLocalizations.of(context).agendaDeleteTooltip,
+              right: 10,
+            ),
+          if (onRename != null)
+            _CoverActionButton(
+              onPressed: onRename!,
+              icon: Icons.drive_file_rename_outline,
+              tooltip: AppLocalizations.of(context).agendaRename,
+              right: onDelete != null ? 54 : 10,
+            ),
         ],
       ),
     );
@@ -261,25 +278,29 @@ class _CoverTitle extends StatelessWidget {
   }
 }
 
-class _DeleteButton extends StatelessWidget {
-  const _DeleteButton({required this.onDelete});
+class _CoverActionButton extends StatelessWidget {
+  const _CoverActionButton({
+    required this.onPressed,
+    required this.icon,
+    required this.tooltip,
+    required this.right,
+  });
 
-  final VoidCallback onDelete;
+  final VoidCallback onPressed;
+  final IconData icon;
+  final String tooltip;
+  final double right;
 
   @override
   Widget build(BuildContext context) {
     return Positioned(
       top: 6,
-      right: 10,
+      right: right,
       child: IconButton(
-        icon: const Icon(
-          Icons.delete_outline_rounded,
-          color: Colors.white70,
-          size: 19,
-        ),
-        tooltip: AppLocalizations.of(context).agendaDeleteTooltip,
+        icon: Icon(icon, color: Colors.white70, size: 19),
+        tooltip: tooltip,
         visualDensity: VisualDensity.compact,
-        onPressed: onDelete,
+        onPressed: onPressed,
       ),
     );
   }

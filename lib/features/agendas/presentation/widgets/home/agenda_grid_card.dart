@@ -25,6 +25,7 @@ class AgendaGridCard extends StatelessWidget {
     required this.onOpenReading,
     required this.onOpenEdit,
     required this.onDelete,
+    this.onRename,
     super.key,
   });
 
@@ -46,18 +47,21 @@ class AgendaGridCard extends StatelessWidget {
   /// Triggered when the user requests deletion.
   final VoidCallback onDelete;
 
+  final VoidCallback? onRename;
+
   @override
   Widget build(BuildContext context) {
     final staggerDelay = Duration(milliseconds: _kStaggerMs * index);
     const animDuration = Duration(milliseconds: _kAnimDurationMs);
 
     return AgendaCard(
-      agenda: agenda,
-      onOpenWriting: onOpenWriting,
-      onOpenReading: onOpenReading,
-      onOpenEdit: onOpenEdit,
-      onDelete: onDelete,
-    )
+          agenda: agenda,
+          onOpenWriting: onOpenWriting,
+          onOpenReading: onOpenReading,
+          onOpenEdit: onOpenEdit,
+          onDelete: onDelete,
+          onRename: onRename,
+        )
         .animate()
         .fadeIn(duration: animDuration, delay: staggerDelay)
         .slideY(

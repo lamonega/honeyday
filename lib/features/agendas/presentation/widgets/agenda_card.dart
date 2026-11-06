@@ -20,6 +20,7 @@ class AgendaCard extends StatefulWidget {
     required this.onOpenReading,
     required this.onOpenEdit,
     required this.onDelete,
+    this.onRename,
     super.key,
   });
 
@@ -37,6 +38,9 @@ class AgendaCard extends StatefulWidget {
 
   /// Triggered when requesting deletion of this agenda.
   final VoidCallback onDelete;
+
+  /// Optional action for changing the title without opening the agenda.
+  final VoidCallback? onRename;
 
   @override
   State<AgendaCard> createState() => _AgendaCardState();
@@ -78,6 +82,7 @@ class _AgendaCardState extends State<AgendaCard> {
                   title: widget.agenda.title,
                   coverStyle: widget.agenda.coverStyle,
                   onDelete: widget.onDelete,
+                  onRename: widget.onRename,
                 ),
               ),
               BottomDetailsBar(

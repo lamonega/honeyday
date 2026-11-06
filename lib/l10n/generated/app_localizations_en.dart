@@ -164,6 +164,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeEmptyBody => 'Tap + to create one.';
 
   @override
+  String get agendaRename => 'Rename agenda';
+
+  @override
+  String get agendaTitleRequired => 'Enter a title.';
+
+  @override
+  String get agendaRenameError =>
+      'Could not rename the agenda. Your title is still here; try again.';
+
+  @override
   String get agendaDeleteTitle => 'Delete agenda?';
 
   @override

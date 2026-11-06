@@ -11,6 +11,7 @@ import 'package:honeyday/features/agendas/presentation/widgets/home/agenda_grid_
 import 'package:honeyday/features/agendas/presentation/widgets/home/home_empty_state.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/home/home_fab.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/home/home_header.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/rename_agenda_dialog.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 // ──────────────────────────────────────────────
@@ -19,12 +20,16 @@ import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// Breakpoint for tablet layout in responsive grid.
 const int kBreakpointTablet = 900;
+
 /// Breakpoint for desktop layout in responsive grid.
 const int kBreakpointDesktop = 1200;
+
 /// Extra-large spacing for layout padding.
 const double kSpacingExtraLarge = 24;
+
 /// Grid spacing between home cards.
 const double kHomeGridSpacing = 20;
+
 /// Aspect ratio for home agenda cards.
 const double kHomeCardAspectRatio = 0.85;
 
@@ -103,11 +108,7 @@ class HomePage extends ConsumerWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.error_outline_rounded,
-            size: 48,
-            color: colorScheme.error,
-          ),
+          Icon(Icons.error_outline_rounded, size: 48, color: colorScheme.error),
           const SizedBox(height: 12),
           Text(
             l10n.homeErrorLoading,
@@ -174,10 +175,7 @@ class HomePage extends ConsumerWidget {
 
 /// Responsive grid of agenda cards.
 class _AgendaGrid extends ConsumerWidget {
-  const _AgendaGrid({
-    required this.agendas,
-    required this.onDelete,
-  });
+  const _AgendaGrid({required this.agendas, required this.onDelete});
 
   final List<Agenda> agendas;
 
@@ -216,6 +214,20 @@ class _AgendaGrid extends ConsumerWidget {
                   context.go('/agenda/${agenda.id}?mode=edit');
                 },
                 onDelete: () => onDelete(context, ref, agenda),
+                onRename: () {
+                  final controller = ref.read(homeControllerProvider);
+                  unawaited(
+                    showDialog<void>(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) => RenameAgendaDialog(
+                        initialTitle: agenda.title,
+                        onSave: (title) =>
+                            controller.renameAgenda(agenda.id, title),
+                      ),
+                    ),
+                  );
+                },
               );
             },
           ),
@@ -247,9 +259,10 @@ class _SkeletonCardState extends State<_SkeletonCard>
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    _animation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _animation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
     _delayTimer = Timer(widget.delay, () {
       if (mounted) _controller.repeat(reverse: true);
     });
@@ -273,7 +286,8 @@ class _SkeletonCardState extends State<_SkeletonCard>
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
             side: BorderSide(
-              color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+              color: Theme.of(context).colorScheme.outline
+                  .withValues(alpha: 0.3),
             ),
           ),
           child: Column(
@@ -303,7 +317,9 @@ class _SkeletonCardState extends State<_SkeletonCard>
                       width: 48,
                       height: 20,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
                             .withValues(alpha: 0.5 + _animation.value * 0.5),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -313,7 +329,9 @@ class _SkeletonCardState extends State<_SkeletonCard>
                       width: 28,
                       height: 28,
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
                             .withValues(alpha: 0.5 + _animation.value * 0.5),
                         borderRadius: BorderRadius.circular(8),
                       ),

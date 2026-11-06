@@ -157,6 +157,12 @@
   "@homeEmptyBody": {
     "description": "Empty state body text"
   },
+  "agendaRename": "Rename agenda",
+  "@agendaRename": {"description": "Rename action tooltip and dialog title"},
+  "agendaTitleRequired": "Enter a title.",
+  "@agendaTitleRequired": {"description": "Validation for an empty agenda title"},
+  "agendaRenameError": "Could not rename the agenda. Your title is still here; try again.",
+  "@agendaRenameError": {"description": "Rename persistence failure with retry guidance"},
   "agendaDeleteTitle": "Delete agenda?",
   "@agendaDeleteTitle": {
     "description": "Delete agenda?"

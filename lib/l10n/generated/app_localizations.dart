@@ -373,6 +373,24 @@ abstract class AppLocalizations {
   /// **'Tap + to create one.'**
   String get homeEmptyBody;
 
+  /// Rename action tooltip and dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Rename agenda'**
+  String get agendaRename;
+
+  /// Validation for an empty agenda title
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a title.'**
+  String get agendaTitleRequired;
+
+  /// Rename persistence failure with retry guidance
+  ///
+  /// In en, this message translates to:
+  /// **'Could not rename the agenda. Your title is still here; try again.'**
+  String get agendaRenameError;
+
   /// Delete agenda?
   ///
   /// In en, this message translates to:

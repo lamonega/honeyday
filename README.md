@@ -25,7 +25,7 @@
 
 ## Features
 
-- **Multi-agenda management** — Create, organize, and switch between multiple agendas with custom covers and paper styles.
+- **Multi-agenda management** — Create, rename, and switch between multiple agendas with custom covers and paper styles. Rename directly from a cover's action button; failed saves keep your new title available for retry.
 - **Freehand ink engine** — Write, draw, and highlight with pressure-sensitive vector strokes (pen, highlighter, eraser).
 - **Modular canvas widgets** — Drop shapes, planner templates, stickers, calendars, budget trackers, and more onto your pages.
 - **Three interaction modes** — Reading (flip pages), Writing (ink drawing), Edit (drag, resize, rotate widgets).
