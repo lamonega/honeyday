@@ -34,6 +34,57 @@ Best practices and constraints for clean state management in Flutter using River
 
 ## Implementation example
 
+### Original (histórico)
+
+> Este ejemplo usa una API anterior y no protege la asignación tras la espera; consérvalo solo como referencia histórica.
+
+```dart
+// lib/features/tasks/presentation/controllers/task_controller.dart
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../domain/models/task_item.dart';
+import '../../domain/repositories/task_repository.dart';
+import '../providers/task_providers.dart';
+
+class TaskController extends AutoDisposeAsyncNotifier<List<TaskItem>> {
+  @override
+  Future<List<TaskItem>> build() async {
+    final repository = ref.watch(taskRepositoryProvider);
+    return repository.getTasks();
+  }
+
+  Future<void> addTask(TaskItem item) async {
+    if (!ref.mounted) return;
+
+    state = const AsyncValue.loading().copyWithPrevious(state);
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(taskRepositoryProvider);
+      await repository.saveTask(item);
+      return repository.getTasks();
+    });
+  }
+
+  Future<void> deleteTask(String id) async {
+    if (!ref.mounted) return;
+
+    state = await AsyncValue.guard(() async {
+      final repository = ref.read(taskRepositoryProvider);
+      await repository.deleteTask(id);
+      return repository.getTasks();
+    });
+  }
+}
+
+final taskControllerProvider =
+    AsyncNotifierProvider.autoDispose<TaskController, List<TaskItem>>(
+  TaskController.new,
+);
+```
+
+### Adaptado a la versión 3.4.3 del proyecto
+
+> Se reemplazó `AutoDisposeAsyncNotifier` por `AsyncNotifier`, pues Riverpod 3 unifica las interfaces. Se comprueba `ref.mounted` después de cada `await` antes de asignar el estado para evitar usar un notifier ya descartado. El ejemplo es ilustrativo y no fue compilado. Fuentes: [migración a Riverpod 3](https://riverpod.dev/docs/3.0_migration) y [Ref.mounted 3.4.3](https://pub.dev/documentation/riverpod/3.4.3/riverpod/Ref/mounted.html).
+
 ```dart
 // lib/features/tasks/presentation/controllers/task_controller.dart
 
