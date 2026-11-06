@@ -8,6 +8,7 @@ import 'package:honeyday/features/agendas/presentation/controllers/agenda_viewer
 import 'package:honeyday/features/agendas/presentation/pages/agenda_viewer_page.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode_notifier.dart';
 import 'package:honeyday/features/canvas/presentation/pages/page_view_canvas.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../helpers/pump_app.dart';
 
@@ -17,6 +18,8 @@ class _UnusedRepository implements FullAgendaRepository {
 }
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   testWidgets('reading and writing retain the same canvas state', (
     tester,
   ) async {

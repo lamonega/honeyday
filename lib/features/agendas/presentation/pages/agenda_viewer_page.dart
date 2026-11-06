@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
 import 'package:honeyday/core/utils/haptics.dart';
+import 'package:honeyday/features/agendas/data/repositories/reading_position_store.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/agenda_viewer_controller.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/save_session.dart';
@@ -45,8 +46,10 @@ class AgendaViewerPage extends ConsumerStatefulWidget {
 }
 
 class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
-  late final PageController _pageController;
+  late PageController _pageController;
   int _currentPageIndex = 0;
+  bool _positionReady = false;
+  ReadingPositionStore? _readingPositions;
   bool _exitInProgress = false;
   bool _exportPreparing = false;
   final SaveSession _saveSession = SaveSession();
@@ -59,8 +62,10 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   void initState() {
     super.initState();
     _pageController = PageController();
+    unawaited(_restoreReadingPosition());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       if (_isEditMode) {
         ref.read(canvasModeProvider.notifier).setEdit();
       } else {
@@ -84,7 +89,52 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     super.dispose();
   }
 
+  Future<void> _restoreReadingPosition() async {
+    try {
+      final (store, pages) = await (
+        ref.read(readingPositionStoreProvider.future),
+        ref.read(agendaPagesProvider(widget.agendaId).future),
+      ).wait;
+      if (!mounted) return;
+      _readingPositions = store;
+      final pageId = store.lastPage(widget.agendaId);
+      // Preference initialization may finish after a newer page-list emission.
+      final currentPages =
+          ref.read(agendaPagesProvider(widget.agendaId)).value ?? pages;
+      final index = currentPages.indexWhere((page) => page.id == pageId);
+      _currentPageIndex = index < 0 ? 0 : index;
+      // No PageView is mounted until the bookmark and initial pages are ready.
+      _pageController.dispose();
+      _pageController = PageController(initialPage: _currentPageIndex);
+    } on Object catch (error) {
+      // Preferences are optional convenience, not a prerequisite for opening
+      // content. Page stream errors retain their existing error UI below.
+      debugPrint('Honeyday: could not restore reading position: $error');
+    } finally {
+      if (mounted) setState(() => _positionReady = true);
+    }
+  }
+
+  Future<void> _rememberCurrentPage() async {
+    final pageId = _currentPagePageId;
+    final store = _readingPositions;
+    if (pageId == null || store == null) return;
+    try {
+      await store.remember(widget.agendaId, pageId);
+    } on Object catch (error) {
+      // Bookmark failure must never be confused with unsaved diary content or
+      // prevent the user from leaving a successfully saved agenda.
+      debugPrint('Honeyday: could not remember reading position: $error');
+    }
+  }
+
+  void _onPageChanged(int index) {
+    setState(() => _currentPageIndex = index);
+    unawaited(_rememberCurrentPage());
+  }
+
   void _goToPage(int index, int totalPages) {
+    if (!_positionReady || !_pageController.hasClients) return;
     if (index >= 0 && index < totalPages) {
       setState(() => _currentPageIndex = index);
       _pageController.animateToPage(
@@ -230,6 +280,8 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     try {
       _saveSession.flushEditors();
       await _saveSession.drain();
+      if (!mounted) return;
+      await _rememberCurrentPage();
       if (mounted) context.go('/');
     } on Object catch (error) {
       if (mounted) _reportPersistError(context, error);
@@ -249,6 +301,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   }
 
   Future<void> _showPageManager(List<AgendaPage> pages) async {
+    if (!_positionReady) return;
     final controller = ref.read(agendaViewerControllerProvider);
 
     // The sheet outlives the build that opened it: pages can be deleted,
@@ -383,6 +436,11 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   }) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    if (!_positionReady) {
+      return Center(
+        child: CircularProgressIndicator(color: colorScheme.primary),
+      );
+    }
     return pagesAsync.when(
       loading: () =>
           Center(child: CircularProgressIndicator(color: colorScheme.primary)),
@@ -494,9 +552,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                   controller: _pageController,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: pagesList.length,
-                  onPageChanged: (index) {
-                    setState(() => _currentPageIndex = index);
-                  },
+                  onPageChanged: _onPageChanged,
                   itemBuilder: (context, index) {
                     final page = pagesList[index];
                     return _PageContentLoader(
@@ -563,7 +619,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                     physics: scrollPhysics,
                     itemCount: pagesList.length,
                     onPageChanged: (index) {
-                      setState(() => _currentPageIndex = index);
+                      _onPageChanged(index);
                       unawaited(hapticLight());
                     },
                     itemBuilder: (context, index) {

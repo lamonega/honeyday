@@ -29,6 +29,7 @@
 - **Freehand ink engine** — Write, draw, and highlight with pressure-sensitive vector strokes (pen, highlighter, eraser).
 - **Modular canvas widgets** — Drop shapes, planner templates, stickers, calendars, budget trackers, and more onto your pages.
 - **Three interaction modes** — Reading (flip pages), Writing (ink drawing), Edit (drag, resize, rotate widgets).
+- **Resume where you left off** — Each agenda remembers the last visited page on this device, even after reordering pages. Missing/deleted bookmarks fall back to the first page.
 - **Customizable themes** — System / light / dark mode, 8 accent color presets, warm paper-and-honey aesthetic.
 - **Onboarding flow** — Clean 3-step onboarding carousel.
 - **Local storage** — SQLite persistence via Drift. No account or cloud synchronization is required or currently implemented.

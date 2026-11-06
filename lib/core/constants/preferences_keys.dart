@@ -8,4 +8,7 @@ abstract final class PreferencesKeys {
 
   /// User-selected accent color hex value.
   static const String accentColor = 'accent_color';
+
+  /// Page identity last visited in an agenda (never an order-dependent index).
+  static String lastPage(String agendaId) => 'agenda_last_page_$agendaId';
 }
