@@ -52,6 +52,71 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsAccentCustom => 'Personalizado';
 
   @override
+  String get backupTitle => 'Copias de seguridad editables';
+
+  @override
+  String get backupPrivacy =>
+      'Incluye todas las agendas activas, elementos de página y escritura a mano. El archivo no está cifrado: guardalo en un lugar privado. No incluye elementos eliminados ni ajustes de la aplicación.';
+
+  @override
+  String get backupExport => 'Crear copia de seguridad';
+
+  @override
+  String get backupExportDescription =>
+      'Guardar una copia editable de todas tus agendas';
+
+  @override
+  String get backupRestore => 'Importar copia de seguridad';
+
+  @override
+  String get backupRestoreSubtitle =>
+      'Agregar agendas desde un archivo de Honeyday';
+
+  @override
+  String get backupWorking => 'Procesando…';
+
+  @override
+  String get backupReady => 'Archivo de copia de seguridad preparado.';
+
+  @override
+  String get backupError =>
+      'La operación falló. No se reemplazaron tus agendas existentes. Intentá de nuevo.';
+
+  @override
+  String get backupInvalid =>
+      'El archivo no es una copia de Honeyday válida y compatible, o supera el límite de 50 MiB.';
+
+  @override
+  String get backupConfirmTitle => '¿Importar estas agendas?';
+
+  @override
+  String backupConfirmDescription(
+    int agendas,
+    int pages,
+    int elements,
+    int strokes,
+  ) {
+    return 'Agendas: $agendas\nPáginas: $pages\nElementos: $elements\nTrazos de tinta: $strokes\n\nSe agregarán copias independientes. Tus agendas existentes no se modificarán. Si importás el mismo archivo otra vez, se crearán copias adicionales.';
+  }
+
+  @override
+  String get backupConfirm => 'Importar copias';
+
+  @override
+  String backupRestored(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se importaron $count agendas.',
+      one: 'Se importó 1 agenda.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get backupEmpty => 'Esta copia de seguridad no contiene agendas.';
+
+  @override
   String get settingsAbout => 'Acerca de';
 
   @override

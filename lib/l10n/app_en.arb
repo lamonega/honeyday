@@ -56,6 +56,43 @@
   "@settingsAccentCustom": {
     "description": "Subtitle when a custom accent color is selected"
   },
+  "backupTitle": "Editable backups",
+  "backupPrivacy": "Includes all active agendas, page elements and handwriting. The file is not encrypted: keep it private. Deleted items and app settings are not included.",
+  "backupExport": "Create backup",
+  "backupExportDescription": "Save an editable copy of all your agendas",
+  "backupRestore": "Import backup",
+  "backupRestoreSubtitle": "Add agendas from a Honeyday backup file",
+  "backupWorking": "Working…",
+  "backupReady": "Backup file prepared.",
+  "backupError": "The backup operation failed. Your existing agendas have not been replaced. Try again.",
+  "backupInvalid": "This file is not a valid supported Honeyday backup, or exceeds the 50 MiB limit.",
+  "backupConfirmTitle": "Import these agendas?",
+  "backupConfirmDescription": "Agendas: {agendas}\nPages: {pages}\nElements: {elements}\nInk strokes: {strokes}\n\nNew independent copies will be added. Existing agendas will not be changed. Importing the same file again creates additional copies.",
+  "@backupConfirmDescription": {
+    "placeholders": {
+      "agendas": {"type": "int"},
+      "pages": {"type": "int"},
+      "elements": {"type": "int"},
+      "strokes": {"type": "int"}
+    }
+  },
+  "backupConfirm": "Import copies",
+  "backupRestored": "{count, plural, =1{Imported 1 agenda.} other{Imported {count} agendas.}}",
+  "@backupRestored": {"placeholders": {"count": {"type": "int"}}},
+  "backupEmpty": "This backup does not contain any agendas.",
+  "@backupTitle": {"description": "Settings section for editable backups"},
+  "@backupPrivacy": {"description": "Backup scope and privacy warning"},
+  "@backupExport": {"description": "Action to create a backup"},
+  "@backupExportDescription": {"description": "Description of the backup export action"},
+  "@backupRestore": {"description": "Action to pick a backup file"},
+  "@backupRestoreSubtitle": {"description": "Description of the import action"},
+  "@backupWorking": {"description": "Backup operation progress label"},
+  "@backupReady": {"description": "Backup handed to the save dialog or share sheet"},
+  "@backupError": {"description": "Generic backup operation failure"},
+  "@backupInvalid": {"description": "Invalid, incompatible or oversized backup file"},
+  "@backupConfirmTitle": {"description": "Import confirmation dialog title"},
+  "@backupConfirm": {"description": "Confirm additive import"},
+  "@backupEmpty": {"description": "No agendas found in the selected backup"},
   "settingsAbout": "About",
   "@settingsAbout": {
     "description": "Section header for about settings"

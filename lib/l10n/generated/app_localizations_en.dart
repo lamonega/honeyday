@@ -52,6 +52,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAccentCustom => 'Custom';
 
   @override
+  String get backupTitle => 'Editable backups';
+
+  @override
+  String get backupPrivacy =>
+      'Includes all active agendas, page elements and handwriting. The file is not encrypted: keep it private. Deleted items and app settings are not included.';
+
+  @override
+  String get backupExport => 'Create backup';
+
+  @override
+  String get backupExportDescription =>
+      'Save an editable copy of all your agendas';
+
+  @override
+  String get backupRestore => 'Import backup';
+
+  @override
+  String get backupRestoreSubtitle => 'Add agendas from a Honeyday backup file';
+
+  @override
+  String get backupWorking => 'Working…';
+
+  @override
+  String get backupReady => 'Backup file prepared.';
+
+  @override
+  String get backupError =>
+      'The backup operation failed. Your existing agendas have not been replaced. Try again.';
+
+  @override
+  String get backupInvalid =>
+      'This file is not a valid supported Honeyday backup, or exceeds the 50 MiB limit.';
+
+  @override
+  String get backupConfirmTitle => 'Import these agendas?';
+
+  @override
+  String backupConfirmDescription(
+    int agendas,
+    int pages,
+    int elements,
+    int strokes,
+  ) {
+    return 'Agendas: $agendas\nPages: $pages\nElements: $elements\nInk strokes: $strokes\n\nNew independent copies will be added. Existing agendas will not be changed. Importing the same file again creates additional copies.';
+  }
+
+  @override
+  String get backupConfirm => 'Import copies';
+
+  @override
+  String backupRestored(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Imported $count agendas.',
+      one: 'Imported 1 agenda.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get backupEmpty => 'This backup does not contain any agendas.';
+
+  @override
   String get settingsAbout => 'About';
 
   @override

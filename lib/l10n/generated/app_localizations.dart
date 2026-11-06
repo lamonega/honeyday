@@ -182,6 +182,101 @@ abstract class AppLocalizations {
   /// **'Custom'**
   String get settingsAccentCustom;
 
+  /// Settings section for editable backups
+  ///
+  /// In en, this message translates to:
+  /// **'Editable backups'**
+  String get backupTitle;
+
+  /// Backup scope and privacy warning
+  ///
+  /// In en, this message translates to:
+  /// **'Includes all active agendas, page elements and handwriting. The file is not encrypted: keep it private. Deleted items and app settings are not included.'**
+  String get backupPrivacy;
+
+  /// Action to create a backup
+  ///
+  /// In en, this message translates to:
+  /// **'Create backup'**
+  String get backupExport;
+
+  /// Description of the backup export action
+  ///
+  /// In en, this message translates to:
+  /// **'Save an editable copy of all your agendas'**
+  String get backupExportDescription;
+
+  /// Action to pick a backup file
+  ///
+  /// In en, this message translates to:
+  /// **'Import backup'**
+  String get backupRestore;
+
+  /// Description of the import action
+  ///
+  /// In en, this message translates to:
+  /// **'Add agendas from a Honeyday backup file'**
+  String get backupRestoreSubtitle;
+
+  /// Backup operation progress label
+  ///
+  /// In en, this message translates to:
+  /// **'Working…'**
+  String get backupWorking;
+
+  /// Backup handed to the save dialog or share sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Backup file prepared.'**
+  String get backupReady;
+
+  /// Generic backup operation failure
+  ///
+  /// In en, this message translates to:
+  /// **'The backup operation failed. Your existing agendas have not been replaced. Try again.'**
+  String get backupError;
+
+  /// Invalid, incompatible or oversized backup file
+  ///
+  /// In en, this message translates to:
+  /// **'This file is not a valid supported Honeyday backup, or exceeds the 50 MiB limit.'**
+  String get backupInvalid;
+
+  /// Import confirmation dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Import these agendas?'**
+  String get backupConfirmTitle;
+
+  /// No description provided for @backupConfirmDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Agendas: {agendas}\nPages: {pages}\nElements: {elements}\nInk strokes: {strokes}\n\nNew independent copies will be added. Existing agendas will not be changed. Importing the same file again creates additional copies.'**
+  String backupConfirmDescription(
+    int agendas,
+    int pages,
+    int elements,
+    int strokes,
+  );
+
+  /// Confirm additive import
+  ///
+  /// In en, this message translates to:
+  /// **'Import copies'**
+  String get backupConfirm;
+
+  /// No description provided for @backupRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Imported 1 agenda.} other{Imported {count} agendas.}}'**
+  String backupRestored(int count);
+
+  /// No agendas found in the selected backup
+  ///
+  /// In en, this message translates to:
+  /// **'This backup does not contain any agendas.'**
+  String get backupEmpty;
+
   /// Section header for about settings
   ///
   /// In en, this message translates to:

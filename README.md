@@ -31,7 +31,9 @@
 - **Three interaction modes** — Reading (flip pages), Writing (ink drawing), Edit (drag, resize, rotate widgets).
 - **Customizable themes** — System / light / dark mode, 8 accent color presets, warm paper-and-honey aesthetic.
 - **Onboarding flow** — Clean 3-step onboarding carousel.
-- **Offline-first** — Local SQLite persistence via Drift with cloud-ready sync architecture.
+- **Local storage** — SQLite persistence via Drift. No account or cloud synchronization is required or currently implemented.
+- **Editable backups** — Export/import all active agendas, page elements and handwriting as a portable `.honeyday` file. Imports create independent copies without overwriting existing agendas. See [backup scope, privacy and limitations](docs/backups.md).
+- **PDF templates** — Export covers and page elements to PDF; handwritten ink is not currently included in PDF export (use editable backups to preserve it).
 - **Responsive layout** — Adaptive navigation (bottom bar on mobile, rail on desktop).
 
 ## Tech Stack
@@ -67,8 +69,10 @@ lib/
 │   └── widgets/            # Reusable widgets (category filter)
 ├── features/               # Feature modules (domain / data / presentation)
 │   ├── agendas/            # Agenda CRUD & viewer
+│   ├── backup/             # Portable editable backups, validation & restore
 │   ├── canvas/             # Ink canvas, transform engine, snapping
 │   ├── catalog/            # Widget registry & modular elements
+│   ├── export/             # PDF capture, compression workers & output
 │   ├── onboarding/         # First-launch flow
 │   └── settings/           # Preferences & appearance
 └── main.dart               # Entry point
@@ -78,8 +82,13 @@ lib/
 
 ### Prerequisites
 
-- [Flutter SDK](https://flutter.dev/docs/get-started/install) (3.x, channel stable)
-- Dart SDK (bundled with Flutter)
+- [Flutter SDK](https://flutter.dev/docs/get-started/install), stable channel. CI is pinned to **Flutter 3.47.5**; use the same version for reproducible checks.
+- Dart SDK (bundled with Flutter), compatible with `pubspec.yaml` (`^3.13.3`).
+
+Platform folders exist for Android, iOS, Web, Linux, macOS and Windows, but CI
+currently runs analysis and tests on Windows only. A platform listing is not a
+guarantee that its native file dialogs, pen input or release packaging have
+been verified.
 
 ### Installation
 
@@ -98,11 +107,18 @@ dart run build_runner build --delete-conflicting-outputs
 flutter run
 ```
 
-### Running Tests
+### Verification
 
 ```bash
+dart analyze
 flutter test
+flutter build web
 ```
+
+`flutter build web` checks the browser target; it is separate from Drift code
+generation. Native release builds require the corresponding platform toolchain.
+Golden baselines have Windows and CI variants. Format only the files you change
+with `dart format <paths>` rather than rewriting unrelated files.
 
 The export benchmarks are excluded from that run. They are slow and their
 numbers are machine-specific, so run them explicitly:

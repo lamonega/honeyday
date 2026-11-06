@@ -7,6 +7,7 @@ import 'package:honeyday/core/providers/app_version_provider.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:honeyday/core/theme/design_tokens.dart';
 import 'package:honeyday/core/theme/theme_providers.dart';
+import 'package:honeyday/features/backup/presentation/backup_settings_section.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 class SettingsPage extends ConsumerWidget {
@@ -14,23 +15,25 @@ class SettingsPage extends ConsumerWidget {
 
   /// The preset accent palette: every swatch paired with the accessor for its
   /// localized name, so each hex value exists exactly once in the codebase.
-  static final List<(Color, String Function(AppLocalizations))>
-  _accentPresets = <(Color, String Function(AppLocalizations))>[
-    (const Color(0xFFF59E0B), (l10n) => l10n.settingsAccentBeeHoney),
-    (const Color(0xFF8B5CF6), (l10n) => l10n.settingsAccentLavender),
-    (const Color(0xFF10B981), (l10n) => l10n.settingsAccentSage),
-    (const Color(0xFFEC4899), (l10n) => l10n.settingsAccentRose),
-    (const Color(0xFF3B82F6), (l10n) => l10n.settingsAccentOcean),
-    (const Color(0xFFEF4444), (l10n) => l10n.settingsAccentBrick),
-    (const Color(0xFF64748B), (l10n) => l10n.settingsAccentGray),
-    (const Color(0xFF14B8A6), (l10n) => l10n.settingsAccentTeal),
-  ];
+  static final List<(Color, String Function(AppLocalizations))> _accentPresets =
+      <(Color, String Function(AppLocalizations))>[
+        (const Color(0xFFF59E0B), (l10n) => l10n.settingsAccentBeeHoney),
+        (const Color(0xFF8B5CF6), (l10n) => l10n.settingsAccentLavender),
+        (const Color(0xFF10B981), (l10n) => l10n.settingsAccentSage),
+        (const Color(0xFFEC4899), (l10n) => l10n.settingsAccentRose),
+        (const Color(0xFF3B82F6), (l10n) => l10n.settingsAccentOcean),
+        (const Color(0xFFEF4444), (l10n) => l10n.settingsAccentBrick),
+        (const Color(0xFF64748B), (l10n) => l10n.settingsAccentGray),
+        (const Color(0xFF14B8A6), (l10n) => l10n.settingsAccentTeal),
+      ];
 
   /// Localized name of the preset [accentColor], or `null` when the accent is
   /// a custom color outside the preset palette.
   static String? _getAccentName(AppLocalizations l10n, Color accentColor) {
     for (final (color, localizedName) in _accentPresets) {
-      if (color.toARGB32() == accentColor.toARGB32()) return localizedName(l10n);
+      if (color.toARGB32() == accentColor.toARGB32()) {
+        return localizedName(l10n);
+      }
     }
     return null;
   }
@@ -61,7 +64,10 @@ class SettingsPage extends ConsumerWidget {
         ? accentColorValue.value!
         : AppColors.honeyAmber;
 
-    final accentName = _getAccentName(AppLocalizations.of(context), accentColor);
+    final accentName = _getAccentName(
+      AppLocalizations.of(context),
+      accentColor,
+    );
 
     return Scaffold(
       appBar: AppBar(title: Text(AppLocalizations.of(context).settingsTitle)),
@@ -103,6 +109,7 @@ class SettingsPage extends ConsumerWidget {
                 unawaited(_showAccentColorPicker(context, ref, accentColor)),
           ),
           const Divider(height: 1),
+          const BackupSettingsSection(),
           _SectionHeader(
             label: AppLocalizations.of(context).settingsAbout,
             colorScheme: colorScheme,
