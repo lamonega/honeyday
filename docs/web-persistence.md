@@ -82,7 +82,9 @@ apuntando a otro JavaScript, sin modificar el worker del proyecto.
 
 Además se repitió el recorrido de la aplicación compilada: crear una agenda
 con su página, volver a Inicio y recargar. Con el worker anterior la portada
-se perdía; con el nuevo seguía disponible.
+se perdía; con el nuevo seguía disponible. También se dibujó un trazo, se recargó
+el visor y se comprobó su persistencia y su inclusión/exclusión en los PDF
+realmente descargados; véase [la verificación PDF](pdf-export.md).
 
 ## Límites
 

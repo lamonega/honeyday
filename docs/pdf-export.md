@@ -96,7 +96,16 @@ y recorte. La integración crea un PDF con la base, captura, worker y escritor
 reales y descomprime su imagen para comprobar el trazo, tanto incluido como
 excluido. Los golden Windows/CI comparan agenda y plantilla.
 
+Además se comprobó el recorrido de la aplicación Web compilada en Chrome
+headless sobre Windows, con datos y perfil de prueba: crear agenda, dibujar con
+eventos de lápiz, recargar y descargar dos PDF de portada más una página. El
+trazo seguía visible tras recargar. La descarga A4 tenía MediaBox de
+595,28 × 841,89 puntos; la plantilla Carta, 612 × 792. Al descomprimir la imagen
+de la página, el PDF con tinta contenía 3.262 píxeles oscuros del trazo y la
+plantilla ninguno. Es una comprobación puntual del pipeline Web real, no una
+prueba de todos los navegadores ni de impresión física.
+
 Aún hay que revisar los PDF en un visor externo, imprimir A4/Carta y comprobar
-cancelación, hojas de compartir, descargas y memoria con agendas grandes en las
-plataformas objetivo. Las pruebas de escritorio no certifican esos recorridos
-nativos ni dispositivos de poca RAM.
+cancelación, hojas de compartir, selectores nativos y memoria con agendas grandes
+en las plataformas objetivo. Las pruebas de escritorio y el smoke de Chrome no
+certifican esos recorridos nativos ni dispositivos de poca RAM.
