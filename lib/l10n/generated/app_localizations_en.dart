@@ -174,11 +174,56 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not rename the agenda. Your title is still here; try again.';
 
   @override
-  String get agendaDeleteTitle => 'Delete agenda?';
+  String get agendaDeleteTitle => 'Move agenda to trash?';
+
+  @override
+  String get agendaMoveToTrash => 'Move to trash';
+
+  @override
+  String get agendaTrashTitle => 'Trash';
+
+  @override
+  String get agendaTrashEmpty => 'The trash is empty';
+
+  @override
+  String get agendaTrashPolicy =>
+      'Agendas stay here until you restore or permanently delete them. They are not included in backups.';
+
+  @override
+  String get agendaTrashError => 'Could not load the trash.';
+
+  @override
+  String get agendaTrashRetry => 'Try again';
+
+  @override
+  String get agendaRestore => 'Restore';
+
+  @override
+  String get agendaRestoreTitle => 'Restore agenda?';
+
+  @override
+  String agendaRestoreContent(String title) {
+    return '\"$title\" will return to Home with its saved content. Previously deleted pages, elements and strokes will remain deleted.';
+  }
+
+  @override
+  String get agendaDeleteForever => 'Delete permanently';
+
+  @override
+  String get agendaDeleteForeverTitle => 'Permanently delete agenda?';
+
+  @override
+  String agendaDeleteForeverContent(String title) {
+    return '\"$title\" and all its pages, elements and handwriting will be permanently removed, including previously deleted items. You cannot undo this. To save a backup, cancel and restore the agenda first.';
+  }
+
+  @override
+  String get agendaActionError =>
+      'The operation failed. Try again; this dialog will stay open.';
 
   @override
   String agendaDeleteContent(Object title) {
-    return '\"$title\" and all its associated pages will be deleted.';
+    return '\"$title\" will move to the trash with its pages, elements and handwriting. You can restore it later.';
   }
 
   @override
@@ -266,7 +311,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get agendaDeleteTooltip => 'Delete agenda';
+  String get agendaDeleteTooltip => 'Move agenda to trash';
 
   @override
   String get catalogFilterAll => 'All';

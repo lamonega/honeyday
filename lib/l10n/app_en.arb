@@ -163,13 +163,39 @@
   "@agendaTitleRequired": {"description": "Validation for an empty agenda title"},
   "agendaRenameError": "Could not rename the agenda. Your title is still here; try again.",
   "@agendaRenameError": {"description": "Rename persistence failure with retry guidance"},
-  "agendaDeleteTitle": "Delete agenda?",
+  "agendaDeleteTitle": "Move agenda to trash?",
+  "agendaMoveToTrash": "Move to trash",
+  "agendaTrashTitle": "Trash",
+  "agendaTrashEmpty": "The trash is empty",
+  "agendaTrashPolicy": "Agendas stay here until you restore or permanently delete them. They are not included in backups.",
+  "agendaTrashError": "Could not load the trash.",
+  "agendaTrashRetry": "Try again",
+  "agendaRestore": "Restore",
+  "agendaRestoreTitle": "Restore agenda?",
+  "agendaRestoreContent": "\"{title}\" will return to Home with its saved content. Previously deleted pages, elements and strokes will remain deleted.",
+  "@agendaRestoreContent": {"placeholders": {"title": {"type": "String"}}},
+  "agendaDeleteForever": "Delete permanently",
+  "agendaDeleteForeverTitle": "Permanently delete agenda?",
+  "agendaDeleteForeverContent": "\"{title}\" and all its pages, elements and handwriting will be permanently removed, including previously deleted items. You cannot undo this. To save a backup, cancel and restore the agenda first.",
+  "@agendaDeleteForeverContent": {"placeholders": {"title": {"type": "String"}}},
+  "agendaActionError": "The operation failed. Try again; this dialog will stay open.",
+  "@agendaMoveToTrash": {"description": "Confirm moving an agenda to recoverable trash"},
+  "@agendaTrashTitle": {"description": "Trash screen title and home action tooltip"},
+  "@agendaTrashEmpty": {"description": "Empty trash message"},
+  "@agendaTrashPolicy": {"description": "Retention and backup scope for trashed agendas"},
+  "@agendaTrashError": {"description": "Failed trash list load"},
+  "@agendaTrashRetry": {"description": "Retry loading the trash list"},
+  "@agendaRestore": {"description": "Restore action and confirmation button"},
+  "@agendaRestoreTitle": {"description": "Restore confirmation title"},
+  "@agendaDeleteForever": {"description": "Irreversible deletion action and confirmation button"},
+  "@agendaDeleteForeverTitle": {"description": "Permanent deletion confirmation title"},
+  "@agendaActionError": {"description": "Failed agenda mutation retained for retry"},
   "@agendaDeleteTitle": {
-    "description": "Delete agenda?"
+    "description": "Confirmation title for recoverable agenda deletion"
   },
-  "agendaDeleteContent": "\"{title}\" and all its associated pages will be deleted.",
+  "agendaDeleteContent": "\"{title}\" will move to the trash with its pages, elements and handwriting. You can restore it later.",
   "@agendaDeleteContent": {
-    "description": "\"{title}\" and all its associated pages will be deleted."
+    "description": "Explain that moving an agenda to trash keeps its content recoverable"
   },
   "agendaExitTitle": "Leave without saving?",
   "@agendaExitTitle": {
@@ -259,7 +285,7 @@
   "@agendaPageBadge": {
     "description": "{count, plural, =1{{count} page} other{{count} pages}}"
   },
-  "agendaDeleteTooltip": "Delete agenda",
+  "agendaDeleteTooltip": "Move agenda to trash",
   "@agendaDeleteTooltip": {
     "description": "Delete agenda"
   },

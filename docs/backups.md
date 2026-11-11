@@ -44,6 +44,10 @@ Excluded:
 - Appearance preferences, onboarding state and other app settings.
 - Undo/redo history and pending changes not yet written to the database.
 
+Agendas in the [trash](trash.md) are excluded. To back one up, restore it first
+and then create a backup. Permanently deleting it does not delete previously
+exported backups or PDFs.
+
 Backups are **plain, unencrypted JSON**. They may contain private diary entries
 or financial information. Treat them as private documents. Honeyday does not
 upload them, encrypt them, schedule automatic backups, or synchronize devices.

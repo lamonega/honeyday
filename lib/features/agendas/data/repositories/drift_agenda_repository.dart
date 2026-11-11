@@ -35,6 +35,17 @@ class DriftAgendaRepository implements FullAgendaRepository {
   Stream<List<Agenda>> watchAgendas() => _agendaDao.watchAgendas();
 
   @override
+  Stream<List<Agenda>> watchTrashedAgendas() =>
+      _agendaDao.watchTrashedAgendas();
+
+  @override
+  Future<void> restoreAgenda(String id) => _agendaDao.restoreAgenda(id);
+
+  @override
+  Future<void> deleteAgendaPermanently(String id) =>
+      _agendaDao.deleteAgendaPermanently(id);
+
+  @override
   Future<Agenda?> getAgenda(String id) => _agendaDao.getAgenda(id);
 
   @override

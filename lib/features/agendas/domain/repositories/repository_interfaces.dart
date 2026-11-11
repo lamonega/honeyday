@@ -13,7 +13,21 @@ abstract interface class AgendaRepository {
     String coverStyle = 'honey',
   });
   Future<void> updateAgendaTitle(String id, String newTitle);
+
+  /// Moves the agenda to recoverable trash without changing its descendants.
   Future<void> deleteAgenda(String id);
+}
+
+/// Recoverable agenda deletion. Child tombstones are preserved on restore.
+abstract interface class AgendaTrashRepository {
+  Stream<List<Agenda>> watchTrashedAgendas();
+
+  /// Restores only the agenda, keeping its existing page/element/ink identities.
+  Future<void> restoreAgenda(String id);
+
+  /// Atomically removes a trashed agenda and all descendants, including deleted
+  /// children. Throws if the agenda is active; missing IDs are a safe no-op.
+  Future<void> deleteAgendaPermanently(String id);
 }
 
 /// Repository for agenda page operations.
@@ -65,6 +79,7 @@ abstract interface class StrokeRepository {
 abstract interface class FullAgendaRepository
     implements
         AgendaRepository,
+        AgendaTrashRepository,
         PageRepository,
         CanvasElementRepository,
         StrokeRepository {

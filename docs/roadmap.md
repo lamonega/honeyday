@@ -36,6 +36,10 @@ Priorizar un **cuaderno/planner local y personalizable** que se pueda usar a
   y pruebas renderizadas de contraste mínimo 4,5:1 para ambos temas/selecciones,
   conservando el cambio de estado y la liberación del foco de texto.
 
+- [x] [Papelera de agendas](trash.md): restaurar identidades y contenido sin
+  revivir hijos borrados, borrado definitivo transaccional y confirmado,
+  errores/reintentos y pruebas de reapertura e interfaz adaptable.
+
 ## Próximos trabajos, en orden sugerido
 
 ### 1. Validación manual y primera distribución de prueba
@@ -95,8 +99,8 @@ Pendiente en plataformas reales:
 
 - Búsqueda por título, seguida de búsqueda textual si hay una necesidad real.
 - Un pequeño conjunto de plantillas de página completas, no más elementos sueltos.
-- Papelera/restauración de agendas eliminadas, con una política clara para
-  contenido eliminado y limpieza permanente.
+- La papelera de agendas ya permite restaurar y borrar definitivamente; validar
+  sus recorridos en las plataformas elegidas antes de una distribución.
 - Considerar backup por agenda y backups mayores que 50 MiB solo con una
   estrategia de memoria y formato apropiada; no quitar el límite sin medir.
 

@@ -3,10 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:honeyday/core/constants/app_constants.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/home_controller.dart';
+import 'package:honeyday/features/agendas/presentation/pages/agenda_trash_page.dart';
+import 'package:honeyday/features/agendas/presentation/widgets/agenda_action_dialog.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/home/agenda_grid_card.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/home/home_empty_state.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/home/home_fab.dart';
@@ -58,7 +59,9 @@ class HomePage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: const HomeHeader(),
+      appBar: HomeHeader(
+        onOpenTrash: () => context.go(AgendaTrashPage.routePath),
+      ),
       floatingActionButton: const HomeFab(),
       body: agendasAsync.when(
         loading: () => _buildSkeletonLoader(context),
@@ -136,40 +139,18 @@ class HomePage extends ConsumerWidget {
     WidgetRef ref,
     Agenda agenda,
   ) async {
-    final confirmed = await showDialog<bool>(
+    final l10n = AppLocalizations.of(context);
+    final controller = ref.read(homeControllerProvider);
+    await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          AppLocalizations.of(context).agendaDeleteTitle,
-          style: GoogleFonts.fraunces(fontWeight: FontWeight.bold),
-        ),
-        content: Text(
-          AppLocalizations.of(context).agendaDeleteContent(agenda.title),
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface
-                .withValues(alpha: 0.7),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(AppLocalizations.of(context).commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-              foregroundColor: Theme.of(context).colorScheme.onError,
-            ),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(AppLocalizations.of(context).commonDelete),
-          ),
-        ],
+      barrierDismissible: false,
+      builder: (_) => AgendaActionDialog(
+        title: l10n.agendaDeleteTitle,
+        description: l10n.agendaDeleteContent(agenda.title),
+        confirmLabel: l10n.agendaMoveToTrash,
+        onConfirm: () => controller.deleteAgenda(agenda.id),
       ),
     );
-
-    if (confirmed == true) {
-      await ref.read(homeControllerProvider).deleteAgenda(agenda.id);
-    }
   }
 }
 

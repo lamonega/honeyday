@@ -391,16 +391,94 @@ abstract class AppLocalizations {
   /// **'Could not rename the agenda. Your title is still here; try again.'**
   String get agendaRenameError;
 
-  /// Delete agenda?
+  /// Confirmation title for recoverable agenda deletion
   ///
   /// In en, this message translates to:
-  /// **'Delete agenda?'**
+  /// **'Move agenda to trash?'**
   String get agendaDeleteTitle;
 
-  /// "{title}" and all its associated pages will be deleted.
+  /// Confirm moving an agenda to recoverable trash
   ///
   /// In en, this message translates to:
-  /// **'\"{title}\" and all its associated pages will be deleted.'**
+  /// **'Move to trash'**
+  String get agendaMoveToTrash;
+
+  /// Trash screen title and home action tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Trash'**
+  String get agendaTrashTitle;
+
+  /// Empty trash message
+  ///
+  /// In en, this message translates to:
+  /// **'The trash is empty'**
+  String get agendaTrashEmpty;
+
+  /// Retention and backup scope for trashed agendas
+  ///
+  /// In en, this message translates to:
+  /// **'Agendas stay here until you restore or permanently delete them. They are not included in backups.'**
+  String get agendaTrashPolicy;
+
+  /// Failed trash list load
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the trash.'**
+  String get agendaTrashError;
+
+  /// Retry loading the trash list
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get agendaTrashRetry;
+
+  /// Restore action and confirmation button
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get agendaRestore;
+
+  /// Restore confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Restore agenda?'**
+  String get agendaRestoreTitle;
+
+  /// No description provided for @agendaRestoreContent.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{title}\" will return to Home with its saved content. Previously deleted pages, elements and strokes will remain deleted.'**
+  String agendaRestoreContent(String title);
+
+  /// Irreversible deletion action and confirmation button
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get agendaDeleteForever;
+
+  /// Permanent deletion confirmation title
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete agenda?'**
+  String get agendaDeleteForeverTitle;
+
+  /// No description provided for @agendaDeleteForeverContent.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{title}\" and all its pages, elements and handwriting will be permanently removed, including previously deleted items. You cannot undo this. To save a backup, cancel and restore the agenda first.'**
+  String agendaDeleteForeverContent(String title);
+
+  /// Failed agenda mutation retained for retry
+  ///
+  /// In en, this message translates to:
+  /// **'The operation failed. Try again; this dialog will stay open.'**
+  String get agendaActionError;
+
+  /// Explain that moving an agenda to trash keeps its content recoverable
+  ///
+  /// In en, this message translates to:
+  /// **'\"{title}\" will move to the trash with its pages, elements and handwriting. You can restore it later.'**
   String agendaDeleteContent(Object title);
 
   /// Leave without saving?
@@ -544,7 +622,7 @@ abstract class AppLocalizations {
   /// Delete agenda
   ///
   /// In en, this message translates to:
-  /// **'Delete agenda'**
+  /// **'Move agenda to trash'**
   String get agendaDeleteTooltip;
 
   /// Filter chip to show all items

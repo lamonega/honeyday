@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:honeyday/app/app_shell.dart';
+import 'package:honeyday/features/agendas/presentation/pages/agenda_trash_page.dart';
 import 'package:honeyday/features/agendas/presentation/pages/agenda_viewer_page.dart';
 import 'package:honeyday/features/agendas/presentation/pages/home_page.dart';
 import 'package:honeyday/features/settings/presentation/pages/settings_page.dart';
@@ -28,6 +29,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: AgendaTrashPage.routePath,
+        builder: (context, state) => const AgendaTrashPage(),
       ),
       GoRoute(
         path: '/agenda/:id',

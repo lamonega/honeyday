@@ -4,11 +4,12 @@ import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 /// AppBar for the home dashboard displaying the "Tus agendas" title.
 ///
-/// The header is layout-only: the single "create agenda" entry point lives in
-/// the home FAB, so this bar carries no trailing actions of its own.
+/// Creation lives in the home FAB; the trailing action opens recoverable trash.
 class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
   /// Constructs a [HomeHeader].
-  const HomeHeader({super.key});
+  const HomeHeader({required this.onOpenTrash, super.key});
+
+  final VoidCallback onOpenTrash;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -19,6 +20,13 @@ class HomeHeader extends StatelessWidget implements PreferredSizeWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return AppBar(
+      actions: [
+        IconButton(
+          tooltip: l10n.agendaTrashTitle,
+          onPressed: onOpenTrash,
+          icon: const Icon(Icons.delete_outline_rounded),
+        ),
+      ],
       title: Text(
         l10n.homeTitle,
         style: GoogleFonts.fraunces(

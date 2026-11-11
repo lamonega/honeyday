@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:honeyday/core/database/app_database.dart' hide Agenda, AgendaPage;
+import 'package:honeyday/core/database/app_database.dart'
+    hide Agenda, AgendaPage;
 import 'package:honeyday/features/agendas/data/models/agenda_dto.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:uuid/uuid.dart';
@@ -16,9 +17,14 @@ class AgendaDao {
   static const _uuid = Uuid();
 
   /// Watches all non-deleted agendas, ordered by most recently updated.
-  Stream<List<Agenda>> watchAgendas() {
+  Stream<List<Agenda>> watchAgendas() => _watchAgendas(deleted: false);
+
+  /// Watches recoverable agendas. Their children are kept untouched.
+  Stream<List<Agenda>> watchTrashedAgendas() => _watchAgendas(deleted: true);
+
+  Stream<List<Agenda>> _watchAgendas({required bool deleted}) {
     return (_db.select(_db.agendas)
-          ..where((tbl) => tbl.isDeleted.equals(false))
+          ..where((tbl) => tbl.isDeleted.equals(deleted))
           ..orderBy([
             (t) =>
                 OrderingTerm(expression: t.updatedAt, mode: OrderingMode.desc),
@@ -91,11 +97,48 @@ class AgendaDao {
 
   /// Soft-deletes the agenda identified by [id].
   Future<void> deleteAgenda(String id) async {
-    await (_db.update(_db.agendas)..where((tbl) => tbl.id.equals(id))).write(
+    await (_db.update(
+      _db.agendas,
+    )..where((tbl) => tbl.id.equals(id) & tbl.isDeleted.equals(false))).write(
       AgendasCompanion(
         isDeleted: const Value(true),
         updatedAt: Value(DateTime.now().toUtc()),
       ),
     );
   }
+
+  Future<void> restoreAgenda(String id) async {
+    await (_db.update(
+      _db.agendas,
+    )..where((tbl) => tbl.id.equals(id) & tbl.isDeleted.equals(true))).write(
+      AgendasCompanion(
+        isDeleted: const Value(false),
+        updatedAt: Value(DateTime.now().toUtc()),
+      ),
+    );
+  }
+
+  Future<void> deleteAgendaPermanently(String id) => _db.transaction(() async {
+    final agenda = await (_db.select(
+      _db.agendas,
+    )..where((tbl) => tbl.id.equals(id))).getSingleOrNull();
+    if (agenda == null) return;
+    if (!agenda.isDeleted) {
+      throw StateError('Only trashed agendas can be permanently deleted.');
+    }
+
+    final pages = _db.selectOnly(_db.pages)
+      ..addColumns([_db.pages.id])
+      ..where(_db.pages.agendaId.equals(id));
+    // Foreign keys do not cascade. Remove every descendant, including earlier
+    // tombstones, in dependency order and in the same transaction as the guard.
+    await (_db.delete(
+      _db.strokes,
+    )..where((tbl) => tbl.pageId.isInQuery(pages))).go();
+    await (_db.delete(
+      _db.canvasElements,
+    )..where((tbl) => tbl.pageId.isInQuery(pages))).go();
+    await (_db.delete(_db.pages)..where((tbl) => tbl.agendaId.equals(id))).go();
+    await (_db.delete(_db.agendas)..where((tbl) => tbl.id.equals(id))).go();
+  });
 }

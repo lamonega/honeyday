@@ -175,11 +175,56 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo renombrar la agenda. Conservamos tu título; intentá de nuevo.';
 
   @override
-  String get agendaDeleteTitle => '¿Eliminar agenda?';
+  String get agendaDeleteTitle => '¿Mover agenda a la papelera?';
+
+  @override
+  String get agendaMoveToTrash => 'Mover a la papelera';
+
+  @override
+  String get agendaTrashTitle => 'Papelera';
+
+  @override
+  String get agendaTrashEmpty => 'La papelera está vacía';
+
+  @override
+  String get agendaTrashPolicy =>
+      'Las agendas se conservan hasta que las restaures o las elimines definitivamente. No se incluyen en los backups.';
+
+  @override
+  String get agendaTrashError => 'No se pudo cargar la papelera.';
+
+  @override
+  String get agendaTrashRetry => 'Reintentar';
+
+  @override
+  String get agendaRestore => 'Restaurar';
+
+  @override
+  String get agendaRestoreTitle => '¿Restaurar agenda?';
+
+  @override
+  String agendaRestoreContent(String title) {
+    return '\"$title\" volverá a Inicio con su contenido guardado. Las páginas, elementos y trazos eliminados previamente seguirán eliminados.';
+  }
+
+  @override
+  String get agendaDeleteForever => 'Eliminar definitivamente';
+
+  @override
+  String get agendaDeleteForeverTitle => '¿Eliminar agenda definitivamente?';
+
+  @override
+  String agendaDeleteForeverContent(String title) {
+    return 'Se eliminarán definitivamente \"$title\" y todas sus páginas, elementos y trazos, incluso los eliminados previamente. No podrás deshacerlo. Para guardar un backup, cancelá y restaurá la agenda primero.';
+  }
+
+  @override
+  String get agendaActionError =>
+      'La operación falló. Intentá de nuevo; este diálogo permanecerá abierto.';
 
   @override
   String agendaDeleteContent(Object title) {
-    return 'Se eliminará \"$title\" y todas sus páginas asociadas.';
+    return '\"$title\" se moverá a la papelera con sus páginas, elementos y tinta. Podrás restaurarla después.';
   }
 
   @override
@@ -269,7 +314,7 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get agendaDeleteTooltip => 'Eliminar agenda';
+  String get agendaDeleteTooltip => 'Mover agenda a la papelera';
 
   @override
   String get catalogFilterAll => 'Todas';

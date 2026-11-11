@@ -32,6 +32,7 @@ En entornos con recursos limitados, ejecuta análisis, pruebas y build de forma 
 ## Estado funcional y continuidad
 
 - `docs/backups.md`: formato, alcance y privacidad de los backups editables; importar crea copias sin reemplazar datos existentes.
+- `docs/trash.md`: restaurar agendas conserva identidad y tombstones de hijos; el borrado definitivo es transaccional y solo acepta agendas que sigan en la papelera. Los backups no incluyen la papelera.
 - `docs/roadmap.md`: entregas incorporadas, límites conocidos y próximos trabajos.
 - `docs/pdf-export.md`: PDF con tinta por defecto, opciones de plantilla y decodificación por página. No sustituye al backup editable.
 - `docs/fonts.md`: fuentes empaquetadas, licencias y Roboto de respaldo para el arranque Web.
