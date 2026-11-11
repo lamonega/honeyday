@@ -29,6 +29,9 @@ Priorizar un **cuaderno/planner local y personalizable** que se pueda usar a
   por página y opciones independientes de texto/tinta para plantillas.
 - [x] Pruebas de capas, resaltador, recorte y contenido del archivo PDF final;
   golden nuevos de agenda completa frente a plantilla y benchmark de memoria.
+- [x] [Persistencia Web](web-persistence.md): reproducir y corregir la pérdida
+  transaccional de IndexedDB de Drift 2.35.0, actualizar dependencia/worker y
+  añadir regresión con recarga real de Chrome y control negativo.
 
 ## Próximos trabajos, en orden sugerido
 

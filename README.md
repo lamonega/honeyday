@@ -96,7 +96,8 @@ completed reliability work, known limitations and suggested next steps.
 Platform folders exist for Android, iOS, Web, Linux, macOS and Windows. CI runs
 analysis and tests on Windows and builds the JavaScript Web target on Linux.
 A platform listing is not a guarantee that its native file dialogs, pen input
-or release packaging have been verified.
+or release packaging have been verified. Web CI also requires Node 22+ and
+Chrome/Chromium for its reload/persistence regression (no npm packages).
 
 ### Installation
 
@@ -125,6 +126,16 @@ flutter build web
 
 `flutter build web` checks the browser target; it is separate from Drift code
 generation. Native release builds require the corresponding platform toolchain.
+After upgrading Drift or the SDK, regenerate its separately shipped worker:
+
+```bash
+dart compile js -O4 --no-source-maps -o web/drift_worker.js tool/drift_worker.dart
+node tool/test_web_persistence.mjs
+```
+
+See [Web persistence, the IndexedDB data-loss fix and deployment precautions](docs/web-persistence.md).
+CI verifies the compiled worker and persistence across a real Chrome reload.
+
 Golden baselines have Windows and CI variants. Format only the files you change
 with `dart format <paths>` rather than rewriting unrelated files.
 

@@ -43,6 +43,19 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Rebuild Drift worker from locked dependencies
+        run: dart compile js -O4 --no-source-maps -o web/drift_worker.js tool/drift_worker.dart
+
+      - name: Verify committed Drift worker is current
+        run: git diff --exit-code -- web/drift_worker.js
+
       - name: Build web (JavaScript)
         # This checks the shipped JS target, not optional Wasm compatibility.
         run: flutter build web --no-pub --no-wasm-dry-run
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify IndexedDB persistence across a browser reload
+        run: node tool/test_web_persistence.mjs

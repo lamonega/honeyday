@@ -15,9 +15,11 @@ Desde la raíz, según README y CI:
 
 - Instala dependencias: `flutter pub get`.
 - Genera código Drift cuando corresponda: `dart run build_runner build --delete-conflicting-outputs` (puede sobrescribir archivos generados).
+- Tras actualizar Drift/SDK, regenera el worker Web: `dart compile js -O4 --no-source-maps -o web/drift_worker.js tool/drift_worker.dart`. CI comprueba que coincida con el archivo versionado.
 - Ejecuta la aplicación: `flutter run`.
 - Analiza: `dart analyze --fatal-infos` (CI también rechaza avisos informativos).
 - Ejecuta pruebas: `flutter test`.
+- Regresión IndexedDB con recarga real: `node tool/test_web_persistence.mjs` (Node 22+, Chrome/Chromium y Dart; sin npm).
 - Compila Web (JavaScript, como CI): `flutter build web --no-pub --no-wasm-dry-run` después de instalar dependencias.
 - Formatea los archivos modificados: `dart format <rutas>`. Evita reformatear archivos ajenos al cambio.
 
@@ -30,7 +32,10 @@ En entornos con recursos limitados, ejecuta análisis, pruebas y build de forma 
 ## Estado funcional y continuidad
 
 - `docs/backups.md`: formato, alcance y privacidad de los backups editables; importar crea copias sin reemplazar datos existentes.
-- `docs/roadmap.md`: entregas incorporadas, límites conocidos y próximos trabajos. PDF todavía no incluye tinta; backup sí.
+- `docs/roadmap.md`: entregas incorporadas, límites conocidos y próximos trabajos.
+- `docs/pdf-export.md`: PDF con tinta por defecto, opciones de plantilla y decodificación por página. No sustituye al backup editable.
+- `docs/fonts.md`: fuentes empaquetadas, licencias y Roboto de respaldo para el arranque Web.
+- `docs/web-persistence.md`: pérdida transaccional de IndexedDB corregida con Drift actualizado y worker recompilado. No bajar a 2.35.0 ni conservar un worker desactualizado.
 - Antes de una release, verifica manualmente los diálogos de archivos, compartir, lápiz y cierre en las plataformas objetivo.
 
 ## Convenciones y límites
