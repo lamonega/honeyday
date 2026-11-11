@@ -32,6 +32,9 @@ Priorizar un **cuaderno/planner local y personalizable** que se pueda usar a
 - [x] [Persistencia Web](web-persistence.md): reproducir y corregir la pérdida
   transaccional de IndexedDB de Drift 2.35.0, actualizar dependencia/worker y
   añadir regresión con recarga real de Chrome y control negativo.
+- [x] Selector Contenido/Tinta legible sobre el papel en tema oscuro: fondo opaco
+  y pruebas renderizadas de contraste mínimo 4,5:1 para ambos temas/selecciones,
+  conservando el cambio de estado y la liberación del foco de texto.
 
 ## Próximos trabajos, en orden sugerido
 

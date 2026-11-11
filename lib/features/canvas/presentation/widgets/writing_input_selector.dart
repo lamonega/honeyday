@@ -12,6 +12,10 @@ class WritingInputSelector extends ConsumerWidget {
     final l10n = AppLocalizations.of(context);
 
     return SegmentedButton<WritingInput>(
+      style: SegmentedButton.styleFrom(
+        // Paper stays light even when the surrounding application is dark.
+        backgroundColor: Theme.of(context).colorScheme.surface,
+      ),
       segments: [
         ButtonSegment(
           value: WritingInput.content,
