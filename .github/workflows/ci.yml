@@ -44,7 +44,7 @@ jobs:
         run: flutter pub get
 
       - name: Rebuild Drift worker from locked dependencies
-        run: dart compile js -O4 --no-source-maps -o web/drift_worker.js tool/drift_worker.dart
+        run: dart run tool/build_drift_worker.dart
 
       - name: Verify committed Drift worker is current
         run: git diff --exit-code -- web/drift_worker.js
@@ -52,6 +52,13 @@ jobs:
       - name: Build web (JavaScript)
         # This checks the shipped JS target, not optional Wasm compatibility.
         run: flutter build web --no-pub --no-wasm-dry-run
+
+      - name: Verify compiler dependency metadata is not shipped
+        run: |
+          if find build/web -name '*.deps' -print -quit | grep -q .; then
+            echo "::error::Compiler dependency metadata must not be shipped"
+            exit 1
+          fi
 
       - uses: actions/setup-node@v4
         with:

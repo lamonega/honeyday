@@ -15,7 +15,7 @@ Desde la raíz, según README y CI:
 
 - Instala dependencias: `flutter pub get`.
 - Genera código Drift cuando corresponda: `dart run build_runner build --delete-conflicting-outputs` (puede sobrescribir archivos generados).
-- Tras actualizar Drift/SDK, regenera el worker Web: `dart compile js -O4 --no-source-maps -o web/drift_worker.js tool/drift_worker.dart`. CI comprueba que coincida con el archivo versionado.
+- Tras actualizar Drift/SDK, regenera el worker Web: `dart run tool/build_drift_worker.dart`. Compila fuera de `web/` para no publicar `.js.deps` con rutas locales. CI comprueba que el JS coincida con el archivo versionado.
 - Ejecuta la aplicación: `flutter run`.
 - Analiza: `dart analyze --fatal-infos` (CI también rechaza avisos informativos).
 - Ejecuta pruebas: `flutter test`.

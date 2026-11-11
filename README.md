@@ -129,7 +129,7 @@ generation. Native release builds require the corresponding platform toolchain.
 After upgrading Drift or the SDK, regenerate its separately shipped worker:
 
 ```bash
-dart compile js -O4 --no-source-maps -o web/drift_worker.js tool/drift_worker.dart
+dart run tool/build_drift_worker.dart
 node tool/test_web_persistence.mjs
 ```
 

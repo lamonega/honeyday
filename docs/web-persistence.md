@@ -30,13 +30,17 @@ Drift o el SDK, regenerar el archivo estático que se entrega al navegador:
 
 ```bash
 flutter pub get
-dart compile js -O4 --no-source-maps -o web/drift_worker.js tool/drift_worker.dart
+dart run tool/build_drift_worker.dart
 ```
 
 `tool/drift_worker.dart` es la fuente mínima, basada en el entry point público
 `WasmDatabase.workerMainForOpen()`. No editar manualmente el JavaScript generado.
-El archivo `.js.deps` contiene rutas de la máquina y está ignorado; no se necesitan
-source maps para distribuir este worker.
+El helper ejecuta `dart compile js -O4 --no-source-maps` en
+`.dart_tool/drift_worker/` y copia únicamente el JavaScript a `web/`. El archivo
+`.js.deps` contiene rutas de la máquina: **ignorarlo en Git no impide que Flutter
+lo copie al build**. Por eso se genera fuera de `web/` y el helper elimina también
+los `.deps` heredados de esa carpeta y de `build/web/`. CI rechaza un artefacto
+Web con archivos `.deps`. No se necesitan source maps para distribuir el worker.
 
 Esto es **distinto** de generar `app_database.g.dart` con `build_runner`. No hace
 falta una migración de esquema para este parche. `web/sqlite3.wasm` no cambió:
