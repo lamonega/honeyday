@@ -100,28 +100,30 @@ class PdfExportService {
     // Start conservatively: one captured raster is allowed in the pipeline
     // at a time until device profiling justifies more memory/concurrency.
     final workers = pool ?? PdfWorkerPool(maxWorkers: 1);
-    final output = (createOutput ?? createPdfOutput)();
-    final writer = PdfWriter(
-      sink: output.sink,
-      pageBox: pageBox,
-      title: snapshot.agenda.title,
-      pageCount: total,
-    );
-    // Only the image dimensions ride along; the rasters go to the pool and
-    // are dropped there, never accumulated the way the old pipeline did.
-    final dimensions = List<({int width, int height})?>.filled(total, null);
-
-    workers.onStream = (pageIndex, flateStream) async {
-      final size = dimensions[pageIndex]!;
-      await writer.writeImage(
-        pageIndex,
-        width: size.width,
-        height: size.height,
-        flateStream: flateStream,
-      );
-    };
+    PdfOutput? output;
 
     try {
+      output = (createOutput ?? createPdfOutput)();
+      final writer = PdfWriter(
+        sink: output.sink,
+        pageBox: pageBox,
+        title: snapshot.agenda.title,
+        pageCount: total,
+      );
+      // Only the image dimensions ride along; the rasters go to the pool and
+      // are dropped there, never accumulated the way the old pipeline did.
+      final dimensions = List<({int width, int height})?>.filled(total, null);
+
+      workers.onStream = (pageIndex, flateStream) async {
+        final size = dimensions[pageIndex]!;
+        await writer.writeImage(
+          pageIndex,
+          width: size.width,
+          height: size.height,
+          flateStream: flateStream,
+        );
+      };
+
       await workers.start();
       await writer.writeHeader();
 
@@ -163,6 +165,7 @@ class PdfExportService {
       );
       checkCancelled();
       await workers.close(isCancelled: cancelled);
+      checkCancelled();
 
       onProgress?.call(
         ExportProgress(
@@ -172,6 +175,7 @@ class PdfExportService {
         ),
       );
       await writer.finish();
+      checkCancelled();
       return PdfExportResult(
         artifact: await output.close(),
         fileName: exportFileName(snapshot.agenda.title),
@@ -195,17 +199,19 @@ class PdfExportService {
 
 Future<void> _discardAfterFailure(
   PdfWorkerPool workers,
-  PdfOutput output,
+  PdfOutput? output,
 ) async {
   try {
     await workers.dispose(cancel: true);
   } on Object catch (error) {
     debugPrint('Honeyday: export worker cancellation failed: $error');
   }
-  try {
-    await output.discard();
-  } on Object catch (error) {
-    debugPrint('Honeyday: export output cleanup failed: $error');
+  if (output != null) {
+    try {
+      await output.discard();
+    } on Object catch (error) {
+      debugPrint('Honeyday: export output cleanup failed: $error');
+    }
   }
 }
 

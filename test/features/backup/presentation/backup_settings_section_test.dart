@@ -245,6 +245,23 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'export FormatException shows generic backup error, not invalid file',
+    (tester) async {
+      repository.failure = const FormatException(
+        'Backup exceeds the 50 MiB limit.',
+      );
+      await pumpSection(tester);
+      await tester.tap(find.text('Crear copia de seguridad'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('La operación falló.'), findsOneWidget);
+      expect(
+        find.textContaining('no es una copia de Honeyday válida'),
+        findsNothing,
+      );
+    },
+  );
+
   testWidgets('storage failures re-enable actions for a retry', (tester) async {
     repository.failure = StateError('disk unavailable');
     await pumpSection(tester);

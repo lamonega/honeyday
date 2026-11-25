@@ -32,15 +32,11 @@ Uint8List readRgb(Uint8List flateStream, int width, int height) {
     expect(
       inflated[src],
       0,
-      reason: 'row $y must use the None filter: prediction was measured to '
+      reason:
+          'row $y must use the None filter: prediction was measured to '
           'inflate a pen-on-paper page, see encodePageImage',
     );
-    rgb.setRange(
-      y * rowBytes,
-      (y + 1) * rowBytes,
-      inflated,
-      src + 1,
-    );
+    rgb.setRange(y * rowBytes, (y + 1) * rowBytes, inflated, src + 1);
   }
   return rgb;
 }
@@ -153,6 +149,16 @@ void main() {
 
       expect(readRgb(stream, 1, 1), [0x10, 0x20, 0x30]);
     });
+
+    test('clamps composited channels at 255 instead of wrapping to 0', () {
+      // Alpha 0xFE over white (0xFF) adds _blendOver(255, 254) = 1.
+      // Source 255 + 1 = 256 must clamp to 255 rather than wrap around to 0.
+      final page = pageOf(1, 1, [0xFF, 0xFF, 0xFF, 0xFE]);
+
+      final stream = encodePageImage(page, backgroundArgb: 0xFFFFFFFF);
+
+      expect(readRgb(stream, 1, 1), [0xFF, 0xFF, 0xFF]);
+    });
   });
 
   group('filterPageRows', () {
@@ -170,9 +176,8 @@ void main() {
         isTrue,
       );
       expect(
-        filterPageRows(
-          pageOf(2, 1, [1, 2, 3, 0xFF, 0, 0, 0, 0]),
-        ).hadTransparency,
+        filterPageRows(pageOf(2, 1, [1, 2, 3, 0xFF, 0, 0, 0, 0]))
+            .hadTransparency,
         isTrue,
         reason: 'one opaque pixel must not hide a transparent neighbor',
       );
@@ -247,7 +252,8 @@ void main() {
       expect(filteredRowByteLength(1, 1), 4);
       expect(filteredRowByteLength(2480, 3410), 3410 * (2480 * 3 + 1));
       expect(
-        filterPageRows(pageOf(3, 2, List<int>.filled(2 * 3 * 4, 0xFF))).rows
+        filterPageRows(pageOf(3, 2, List<int>.filled(2 * 3 * 4, 0xFF)))
+            .rows
             .length,
         filteredRowByteLength(3, 2),
       );

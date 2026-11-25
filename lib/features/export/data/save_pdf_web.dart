@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:js_interop';
 
 import 'package:honeyday/features/export/data/pdf_sink.dart';
@@ -22,9 +23,12 @@ Future<void> savePdfImpl(PdfArtifact artifact, String fileName) async {
   final anchor = HTMLAnchorElement()
     ..href = url
     ..download = fileName;
-  document.body?.appendChild(anchor);
-  anchor
-    ..click()
-    ..remove();
-  URL.revokeObjectURL(url);
+  try {
+    document.body?.appendChild(anchor);
+    anchor.click();
+  } finally {
+    anchor.remove();
+    // Browsers can resolve the Blob after click() returns.
+    Timer(const Duration(seconds: 1), () => URL.revokeObjectURL(url));
+  }
 }

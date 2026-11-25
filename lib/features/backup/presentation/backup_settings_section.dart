@@ -25,13 +25,21 @@ class _BackupSettingsSectionState extends ConsumerState<BackupSettingsSection> {
       ..showSnackBar(SnackBar(content: Text(text)));
   }
 
-  Future<void> _run(Future<void> Function() operation) async {
+  Future<void> _run(
+    Future<void> Function() operation, {
+    bool formatExceptionIsInvalidFile = false,
+  }) async {
     if (_busy) return;
     setState(() => _stage = _BackupStage.working);
     try {
       await operation();
-    } on FormatException {
-      if (mounted) _message(AppLocalizations.of(context).backupInvalid);
+    } on FormatException catch (error, stack) {
+      if (formatExceptionIsInvalidFile) {
+        if (mounted) _message(AppLocalizations.of(context).backupInvalid);
+      } else {
+        debugPrint('Honeyday: backup failed: $error\n$stack');
+        if (mounted) _message(AppLocalizations.of(context).backupError);
+      }
     } on Object catch (error, stack) {
       debugPrint('Honeyday: backup failed: $error\n$stack');
       if (mounted) _message(AppLocalizations.of(context).backupError);
@@ -89,7 +97,7 @@ class _BackupSettingsSectionState extends ConsumerState<BackupSettingsSection> {
     setState(() => _stage = _BackupStage.working);
     final count = await controller.restore(backup);
     if (mounted) _message(l10n.backupRestored(count));
-  });
+  }, formatExceptionIsInvalidFile: true);
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +135,7 @@ class _BackupSettingsSectionState extends ConsumerState<BackupSettingsSection> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Text(l10n.backupWorking),
+                Expanded(child: Text(l10n.backupWorking)),
               ],
             ),
           ),

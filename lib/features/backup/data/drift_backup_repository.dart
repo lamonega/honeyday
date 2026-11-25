@@ -121,13 +121,14 @@ class DriftBackupRepository implements BackupRepository {
                 .copyWith(id: agendaId, pageCount: entry.pages.length)
                 .toCompanion(false),
           );
-          for (final entryPage in entry.pages) {
+          for (var i = 0; i < entry.pages.length; i++) {
+            final entryPage = entry.pages[i];
             final pageId = _uuid.v4();
             batch
               ..insert(
                 _db.pages,
                 entryPage.page
-                    .copyWith(id: pageId, agendaId: agendaId)
+                    .copyWith(id: pageId, agendaId: agendaId, pageNumber: i + 1)
                     .toCompanion(false),
               )
               ..insertAll(_db.canvasElements, [

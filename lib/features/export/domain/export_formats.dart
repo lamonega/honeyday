@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/widgets.dart';
@@ -100,13 +101,33 @@ CanvasFit fitCanvas({
 
 /// Suggested on-disk name for an exported agenda PDF.
 ///
-/// Strips characters that are illegal on common file systems and falls back
-/// to `Agenda` when the title becomes empty after sanitizing.
+/// Strips characters that are illegal on common file systems, bounds the name
+/// in UTF-8 bytes, and falls back to `Agenda` when the title becomes empty.
 String exportFileName(String agendaTitle) {
   final sanitized = agendaTitle
       .replaceAll(RegExp(r'[\\/:*?"<>|]'), '')
+      .replaceAll(RegExp(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]'), '')
       .replaceAll(RegExp(r'\s+'), ' ')
-      .trim();
-  final base = sanitized.isEmpty ? 'Agenda' : sanitized;
-  return '$base — Honeyday.pdf';
+      .trim()
+      .replaceFirst(RegExp(r'^[.\s]+'), '');
+  const suffix = ' — Honeyday.pdf';
+  // Leave some room below the typical 255-byte filesystem component limit.
+  const maxBaseBytes = 180;
+  final title = StringBuffer();
+  var bytes = 0;
+  for (final grapheme in sanitized.characters) {
+    bytes += utf8.encode(grapheme).length;
+    if (bytes > maxBaseBytes) break;
+    title.write(grapheme);
+  }
+  final base = title.toString().trimRight();
+  if (base.isEmpty) return 'Agenda$suffix';
+  final name = '$base$suffix';
+  // Windows reserves device names even when followed by an extension.
+  final stem = name.split('.').first.trimRight();
+  final deviceName = RegExp(
+    r'^(CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³])$',
+    caseSensitive: false,
+  );
+  return deviceName.hasMatch(stem) ? '_$name' : name;
 }

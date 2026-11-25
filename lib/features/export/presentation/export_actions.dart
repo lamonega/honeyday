@@ -94,8 +94,8 @@ Future<void> runAgendaExport(
     try {
       if (rootNavigator.mounted && progressRoute.isActive) {
         rootNavigator.removeRoute(progressRoute);
+        await progressRoute.completed;
       }
-      await progressRoute.completed;
     } on Object catch (error) {
       debugPrint('Honeyday: progress dialog teardown failed: $error');
     }

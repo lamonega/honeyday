@@ -4,8 +4,8 @@ import 'package:honeyday/features/export/data/save_pdf_io.dart'
 
 /// Hands the generated PDF to the platform's save/share surface.
 ///
-/// What: Share sheet (Android/iOS/macOS), native save dialog
-/// (Windows/Linux), browser download (web) — see the platform implementations.
+/// What: Share sheet (Android/iOS), native save dialog
+/// (macOS/Windows/Linux), browser download (web).
 /// Why: One entry point keeps `export_actions` platform-free, and it owns the
 /// temp file lifecycle: a file-backed artifact is deleted once the platform
 /// has taken it, so nothing is left in the temp directory.

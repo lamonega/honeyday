@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/export/domain/export_formats.dart';
@@ -81,6 +83,39 @@ void main() {
 
     test('falls back to Agenda when nothing remains', () {
       expect(exportFileName('???'), 'Agenda — Honeyday.pdf');
+    });
+
+    test('removes control characters rejected in native filenames', () {
+      expect(
+        exportFileName('Mi\u0000 agenda\u0007'),
+        'Mi agenda — Honeyday.pdf',
+      );
+      expect(exportFileName('a \u0000 b'), 'a b — Honeyday.pdf');
+    });
+
+    test('strips leading dots so exported files are never hidden', () {
+      expect(exportFileName('.hidden'), 'hidden — Honeyday.pdf');
+      expect(exportFileName('..'), 'Agenda — Honeyday.pdf');
+      expect(exportFileName('. .hidden'), 'hidden — Honeyday.pdf');
+    });
+
+    test('avoids Windows device names even when the title contains a dot', () {
+      expect(exportFileName('NUL.txt'), '_NUL.txt — Honeyday.pdf');
+    });
+
+    test('bounds long UTF-8 filenames without splitting an emoji', () {
+      final name = exportFileName('a${'🐝' * 100}');
+
+      expect(utf8.encode(name).length, lessThan(255));
+      expect(name, 'a${'🐝' * 44} — Honeyday.pdf');
+    });
+
+    test('truncates on grapheme boundaries without splitting ZWJ emoji', () {
+      const family = '👨‍👩‍👧‍👦'; // 25 UTF-8 bytes per grapheme cluster
+      final name = exportFileName(family * 10);
+
+      expect(utf8.encode(name).length, lessThan(255));
+      expect(name, '${family * 7} — Honeyday.pdf');
     });
   });
 

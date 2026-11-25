@@ -183,6 +183,29 @@ void main() {
     },
   );
 
+  test('renumbers imported pages sequentially 1..N in sorted order', () async {
+    final json = jsonDecode(
+      utf8.decode(await populatedBackup()),
+    ) as Map<String, dynamic>;
+    final pages = _entry(json)['pages'] as List<dynamic>;
+    final firstPage =
+        (pages.first as Map<String, dynamic>)['page'] as Map<String, dynamic>;
+    final secondPage =
+        (pages.last as Map<String, dynamic>)['page'] as Map<String, dynamic>;
+    // Swap order in JSON and introduce large gaps: 999 then 10.
+    firstPage['pageNumber'] = 999;
+    secondPage['pageNumber'] = 10;
+    final bytes = Uint8List.fromList(utf8.encode(jsonEncode(json)));
+
+    await importer.restoreBackup(bytes);
+
+    final importedPages = await (target.select(target.pages)).get()
+      ..sort((a, b) => a.pageNumber.compareTo(b.pageNumber));
+    expect(importedPages.map((p) => p.pageNumber), [1, 2]);
+    // The page that had number 10 ('dotted') comes first, 999 ('lined') second.
+    expect(importedPages.map((p) => p.backgroundStyle), ['dotted', 'lined']);
+  });
+
   test('rolls back every inserted row when a database write fails', () async {
     final bytes = await populatedBackup();
     await target.customStatement('''

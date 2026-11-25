@@ -1,6 +1,5 @@
-import 'dart:typed_data';
-
 import 'package:file_selector/file_selector.dart';
+import 'package:flutter/foundation.dart';
 import 'package:honeyday/features/backup/data/backup_document.dart';
 import 'package:honeyday/features/backup/data/save_backup_io.dart'
     if (dart.library.js_interop) 'package:honeyday/features/backup/data/save_backup_web.dart';
@@ -12,14 +11,20 @@ class PlatformBackupFileStore implements BackupFileStore {
   @override
   Future<Uint8List?> pickBackup() async {
     final file = await openFile(
-      acceptedTypeGroups: const [
-        XTypeGroup(
-          label: 'Honeyday backup',
-          extensions: ['honeyday', 'json'],
-          mimeTypes: ['application/json', 'application/octet-stream'],
-          uniformTypeIdentifiers: ['public.json', 'public.data'],
-        ),
-      ],
+      // Android filters by the provider's MIME type, not by filename. A
+      // .honeyday has no standard MIME type and may be reported as text/plain
+      // or another type. The importer validates the contents after selection.
+      acceptedTypeGroups:
+          !kIsWeb && defaultTargetPlatform == TargetPlatform.android
+          ? const []
+          : const [
+              XTypeGroup(
+                label: 'Honeyday backup',
+                extensions: ['honeyday', 'json'],
+                mimeTypes: ['application/json', 'application/octet-stream'],
+                uniformTypeIdentifiers: ['public.json', 'public.data'],
+              ),
+            ],
     );
     if (file == null) return null;
     if (await file.length() > BackupDocument.maxBytes) {

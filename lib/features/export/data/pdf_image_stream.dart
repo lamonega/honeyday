@@ -51,20 +51,14 @@ typedef FilteredPage = ({Uint8List rows, bool hadTransparency});
 /// The filter byte is still emitted and `/Predictor 15` still announced, so
 /// the row layout is self-describing and a reader never has to guess where a
 /// row ends. It costs 3410 bytes per page, 0.02% of the stream.
-Uint8List encodePageImage(
-  CapturedPage page, {
-  required int backgroundArgb,
-}) {
+Uint8List encodePageImage(CapturedPage page, {required int backgroundArgb}) {
   final first = filterPageRows(page);
   if (!first.hadTransparency) return deflatePdfStream(first.rows);
 
   // Transparent pages are a defence, not the norm (`PageSurface` fills the
   // whole sheet), so paying a second pass here keeps the common path at a
   // single traversal of 34 MB.
-  final composited = filterPageRows(
-    page,
-    backgroundArgb: backgroundArgb,
-  );
+  final composited = filterPageRows(page, backgroundArgb: backgroundArgb);
   return deflatePdfStream(composited.rows);
 }
 
@@ -80,9 +74,7 @@ Uint8List encodePageImageWithCompositing(
   required int creamB,
 }) {
   final argb = (0xFF << 24) | (creamR << 16) | (creamG << 8) | creamB;
-  return deflatePdfStream(
-    filterPageRows(page, backgroundArgb: argb).rows,
-  );
+  return deflatePdfStream(filterPageRows(page, backgroundArgb: argb).rows);
 }
 
 /// Drops the alpha channel and lays the page out as self-describing rows.
@@ -127,7 +119,8 @@ FilteredPage filterPageRows(CapturedPage page, {int? backgroundArgb}) {
       for (var channel = 0; channel < _rgbBytesPerPixel; channel++) {
         var value = rgba[pixel + channel];
         if (composite && alpha != 0xFF) {
-          value = (value + _blendOver(background[channel], alpha)) & 0xFF;
+          final blended = value + _blendOver(background[channel], alpha);
+          value = blended > 0xFF ? 0xFF : blended;
         }
         rows[target++] = value;
       }
