@@ -1,12 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:honeyday/core/database/persistent_storage_unavailable.dart';
 import 'package:honeyday/features/agendas/data/repositories/agenda_repository_provider.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/domain/repositories/repository_interfaces.dart';
 
 final StreamProvider<List<Agenda>> trashedAgendasStreamProvider =
-    StreamProvider.autoDispose<List<Agenda>>((ref) {
-      return ref.watch(agendaRepositoryProvider).watchTrashedAgendas();
-    });
+    StreamProvider.autoDispose<List<Agenda>>(
+      (ref) {
+        return ref.watch(agendaRepositoryProvider).watchTrashedAgendas();
+      },
+      retry: (count, error) => error is PersistentStorageUnavailable
+          ? null
+          : ProviderContainer.defaultRetry(count, error),
+    );
 
 final Provider<AgendaTrashController> agendaTrashControllerProvider =
     Provider<AgendaTrashController>((ref) {

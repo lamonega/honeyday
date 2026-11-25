@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:honeyday/core/constants/app_constants.dart';
+import 'package:honeyday/core/database/persistent_storage_unavailable.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/home_controller.dart';
 import 'package:honeyday/features/agendas/presentation/pages/agenda_trash_page.dart';
@@ -62,7 +63,9 @@ class HomePage extends ConsumerWidget {
       appBar: HomeHeader(
         onOpenTrash: () => context.go(AgendaTrashPage.routePath),
       ),
-      floatingActionButton: const HomeFab(),
+      floatingActionButton: agendasAsync.error is PersistentStorageUnavailable
+          ? null
+          : const HomeFab(),
       body: agendasAsync.when(
         loading: () => _buildSkeletonLoader(context),
         error: (error, _) => _buildErrorState(context, error),
@@ -108,28 +111,36 @@ class HomePage extends ConsumerWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.error_outline_rounded, size: 48, color: colorScheme.error),
-          const SizedBox(height: 12),
-          Text(
-            l10n.homeErrorLoading,
-            style: TextStyle(
-              color: colorScheme.onSurface,
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: colorScheme.error,
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '$error',
-            style: TextStyle(
-              color: colorScheme.onSurface.withValues(alpha: 0.5),
-              fontSize: 13,
+            const SizedBox(height: 12),
+            Text(
+              l10n.homeErrorLoading,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: colorScheme.onSurface,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              error is PersistentStorageUnavailable
+                  ? l10n.homeStorageUnavailable
+                  : '$error',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ),
       ),
     );
   }

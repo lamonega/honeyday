@@ -97,7 +97,7 @@ Future<GoRouter> _pump(
   final router = container.read(routerProvider);
   addTearDown(repository.close);
   addTearDown(container.dispose);
-  addTearDown(router.dispose);
+  addTearDown(() => tester.pumpWidget(const SizedBox.shrink()));
   if (direct) router.go(AgendaTrashPage.routePath);
   await tester.pumpWidget(
     UncontrolledProviderScope(

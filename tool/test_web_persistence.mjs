@@ -18,6 +18,8 @@ const candidates = [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+  process.env.LOCALAPPDATA &&
+    path.join(process.env.LOCALAPPDATA, 'Google', 'Chrome', 'Application', 'chrome.exe'),
 ].filter(Boolean);
 const chromePath = candidates.find((candidate) => existsSync(candidate));
 if (!chromePath) throw new Error('Set CHROME_EXECUTABLE to Chrome/Chromium.');
@@ -138,11 +140,20 @@ try {
   await send('Page.enable');
   await send('Runtime.enable');
   await send('Page.navigate', { url: origin });
-  console.log('Before reload:', await waitForReport('written'));
+  const written = await waitForReport('written');
+  if (written.pdfDownload !== 'verified') throw new Error('PDF download was not verified.');
+  console.log('Before reload:', written);
   // Destroy the first document without a clean database.close(). A new
   // connection must recover the committed data from durable IndexedDB.
   await send('Page.reload', { ignoreCache: true });
   console.log('After reload:', await waitForReport('verified'));
+  await send('Page.addScriptToEvaluateOnNewDocument', {
+    source: `for (const key of ['Worker', 'SharedWorker', 'indexedDB']) {
+      Object.defineProperty(window, key, { value: undefined, configurable: true });
+    }`,
+  });
+  await send('Page.navigate', { url: `${origin}/?storage-disabled` });
+  console.log('Without durable storage:', await waitForReport('storage-unavailable'));
   if (exceptions.length) throw new Error(JSON.stringify(exceptions));
   console.log('PASS: transaction, savepoint rollback and RETURNING survive a reload.');
 } finally {

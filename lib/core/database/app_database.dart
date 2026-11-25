@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:drift_flutter/drift_flutter.dart';
+import 'package:honeyday/core/database/database_connection_native.dart'
+    if (dart.library.js_interop) 'package:honeyday/core/database/database_connection_web.dart';
 
 part 'app_database.g.dart';
 
@@ -159,16 +160,7 @@ class AppDatabase extends _$AppDatabase {
   ///
   /// Can accept an explicit [QueryExecutor] for in-memory testing.
   AppDatabase([QueryExecutor? executor])
-    : super(
-        executor ??
-            driftDatabase(
-              name: 'honeyday_db',
-              web: DriftWebOptions(
-                sqlite3Wasm: Uri.parse('sqlite3.wasm'),
-                driftWorker: Uri.parse('drift_worker.js'),
-              ),
-            ),
-      );
+    : super(executor ?? openDatabaseConnection('honeyday_db'));
 
   @override
   int get schemaVersion => 2;

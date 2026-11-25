@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:honeyday/core/database/persistent_storage_unavailable.dart';
 import 'package:honeyday/features/agendas/data/repositories/agenda_repository_provider.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.dart';
@@ -6,11 +7,15 @@ import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.
 /// StreamProvider exposing the reactive list of active agendas.
 ///
 /// Follows the MVVM recommendation: View subscribes to data state without managing streams.
-final StreamProvider<List<Agenda>> agendasStreamProvider =
-    StreamProvider<List<Agenda>>((ref) {
-      final repository = ref.watch(agendaRepositoryProvider);
-      return repository.watchAgendas();
-    });
+final agendasStreamProvider = StreamProvider<List<Agenda>>(
+  (ref) {
+    final repository = ref.watch(agendaRepositoryProvider);
+    return repository.watchAgendas();
+  },
+  retry: (count, error) => error is PersistentStorageUnavailable
+      ? null
+      : ProviderContainer.defaultRetry(count, error),
+);
 
 /// Controller providing actions for the home page.
 final Provider<HomeController> homeControllerProvider =
@@ -33,22 +38,11 @@ class HomeController {
     required String title,
     String coverStyle = 'honey',
     String paperStyle = 'dotted',
-  }) async {
-    final agenda = await _repository.createAgenda(
-      title: title,
-      coverStyle: coverStyle,
-    );
-
-    // If initial paper style differs from default 'dotted', configure first page
-    if (paperStyle != 'dotted') {
-      final pages = await _repository.watchPages(agenda.id).first;
-      if (pages.isNotEmpty) {
-        await _repository.updatePageBackground(pages.first.id, paperStyle);
-      }
-    }
-
-    return agenda;
-  }
+  }) => _repository.createAgenda(
+    title: title,
+    coverStyle: coverStyle,
+    paperStyle: paperStyle,
+  );
 
   /// Renames an agenda without allowing an empty or whitespace-only title.
   Future<void> renameAgenda(String id, String title) async {

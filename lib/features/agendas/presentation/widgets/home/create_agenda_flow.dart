@@ -29,13 +29,23 @@ Future<void> showCreateAgendaAndNavigate(
   final paperStyle = result['paperStyle'] ?? kDefaultPaperStyle;
 
   final controller = ref.read(homeControllerProvider);
-  final createdAgenda = await controller.createAgenda(
-    title: title,
-    coverStyle: coverStyle,
-    paperStyle: paperStyle,
-  );
-
-  if (context.mounted) {
-    context.go('/agenda/${createdAgenda.id}?mode=edit');
+  final router = GoRouter.of(context);
+  final originatingLocation = router.routeInformationProvider.value.uri;
+  try {
+    final createdAgenda = await controller.createAgenda(
+      title: title,
+      coverStyle: coverStyle,
+      paperStyle: paperStyle,
+    );
+    if (context.mounted &&
+        ModalRoute.of(context)?.isCurrent == true &&
+        router.routeInformationProvider.value.uri == originatingLocation) {
+      router.go('/agenda/${createdAgenda.id}?mode=edit');
+    }
+  } on Object catch (error) {
+    debugPrint('Honeyday: agenda creation failed: $error');
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(l10n.agendaSaveError)));
   }
 }

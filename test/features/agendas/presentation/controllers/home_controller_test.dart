@@ -17,6 +17,16 @@ void main() {
 
   tearDown(() => db.close());
 
+  test('creates the first page with the chosen paper style', () async {
+    final agenda = await controller.createAgenda(
+      title: 'Con cuadrícula',
+      paperStyle: 'grid',
+    );
+    final pages = await repository.watchPages(agenda.id).first;
+    expect(pages.single.backgroundStyle, 'grid');
+    expect(agenda.pageCount, 1);
+  });
+
   test('rename trims the title and preserves identity and pages', () async {
     final agenda = await repository.createAgenda(
       title: 'Original',

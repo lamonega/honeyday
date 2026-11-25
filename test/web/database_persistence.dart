@@ -4,7 +4,11 @@ import 'dart:js_interop';
 
 import 'package:drift/drift.dart';
 import 'package:drift/wasm.dart';
+import 'package:honeyday/core/database/database_connection_web.dart';
+import 'package:honeyday/core/database/persistent_storage_unavailable.dart';
 import 'package:web/web.dart' show window;
+
+import 'pdf_download.dart';
 
 @JS('honeydayPersistenceReport')
 external set _report(JSString value);
@@ -91,17 +95,26 @@ Future<void> _verify(_ProbeDatabase database, List<String> expected) async {
 
 Future<void> main() async {
   try {
+    if (Uri.base.queryParameters.containsKey('storage-disabled')) {
+      await _verifyStorageUnavailable();
+      _report = jsonEncode({'phase': 'storage-unavailable'}).toJS;
+      return;
+    }
     final transactions = await _open('honeyday_regression_transactions');
     final returning = await _open('honeyday_regression_returning');
     final verifying =
         window.localStorage.getItem('honeyday_regression_phase') == 'verify';
     if (!verifying) {
+      await verifyPdfDownload();
       await _write(transactions, returning);
       window.localStorage.setItem('honeyday_regression_phase', 'verify');
       // Intentionally do not close either database. A clean close would flush
       // the old worker and conceal the data-loss bug. The driver reloads now.
-      _report = jsonEncode({'phase': 'written', 'storage': 'sharedIndexedDb'})
-          .toJS;
+      _report = jsonEncode({
+        'phase': 'written',
+        'storage': 'sharedIndexedDb',
+        'pdfDownload': 'verified',
+      }).toJS;
     } else {
       try {
         await _verify(transactions, ['committed', 'after savepoint']);
@@ -121,5 +134,22 @@ Future<void> main() async {
       'error': '$error',
       'stack': '$stack',
     }).toJS;
+  }
+}
+
+Future<void> _verifyStorageUnavailable() async {
+  final db = _ProbeDatabase(
+    openDatabaseConnection('honeyday_storage_disabled'),
+  );
+  try {
+    try {
+      await db.customSelect('SELECT 1').watchSingle().first;
+      throw StateError('A database without durable storage accepted queries.');
+    } on PersistentStorageUnavailable {
+      // The opening error must reach subscribers rather than leaving them
+      // loading or allowing writes to a database that would vanish on reload.
+    }
+  } finally {
+    await db.close();
   }
 }
