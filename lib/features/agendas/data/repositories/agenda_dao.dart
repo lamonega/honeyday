@@ -48,6 +48,7 @@ class AgendaDao {
   Future<Agenda> createAgenda({
     required String title,
     String coverStyle = 'honey',
+    String paperStyle = 'dotted',
   }) async {
     final now = DateTime.now().toUtc();
     final agendaId = _uuid.v4();
@@ -70,7 +71,7 @@ class AgendaDao {
         id: pageId,
         agendaId: agendaId,
         pageNumber: 1,
-        backgroundStyle: const Value('dotted'),
+        backgroundStyle: Value(paperStyle),
         createdAt: Value(now),
         updatedAt: Value(now),
         isDeleted: const Value(false),
@@ -85,9 +86,11 @@ class AgendaDao {
     });
   }
 
-  /// Updates the title of the agenda identified by [id].
+  /// Updates the title of the non-deleted agenda identified by [id].
   Future<void> updateAgendaTitle(String id, String newTitle) async {
-    await (_db.update(_db.agendas)..where((tbl) => tbl.id.equals(id))).write(
+    await (_db.update(
+      _db.agendas,
+    )..where((tbl) => tbl.id.equals(id) & tbl.isDeleted.equals(false))).write(
       AgendasCompanion(
         title: Value(newTitle),
         updatedAt: Value(DateTime.now().toUtc()),

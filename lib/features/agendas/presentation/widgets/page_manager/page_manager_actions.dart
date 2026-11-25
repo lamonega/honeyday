@@ -53,7 +53,7 @@ class PageManagerActions extends StatelessWidget {
           Row(
             children: [
               DropdownButton<String>(
-                value: currentPage!.backgroundStyle,
+                value: PaperStyle.fromString(currentPage!.backgroundStyle).name,
                 underline: const SizedBox.shrink(),
                 isDense: true,
                 items: paperStyles.entries.map((entry) {
@@ -80,6 +80,7 @@ class PageManagerActions extends StatelessWidget {
                     size: 20,
                     color: colorScheme.error,
                   ),
+                  tooltip: l10n.agendaPageDeleteTooltip,
                   visualDensity: VisualDensity.compact,
                   onPressed: onDeletePage,
                 ),

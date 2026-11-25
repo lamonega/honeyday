@@ -18,19 +18,30 @@ class PageDao {
   final AppDatabase _db;
   static const _uuid = Uuid();
 
-  /// Watches all non-deleted pages for [agendaId], ordered by page number.
+  /// Watches all non-deleted pages for a non-deleted [agendaId], ordered by
+  /// page number.
   Stream<List<AgendaPage>> watchPages(String agendaId) {
-    return (_db.select(_db.pages)
+    final query =
+        _db.select(_db.pages).join([
+            innerJoin(
+              _db.agendas,
+              _db.agendas.id.equalsExp(_db.pages.agendaId),
+            ),
+          ])
           ..where(
-            (tbl) =>
-                tbl.agendaId.equals(agendaId) & tbl.isDeleted.equals(false),
+            _db.pages.agendaId.equals(agendaId) &
+                _db.pages.isDeleted.equals(false) &
+                _db.agendas.isDeleted.equals(false),
           )
-          ..orderBy([(t) => OrderingTerm.asc(t.pageNumber)]))
-        .watch()
-        .map(
-          (rows) =>
-              rows.map((r) => AgendaPageDto.fromDrift(r).toEntity()).toList(),
-        );
+          ..orderBy([OrderingTerm.asc(_db.pages.pageNumber)]);
+    return query.watch().map(
+      (rows) => rows
+          .map(
+            (row) =>
+                AgendaPageDto.fromDrift(row.readTable(_db.pages)).toEntity(),
+          )
+          .toList(),
+    );
   }
 
   /// Reads all non-deleted pages for [agendaId], ordered by page number.
@@ -46,7 +57,19 @@ class PageDao {
     return rows.map((r) => AgendaPageDto.fromDrift(r).toEntity()).toList();
   }
 
-  /// Creates a new page and atomically increments the parent agenda's page count.
+  Future<int> _countLivePages(String agendaId) {
+    final liveCount = _db.pages.id.count();
+    return (_db.selectOnly(_db.pages)
+          ..addColumns([liveCount])
+          ..where(
+            _db.pages.agendaId.equals(agendaId) &
+                _db.pages.isDeleted.equals(false),
+          ))
+        .map((row) => row.read(liveCount)!)
+        .getSingle();
+  }
+
+  /// Creates a new page and atomically updates the parent agenda's page count.
   ///
   /// The effective page number is derived inside the transaction as
   /// `max(pageNumber, highest live number + 1)` so callers can never create
@@ -61,10 +84,22 @@ class PageDao {
     final pageId = id ?? _uuid.v4();
 
     return await _db.transaction(() async {
+      final agenda =
+          await (_db.select(_db.agendas)..where(
+                (tbl) => tbl.id.equals(agendaId) & tbl.isDeleted.equals(false),
+              ))
+              .getSingleOrNull();
+      if (agenda == null) {
+        throw StateError('The parent agenda does not exist.');
+      }
+
       final existing = await (_db.select(
         _db.pages,
       )..where((tbl) => tbl.id.equals(pageId))).getSingleOrNull();
       if (existing != null) {
+        if (existing.agendaId != agendaId || existing.isDeleted) {
+          throw StateError('The page identifier is already in use.');
+        }
         return AgendaPageDto.fromDrift(existing).toEntity();
       }
 
@@ -92,22 +127,14 @@ class PageDao {
 
       await _db.into(_db.pages).insert(pageCompanion);
 
-      // Increment the agenda's page count through Drift's typed API so the
-      // DateTime is serialized consistently (raw SQL here previously wrote
-      // milliseconds where drift stores seconds, corrupting updatedAt).
-      final agenda = await (_db.select(
+      // Derive pageCount from live pages through Drift's typed API so the
+      // DateTime is serialized consistently and pageCount stays accurate.
+      final liveCount = await _countLivePages(agendaId);
+      await (_db.update(
         _db.agendas,
-      )..where((tbl) => tbl.id.equals(agendaId))).getSingleOrNull();
-      if (agenda != null) {
-        await (_db.update(
-          _db.agendas,
-        )..where((tbl) => tbl.id.equals(agendaId))).write(
-          AgendasCompanion(
-            pageCount: Value(agenda.pageCount + 1),
-            updatedAt: Value(now),
-          ),
-        );
-      }
+      )..where((tbl) => tbl.id.equals(agendaId))).write(
+        AgendasCompanion(pageCount: Value(liveCount), updatedAt: Value(now)),
+      );
 
       final created = await (_db.select(
         _db.pages,
@@ -116,29 +143,56 @@ class PageDao {
     });
   }
 
-  /// Updates the background style of the page identified by [pageId].
+  /// Updates the background style of the page identified by [pageId] and
+  /// bumps the parent agenda's `updatedAt` timestamp.
   Future<void> updatePageBackground(
     String pageId,
     String backgroundStyle,
   ) async {
-    await (_db.update(_db.pages)..where((tbl) => tbl.id.equals(pageId))).write(
-      PagesCompanion(
-        backgroundStyle: Value(backgroundStyle),
-        updatedAt: Value(DateTime.now().toUtc()),
-      ),
-    );
+    final now = DateTime.now().toUtc();
+    await _db.transaction(() async {
+      final page =
+          await (_db.select(_db.pages)..where(
+                (tbl) => tbl.id.equals(pageId) & tbl.isDeleted.equals(false),
+              ))
+              .getSingleOrNull();
+      if (page == null) return;
+      await (_db.update(
+        _db.pages,
+      )..where((tbl) => tbl.id.equals(pageId))).write(
+        PagesCompanion(
+          backgroundStyle: Value(backgroundStyle),
+          updatedAt: Value(now),
+        ),
+      );
+      await (_db.update(_db.agendas)
+            ..where((tbl) => tbl.id.equals(page.agendaId)))
+          .write(AgendasCompanion(updatedAt: Value(now)));
+    });
   }
 
   /// Soft-deletes the page identified by [pageId].
   ///
-  /// Runs atomically with a decrement of the parent agenda's page count
-  /// (never below 1) so the badge shown in the home list stays truthful.
+  /// Protects the last live page and updates the parent agenda's count in
+  /// the same transaction, even if concurrent callers saw an older list.
   Future<void> deletePage(String pageId) async {
     await _db.transaction(() async {
       final page = await (_db.select(
         _db.pages,
       )..where((tbl) => tbl.id.equals(pageId))).getSingleOrNull();
       if (page == null || page.isDeleted) return;
+
+      final liveCount = _db.pages.id.count();
+      final remainingBeforeDelete =
+          await (_db.selectOnly(_db.pages)
+                ..addColumns([liveCount])
+                ..where(
+                  _db.pages.agendaId.equals(page.agendaId) &
+                      _db.pages.isDeleted.equals(false),
+                ))
+              .map((row) => row.read(liveCount)!)
+              .getSingle();
+      if (remainingBeforeDelete <= 1) return;
 
       final now = DateTime.now().toUtc();
       await (_db.update(
@@ -147,19 +201,14 @@ class PageDao {
         PagesCompanion(isDeleted: const Value(true), updatedAt: Value(now)),
       );
 
-      final agenda = await (_db.select(
+      await (_db.update(
         _db.agendas,
-      )..where((tbl) => tbl.id.equals(page.agendaId))).getSingleOrNull();
-      if (agenda != null && agenda.pageCount > 1) {
-        await (_db.update(
-          _db.agendas,
-        )..where((tbl) => tbl.id.equals(page.agendaId))).write(
-          AgendasCompanion(
-            pageCount: Value(agenda.pageCount - 1),
-            updatedAt: Value(now),
-          ),
-        );
-      }
+      )..where((tbl) => tbl.id.equals(page.agendaId))).write(
+        AgendasCompanion(
+          pageCount: Value(remainingBeforeDelete - 1),
+          updatedAt: Value(now),
+        ),
+      );
     });
   }
 
@@ -241,20 +290,20 @@ class PageDao {
                   .toCompanion(false),
           ]);
       });
+      final liveCount = await _countLivePages(source.agendaId);
       await (_db.update(
         _db.agendas,
       )..where((a) => a.id.equals(source.agendaId))).write(
-        AgendasCompanion(
-          pageCount: Value(agenda.pageCount + 1),
-          updatedAt: Value(now),
-        ),
+        AgendasCompanion(pageCount: Value(liveCount), updatedAt: Value(now)),
       );
       return AgendaPageDto.fromDrift(copy).toEntity();
     });
   }
 
-  /// Reorders pages by assigning sequential page numbers in a transaction.
+  /// Reorders pages by assigning sequential page numbers in a transaction and
+  /// bumps the parent agenda's `updatedAt` timestamp.
   Future<void> reorderPages(List<String> pageIdsInOrder) async {
+    if (pageIdsInOrder.isEmpty) return;
     final now = DateTime.now().toUtc();
     await _db.transaction(() async {
       await _db.batch((batch) {
@@ -266,6 +315,14 @@ class PageDao {
           );
         }
       });
+      final firstPage = await (_db.select(
+        _db.pages,
+      )..where((tbl) => tbl.id.equals(pageIdsInOrder.first))).getSingleOrNull();
+      if (firstPage != null) {
+        await (_db.update(_db.agendas)
+              ..where((tbl) => tbl.id.equals(firstPage.agendaId)))
+            .write(AgendasCompanion(updatedAt: Value(now)));
+      }
     });
   }
 }

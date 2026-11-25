@@ -192,5 +192,6 @@ void main() {
 
     expect(followingRan, isTrue);
     expect(notifications, notificationsAtDispose);
+    expect(detached.isDisposed, isTrue);
   });
 }

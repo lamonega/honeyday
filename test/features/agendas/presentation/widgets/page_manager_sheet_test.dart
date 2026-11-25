@@ -27,8 +27,8 @@ void main() {
       WidgetTester tester, {
       ValueChanged<int>? onSelectPage,
       ValueChanged<String>? onDeletePage,
-      void Function(String, String)? onChangePaperStyle,
-      ValueChanged<List<String>>? onReorderPages,
+      FutureOr<void> Function(String, String)? onChangePaperStyle,
+      FutureOr<void> Function(List<String>)? onReorderPages,
       VoidCallback? onAddPage,
       ValueChanged<String>? onDuplicatePage,
     }) => tester.pumpWidget(
@@ -165,5 +165,72 @@ void main() {
       await session.drain();
       expect(writes, ['page-1:lined', 'page-1:blank']);
     });
+
+    testWidgets(
+      'unknown backgroundStyle falls back to dotted without crashing',
+      (tester) async {
+        final unknownPages = [
+          AgendaPage(
+            id: 'page-unknown',
+            agendaId: 'agenda-1',
+            pageNumber: 1,
+            backgroundStyle: 'unknown_legacy_style',
+            createdAt: DateTime(2026),
+            updatedAt: DateTime(2026),
+          ),
+        ];
+        await tester.pumpWidget(
+          testMaterialApp(
+            home: Scaffold(
+              body: PageManagerSheet(
+                pages: unknownPages,
+                currentPageIndex: 0,
+                onSelectPage: (_) {},
+                onDeletePage: (_) {},
+                onChangePaperStyle: (_, _) {},
+                onReorderPages: (_) {},
+                onAddPage: () {},
+              ),
+            ),
+          ),
+        );
+        final dropdown = tester.widget<DropdownButton<String>>(
+          find.byType(DropdownButton<String>),
+        );
+        expect(dropdown.value, 'dotted');
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets(
+      'reverts optimistic reorder and paper style when callback throws',
+      (tester) async {
+        await pumpSheet(
+          tester,
+          onReorderPages: (_) async => throw StateError('write failed'),
+          onChangePaperStyle: (_, _) async => throw StateError('write failed'),
+        );
+
+        tester
+            .widget<PageManagerGrid>(find.byType(PageManagerGrid))
+            .onReorder(0, 1);
+        await tester.pumpAndSettle();
+        final grid = tester.widget<PageManagerGrid>(
+          find.byType(PageManagerGrid),
+        );
+        expect(grid.pages.map((p) => p.id).toList(), ['page-1', 'page-2']);
+        expect(grid.currentPageIndex, 0);
+
+        final dropdown = tester.widget<DropdownButton<String>>(
+          find.byType(DropdownButton<String>),
+        );
+        dropdown.onChanged!('lined');
+        await tester.pumpAndSettle();
+        final afterDropdown = tester.widget<DropdownButton<String>>(
+          find.byType(DropdownButton<String>),
+        );
+        expect(afterDropdown.value, 'dotted');
+      },
+    );
   });
 }

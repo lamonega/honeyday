@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/viewer_page_indicator.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 // ──────────────────────────────────────────────
 // Viewer navigator constants (used only here)
@@ -7,22 +8,31 @@ import 'package:honeyday/features/agendas/presentation/widgets/viewer_page_indic
 
 /// Bottom margin for the page navigator bar.
 const double kViewerNavBottomMargin = 16;
+
 /// Horizontal padding inside the navigator bar.
 const double kViewerNavHorizontalPadding = 12;
+
 /// Vertical padding inside the navigator bar.
 const double kViewerNavVerticalPadding = 8;
+
 /// Border radius of the navigator bar container.
 const double kViewerNavBorderRadius = 20;
+
 /// Shadow blur radius for the navigator bar.
 const double kViewerNavShadowBlur = 8;
+
 /// Chevron icon size in the navigator.
 const double kViewerNavChevronIconSize = 22;
+
 /// Width of the divider line.
 const double kViewerNavDividerWidth = 1;
+
 /// Height of the divider line.
 const double kViewerNavDividerHeight = 14;
+
 /// Horizontal margin for the divider.
 const double kViewerNavDividerMargin = 6;
+
 /// Font size for the page counter text.
 const double kViewerNavTextFontSize = 12;
 
@@ -43,6 +53,9 @@ class ViewerPageNavigator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final canGoPrev = currentPage > 0;
+    final canGoNext = currentPage < childCount - 1;
 
     return Positioned(
       left: 0,
@@ -65,53 +78,80 @@ class ViewerPageNavigator extends StatelessWidget {
               ),
             ],
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              GestureDetector(
-                onTap: currentPage > 0
-                    ? () => onGoToPage(currentPage - 1)
-                    : null,
-                child: Icon(
-                  Icons.chevron_left_rounded,
-                  size: kViewerNavChevronIconSize,
-                  color: currentPage > 0
-                      ? colorScheme.onSurface
-                      : colorScheme.onSurface.withValues(alpha: 0.2),
+          child: Material(
+            color: Colors.transparent,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Tooltip(
+                  message: l10n.viewerPrevPage,
+                  child: Semantics(
+                    button: true,
+                    enabled: canGoPrev,
+                    label: l10n.viewerPrevPage,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(
+                        kViewerNavBorderRadius,
+                      ),
+                      onTap: canGoPrev
+                          ? () => onGoToPage(currentPage - 1)
+                          : null,
+                      child: Icon(
+                        Icons.chevron_left_rounded,
+                        size: kViewerNavChevronIconSize,
+                        color: canGoPrev
+                            ? colorScheme.onSurface
+                            : colorScheme.onSurface.withValues(alpha: 0.2),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              ViewerPageIndicator(
-                childCount: childCount,
-                currentPage: currentPage,
-              ),
-              Container(
-                width: kViewerNavDividerWidth,
-                height: kViewerNavDividerHeight,
-                margin: const EdgeInsets.symmetric(horizontal: kViewerNavDividerMargin),
-                color: colorScheme.onSurface.withValues(alpha: 0.15),
-              ),
-              Text(
-                '${currentPage + 1}/$childCount',
-                style: TextStyle(
-                  fontSize: kViewerNavTextFontSize,
-                  fontWeight: FontWeight.w500,
-                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                ViewerPageIndicator(
+                  childCount: childCount,
+                  currentPage: currentPage,
                 ),
-              ),
-              const SizedBox(width: 2),
-              GestureDetector(
-                onTap: currentPage < childCount - 1
-                    ? () => onGoToPage(currentPage + 1)
-                    : null,
-                child: Icon(
-                  Icons.chevron_right_rounded,
-                  size: kViewerNavChevronIconSize,
-                  color: currentPage < childCount - 1
-                      ? colorScheme.onSurface
-                      : colorScheme.onSurface.withValues(alpha: 0.2),
+                Container(
+                  width: kViewerNavDividerWidth,
+                  height: kViewerNavDividerHeight,
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: kViewerNavDividerMargin,
+                  ),
+                  color: colorScheme.onSurface.withValues(alpha: 0.15),
                 ),
-              ),
-            ],
+                Text(
+                  '${currentPage + 1}/$childCount',
+                  style: TextStyle(
+                    fontSize: kViewerNavTextFontSize,
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
+                const SizedBox(width: 2),
+                Tooltip(
+                  message: l10n.viewerNextPage,
+                  child: Semantics(
+                    button: true,
+                    enabled: canGoNext,
+                    label: l10n.viewerNextPage,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(
+                        kViewerNavBorderRadius,
+                      ),
+                      onTap: canGoNext
+                          ? () => onGoToPage(currentPage + 1)
+                          : null,
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        size: kViewerNavChevronIconSize,
+                        color: canGoNext
+                            ? colorScheme.onSurface
+                            : colorScheme.onSurface.withValues(alpha: 0.2),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

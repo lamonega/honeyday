@@ -67,6 +67,16 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_defaultTitleSet) {
+      _defaultTitleSet = true;
+      _titleController.text = AppLocalizations.of(context)
+          .agendaNewDefaultTitle;
+    }
+  }
+
+  @override
   void dispose() {
     _titleController.dispose();
     _animController.dispose();
@@ -76,10 +86,6 @@ class _NewAgendaDialogState extends State<NewAgendaDialog>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    if (!_defaultTitleSet) {
-      _defaultTitleSet = true;
-      _titleController.text = l10n.agendaNewDefaultTitle;
-    }
     final activeColor = hexToColor(_selectedCover);
     final darkColor = darken(activeColor);
     final previewTitle = _titleController.text.trim().isEmpty

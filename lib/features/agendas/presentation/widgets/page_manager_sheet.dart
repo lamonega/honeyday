@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/page_manager/page_manager_actions.dart';
@@ -23,8 +25,8 @@ class PageManagerSheet extends StatefulWidget {
   final int currentPageIndex;
   final ValueChanged<int> onSelectPage;
   final ValueChanged<String> onDeletePage;
-  final void Function(String pageId, String style) onChangePaperStyle;
-  final ValueChanged<List<String>> onReorderPages;
+  final FutureOr<void> Function(String pageId, String style) onChangePaperStyle;
+  final FutureOr<void> Function(List<String> pageIds) onReorderPages;
   final VoidCallback onAddPage;
   final ValueChanged<String>? onDuplicatePage;
 
@@ -54,7 +56,9 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
     }
   }
 
-  void _onReorder(int oldIndex, int newIndex) {
+  Future<void> _onReorder(int oldIndex, int newIndex) async {
+    final previousPages = List.of(_pages);
+    final previousIndex = _currentPageIndex;
     setState(() {
       final item = _pages.removeAt(oldIndex);
       _pages.insert(newIndex, item);
@@ -68,16 +72,32 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
         _currentPageIndex += 1;
       }
     });
-    widget.onReorderPages(_pages.map((p) => p.id).toList());
+    try {
+      await widget.onReorderPages(_pages.map((p) => p.id).toList());
+    } on Object {
+      if (mounted) {
+        setState(() {
+          _pages = previousPages;
+          _currentPageIndex = previousIndex;
+        });
+      }
+    }
   }
 
-  void _onChangePaperStyle(String style) {
+  Future<void> _onChangePaperStyle(String style) async {
     if (_currentPageIndex < 0 || _currentPageIndex >= _pages.length) return;
+    final previousPages = List.of(_pages);
     final selected = _pages[_currentPageIndex];
     setState(() {
       _pages[_currentPageIndex] = selected.copyWith(backgroundStyle: style);
     });
-    widget.onChangePaperStyle(selected.id, style);
+    try {
+      await widget.onChangePaperStyle(selected.id, style);
+    } on Object {
+      if (mounted) {
+        setState(() => _pages = previousPages);
+      }
+    }
   }
 
   void _onAddPage() {
@@ -173,13 +193,15 @@ class _PageManagerSheetState extends State<PageManagerSheet> {
               widget.onSelectPage(index);
               Navigator.of(context).pop();
             },
-            onReorder: _onReorder,
+            onReorder: (oldIndex, newIndex) =>
+                unawaited(_onReorder(oldIndex, newIndex)),
           ),
           const SizedBox(height: 12),
           PageManagerActions(
             currentPage: currentPage,
             canDeletePage: _pages.length > 1,
-            onChangePaperStyle: _onChangePaperStyle,
+            onChangePaperStyle: (style) =>
+                unawaited(_onChangePaperStyle(style)),
             onDeletePage: _confirmDelete,
             onAddPage: _onAddPage,
             onDuplicatePage: widget.onDuplicatePage == null

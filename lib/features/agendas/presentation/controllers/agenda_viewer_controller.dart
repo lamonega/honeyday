@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:honeyday/core/database/persistent_storage_unavailable.dart';
 import 'package:honeyday/features/agendas/data/repositories/agenda_repository_provider.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
@@ -12,33 +14,41 @@ import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:uuid/uuid.dart';
 
+Duration? _skipPersistentStorageRetry(int retryCount, Object error) =>
+    error is PersistentStorageUnavailable
+    ? null
+    : ProviderContainer.defaultRetry(retryCount, error);
+
+/// Loads metadata for the viewer header without blocking access to its pages.
+// ignore: specify_nonobvious_property_types
+final viewerAgendaProvider = FutureProvider.autoDispose.family<Agenda?, String>(
+  (ref, agendaId) => ref.watch(agendaRepositoryProvider).getAgenda(agendaId),
+  retry: (_, _) => null,
+);
+
 /// Exposes the reactive list of pages for a given agenda ID.
 // ignore: specify_nonobvious_property_types
-final agendaPagesProvider = StreamProvider.family<List<AgendaPage>, String>((
-  ref,
-  agendaId,
-) {
-  final repository = ref.watch(agendaRepositoryProvider);
-  return repository.watchPages(agendaId);
-});
+final agendaPagesProvider = StreamProvider.autoDispose
+    .family<List<AgendaPage>, String>((ref, agendaId) {
+      final repository = ref.watch(agendaRepositoryProvider);
+      return repository.watchPages(agendaId);
+    }, retry: _skipPersistentStorageRetry);
 
 /// Exposes the UI-ready canvas widget elements for a given page ID.
 // ignore: specify_nonobvious_property_types
-final pageElementsProvider =
-    StreamProvider.family<List<CanvasWidgetData>, String>((ref, pageId) {
+final pageElementsProvider = StreamProvider.autoDispose
+    .family<List<CanvasWidgetData>, String>((ref, pageId) {
       final repository = ref.watch(agendaRepositoryProvider);
       return repository.watchCanvasElements(pageId);
-    });
+    }, retry: _skipPersistentStorageRetry);
 
 /// Exposes the UI-ready vector ink strokes for a given page ID.
 // ignore: specify_nonobvious_property_types
-final pageStrokesProvider = StreamProvider.family<List<InkStroke>, String>((
-  ref,
-  pageId,
-) {
-  final repository = ref.watch(agendaRepositoryProvider);
-  return repository.watchStrokes(pageId);
-});
+final pageStrokesProvider = StreamProvider.autoDispose
+    .family<List<InkStroke>, String>((ref, pageId) {
+      final repository = ref.watch(agendaRepositoryProvider);
+      return repository.watchStrokes(pageId);
+    }, retry: _skipPersistentStorageRetry);
 
 /// Provider for [AgendaViewerController].
 final Provider<AgendaViewerController> agendaViewerControllerProvider =

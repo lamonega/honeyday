@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/agendas/data/repositories/agenda_repository_provider.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/domain/repositories/agenda_repository.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/agenda_viewer_controller.dart';
@@ -28,6 +29,16 @@ class _CopyRepository implements FullAgendaRepository {
   final List<String> events = [];
   final List<String?> copyIds = [];
   bool failOnce = false;
+
+  @override
+  Future<Agenda?> getAgenda(String id) async => Agenda(
+    id: id,
+    title: 'Agenda de prueba',
+    coverStyle: 'honey',
+    pageCount: 2,
+    createdAt: DateTime.utc(2026),
+    updatedAt: DateTime.utc(2026),
+  );
 
   @override
   Future<AgendaPage> duplicatePage(String pageId, {String? id}) async {
@@ -89,6 +100,26 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byTooltip('Duplicar página'));
   }
+
+  testWidgets('edit viewer exposes its title and labels its controls', (
+    tester,
+  ) async {
+    await open(tester);
+    final appBar = find.byType(AppBar);
+    final context = tester.element(appBar);
+    expect(
+      find.descendant(of: appBar, matching: find.text('Agenda de prueba')),
+      findsOneWidget,
+    );
+    for (final label in [
+      MaterialLocalizations.of(context).backButtonTooltip,
+      'Tinta',
+      'Páginas (2)',
+      'Añadir elemento',
+    ]) {
+      expect(find.byTooltip(label), findsOneWidget);
+    }
+  });
 
   testWidgets('flushes and waits for pending field edits before copying', (
     tester,

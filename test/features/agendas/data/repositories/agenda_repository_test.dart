@@ -104,6 +104,23 @@ void main() {
       },
     );
 
+    test('concurrent deletions cannot remove the last live page', () async {
+      final agenda = await repository.createAgenda(title: 'Keep a page');
+      final first = (await repository.watchPages(agenda.id).first).single;
+      final second = await repository.createPage(
+        agendaId: agenda.id,
+        pageNumber: 2,
+      );
+
+      await Future.wait([
+        repository.deletePage(first.id),
+        repository.deletePage(second.id),
+      ]);
+
+      expect(await repository.watchPages(agenda.id).first, hasLength(1));
+      expect((await repository.getAgenda(agenda.id))?.pageCount, 1);
+    });
+
     test(
       'createPage never collides after an intermediate page was deleted',
       () async {

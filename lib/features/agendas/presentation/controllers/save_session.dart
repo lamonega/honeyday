@@ -22,6 +22,8 @@ class SaveSession extends ChangeNotifier {
   StackTrace? _errorStack;
   Future<void>? _worker;
 
+  bool get isDisposed => _disposed;
+  bool get hasError => _error != null;
   Object? get error => _error;
 
   SaveStatus get status {

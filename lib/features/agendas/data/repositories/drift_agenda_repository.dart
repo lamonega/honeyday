@@ -52,7 +52,12 @@ class DriftAgendaRepository implements FullAgendaRepository {
   Future<Agenda> createAgenda({
     required String title,
     String coverStyle = 'honey',
-  }) => _agendaDao.createAgenda(title: title, coverStyle: coverStyle);
+    String paperStyle = 'dotted',
+  }) => _agendaDao.createAgenda(
+    title: title,
+    coverStyle: coverStyle,
+    paperStyle: paperStyle,
+  );
 
   @override
   Future<void> updateAgendaTitle(String id, String newTitle) =>

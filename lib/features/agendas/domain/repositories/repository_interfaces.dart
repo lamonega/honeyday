@@ -8,9 +8,12 @@ import 'package:honeyday/features/canvas/domain/models/ink_stroke.dart';
 abstract interface class AgendaRepository {
   Stream<List<Agenda>> watchAgendas();
   Future<Agenda?> getAgenda(String id);
+
+  /// Creates the agenda and its first page with the requested paper style.
   Future<Agenda> createAgenda({
     required String title,
     String coverStyle = 'honey',
+    String paperStyle = 'dotted',
   });
   Future<void> updateAgendaTitle(String id, String newTitle);
 
@@ -40,6 +43,8 @@ abstract interface class PageRepository {
     String backgroundStyle = 'dotted',
   });
   Future<void> updatePageBackground(String pageId, String backgroundStyle);
+
+  /// Soft-deletes a page unless it is the last live page of its agenda.
   Future<void> deletePage(String pageId);
 
   /// Copies a live page and all its live elements/ink immediately after it.

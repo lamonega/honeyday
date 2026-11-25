@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:honeyday/core/theme/paper_style.dart';
 import 'package:honeyday/core/utils/haptics.dart';
 import 'package:honeyday/features/agendas/data/repositories/reading_position_store.dart';
+import 'package:honeyday/features/agendas/domain/models/agenda.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/agenda_viewer_controller.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/save_session.dart';
@@ -45,8 +47,11 @@ class AgendaViewerPage extends ConsumerStatefulWidget {
   ConsumerState<AgendaViewerPage> createState() => _AgendaViewerPageState();
 }
 
+enum _ExitErrorAction { retry, discard }
+
 class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   late PageController _pageController;
+  late final AppLifecycleListener _lifecycleListener;
   int _currentPageIndex = 0;
   bool _positionReady = false;
   ReadingPositionStore? _readingPositions;
@@ -55,6 +60,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   final SaveSession _saveSession = SaveSession();
   bool _strokesVisible = true;
   final Map<String, PageCanvasController> _pageControllers = {};
+  String? _pendingJumpToPageId;
 
   bool get _isEditMode => widget.initialMode.toLowerCase() == 'edit';
 
@@ -62,24 +68,58 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   void initState() {
     super.initState();
     _pageController = PageController();
+    _lifecycleListener = AppLifecycleListener(
+      onInactive: _flushPendingEdits,
+      onHide: _flushPendingEdits,
+      onPause: _flushPendingEdits,
+      onDetach: _flushPendingEdits,
+      onExitRequested: _handleExitRequested,
+    );
     unawaited(_restoreReadingPosition());
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (_isEditMode) {
-        ref.read(canvasModeProvider.notifier).setEdit();
-      } else {
-        final mode = switch (widget.initialMode.toLowerCase()) {
-          'writing' => CanvasMode.writing,
-          _ => CanvasMode.reading,
-        };
-        ref.read(canvasModeProvider.notifier).setMode(mode);
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) => _applyInitialMode());
+  }
+
+  @override
+  void didUpdateWidget(covariant AgendaViewerPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialMode != widget.initialMode) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _applyInitialMode());
+    }
+  }
+
+  void _applyInitialMode() {
+    if (!mounted) return;
+    if (_isEditMode) {
+      ref.read(canvasModeProvider.notifier).setEdit();
+    } else {
+      final mode = switch (widget.initialMode.toLowerCase()) {
+        'writing' => CanvasMode.writing,
+        _ => CanvasMode.reading,
+      };
+      ref.read(canvasModeProvider.notifier).setMode(mode);
+    }
+  }
+
+  void _flushPendingEdits() {
+    if (_saveSession.isDisposed) return;
+    _saveSession.flushEditors();
+  }
+
+  Future<AppExitResponse> _handleExitRequested() async {
+    if (_saveSession.isDisposed) return AppExitResponse.exit;
+    _saveSession.flushEditors();
+    try {
+      await _saveSession.drain();
+    } on Object catch (error) {
+      debugPrint('Honeyday: drain failed on app exit: $error');
+    }
+    return AppExitResponse.exit;
   }
 
   @override
   void dispose() {
+    _lifecycleListener.dispose();
     for (final controller in _pageControllers.values) {
       controller.removeListener(_onPageHistoryChanged);
     }
@@ -117,8 +157,13 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
 
   Future<void> _rememberCurrentPage() async {
     final pageId = _currentPagePageId;
+    if (pageId == null) return;
+    await _rememberPageId(pageId);
+  }
+
+  Future<void> _rememberPageId(String pageId) async {
     final store = _readingPositions;
-    if (pageId == null || store == null) return;
+    if (store == null) return;
     try {
       await store.remember(widget.agendaId, pageId);
     } on Object catch (error) {
@@ -135,15 +180,13 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
 
   void _goToPage(int index, int totalPages) {
     if (!_positionReady || !_pageController.hasClients) return;
-    if (index >= 0 && index < totalPages) {
-      setState(() => _currentPageIndex = index);
-      _pageController.animateToPage(
-        index,
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeInOutCubic,
-      );
-      unawaited(hapticLight());
-    }
+    if (index < 0 || index >= totalPages || index == _currentPageIndex) return;
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeInOutCubic,
+    );
+    unawaited(hapticLight());
   }
 
   void _undo() {
@@ -181,7 +224,12 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   String? get _currentPagePageId {
     final pagesAsync = ref.read(agendaPagesProvider(widget.agendaId));
     final pages = pagesAsync.value;
-    if (pages == null || _currentPageIndex >= pages.length) return null;
+    if (pages == null ||
+        pages.isEmpty ||
+        _currentPageIndex < 0 ||
+        _currentPageIndex >= pages.length) {
+      return null;
+    }
     return pages[_currentPageIndex].id;
   }
 
@@ -197,6 +245,16 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     _pageControllers[pageId] = controller;
     controller.addListener(_onPageHistoryChanged);
     setState(() {});
+  }
+
+  void _unregisterPageController(
+    String pageId,
+    PageCanvasController controller,
+  ) {
+    controller.removeListener(_onPageHistoryChanged);
+    if (identical(_pageControllers[pageId], controller)) {
+      _pageControllers.remove(pageId);
+    }
   }
 
   bool get _canUndo => _currentPageController?.canUndo ?? false;
@@ -262,14 +320,49 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     );
   }
 
-  Widget _buildExportButton(int pagesCount) {
+  Widget _buildExportButton(int pagesCount, {required bool enabled}) {
     return ValueListenableBuilder<bool>(
       valueListenable: exportInProgress,
       builder: (context, busy, _) => IconButton(
         icon: const Icon(Icons.picture_as_pdf_outlined),
         tooltip: AppLocalizations.of(context).exportPdfTooltip,
-        onPressed: busy ? null : () => unawaited(_startExport(pagesCount)),
+        onPressed: (!enabled || busy)
+            ? null
+            : () => unawaited(_startExport(pagesCount)),
       ),
+    );
+  }
+
+  Future<void> _enqueueWrite(Future<void> Function() operation) async {
+    if (_saveSession.isDisposed) return;
+    if (_saveSession.hasError) {
+      await _saveSession.retry();
+    }
+    await _saveSession.enqueue(operation);
+  }
+
+  Future<_ExitErrorAction?> _showExitSaveErrorDialog() {
+    return showDialog<_ExitErrorAction>(
+      context: context,
+      builder: (dialogContext) {
+        final l10n = AppLocalizations.of(dialogContext);
+        return AlertDialog(
+          title: Text(l10n.agendaExitTitle),
+          content: Text(l10n.agendaExitContent),
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(_ExitErrorAction.discard),
+              child: Text(l10n.agendaDiscard),
+            ),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(_ExitErrorAction.retry),
+              child: Text(l10n.commonRetry),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -277,14 +370,33 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     if (_exitInProgress || _exportPreparing || exportInProgress.value) return;
     setState(() => _exitInProgress = true);
     FocusManager.instance.primaryFocus?.unfocus();
+    var isRetry = false;
     try {
-      _saveSession.flushEditors();
-      await _saveSession.drain();
-      if (!mounted) return;
-      await _rememberCurrentPage();
-      if (mounted) context.go('/');
-    } on Object catch (error) {
-      if (mounted) _reportPersistError(context, error);
+      while (mounted) {
+        try {
+          _saveSession.flushEditors();
+          if (isRetry) {
+            await _saveSession.retry();
+          } else {
+            await _saveSession.drain();
+          }
+          if (!mounted) return;
+          await _rememberCurrentPage();
+          if (mounted) context.go('/');
+          return;
+        } on Object catch (error) {
+          debugPrint('Honeyday: persistence failed on exit: $error');
+          if (!mounted) return;
+          final action = await _showExitSaveErrorDialog();
+          if (!mounted || action == null) return;
+          if (action == _ExitErrorAction.discard) {
+            await _rememberCurrentPage();
+            if (mounted) context.go('/');
+            return;
+          }
+          isRetry = true;
+        }
+      }
     } finally {
       if (mounted) setState(() => _exitInProgress = false);
     }
@@ -319,48 +431,55 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         final before = currentPages();
         if (before.length <= 1) return;
         try {
-          await _saveSession.enqueue(() => controller.deletePage(pageId));
+          await _enqueueWrite(() => controller.deletePage(pageId));
         } on Object catch (error) {
           if (mounted) {
             _reportPersistError(context, error);
           }
           return;
         }
-        if (mounted && _currentPageIndex >= before.length - 1) {
-          _goToPage(before.length - 2, before.length - 1);
+        if (!mounted) return;
+        final remaining = before.where((p) => p.id != pageId).toList();
+        if (remaining.isEmpty) return;
+        if (_currentPageIndex >= remaining.length) {
+          final target = remaining.length - 1;
+          _goToPage(target, remaining.length);
+          unawaited(_rememberPageId(remaining[target].id));
+        } else {
+          unawaited(_rememberPageId(remaining[_currentPageIndex].id));
         }
       },
       onChangePaperStyle: (pageId, style) async {
         try {
-          await _saveSession.enqueue(
+          await _enqueueWrite(
             () => controller.updatePageBackground(pageId, style),
           );
         } on Object catch (error) {
           if (mounted) {
             _reportPersistError(context, error);
           }
-          return;
+          rethrow;
         }
       },
       onReorderPages: (pageIds) async {
-        final current = currentPages();
-        final currentPageId = _currentPageIndex < current.length
-            ? current[_currentPageIndex].id
-            : null;
+        final currentPageId = _currentPagePageId;
         try {
-          await _saveSession.enqueue(() => controller.reorderPages(pageIds));
+          await _enqueueWrite(() => controller.reorderPages(pageIds));
         } on Object catch (error) {
           if (mounted) {
             _reportPersistError(context, error);
           }
-          return;
+          rethrow;
         }
         if (currentPageId != null && mounted) {
           final newIndex = pageIds.indexOf(currentPageId);
           if (newIndex != -1 && newIndex != _currentPageIndex) {
             setState(() => _currentPageIndex = newIndex);
-            _pageController.jumpToPage(newIndex);
+            if (_pageController.hasClients) {
+              _pageController.jumpToPage(newIndex);
+            }
           }
+          unawaited(_rememberPageId(currentPageId));
         }
       },
       onDuplicatePage: (pageId) async {
@@ -394,7 +513,7 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         final newIndex = currentPages().length;
         final pageId = _uuid.v4();
         try {
-          await _saveSession.enqueue(() async {
+          await _enqueueWrite(() async {
             await controller.addPage(
               id: pageId,
               agendaId: widget.agendaId,
@@ -409,12 +528,15 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
           return;
         }
         if (mounted) {
-          ref.invalidate(agendaPagesProvider(widget.agendaId));
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              _goToPage(newIndex, newIndex + 1);
-            }
-          });
+          _pendingJumpToPageId = pageId;
+          final latest = currentPages();
+          final existingIndex = latest.indexWhere((p) => p.id == pageId);
+          if (existingIndex != -1) {
+            _pendingJumpToPageId = null;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) _goToPage(existingIndex, latest.length);
+            });
+          }
         }
       },
     );
@@ -446,20 +568,109 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<AsyncValue<List<AgendaPage>>>(
+      agendaPagesProvider(widget.agendaId),
+      (_, next) {
+        final pagesList = next.value;
+        if (pagesList == null) return;
+        if (_pendingJumpToPageId != null) {
+          final targetIndex = pagesList.indexWhere(
+            (p) => p.id == _pendingJumpToPageId,
+          );
+          if (targetIndex != -1) {
+            _pendingJumpToPageId = null;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted && _pageController.hasClients) {
+                _goToPage(targetIndex, pagesList.length);
+              }
+            });
+            return;
+          }
+        }
+        if (pagesList.isEmpty) {
+          if (_currentPageIndex != 0) {
+            setState(() => _currentPageIndex = 0);
+          }
+          return;
+        }
+        if (_currentPageIndex >= pagesList.length) {
+          final clamped = pagesList.length - 1;
+          setState(() => _currentPageIndex = clamped);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && _pageController.hasClients) {
+              _pageController.jumpToPage(clamped);
+            }
+          });
+          unawaited(_rememberPageId(pagesList[clamped].id));
+        }
+      },
+    );
+
     final pagesAsync = ref.watch(agendaPagesProvider(widget.agendaId));
+    final agendaAsync = ref.watch(viewerAgendaProvider(widget.agendaId));
+    final agenda = agendaAsync.value;
+    final isMissingAgenda = agendaAsync is AsyncData<Agenda?> && agenda == null;
     final currentMode = ref.watch(canvasModeProvider);
 
     final scaffold = _isEditMode
-        ? _buildEditModeScaffold(context, pagesAsync)
-        : _buildReadWriteScaffold(context, pagesAsync, currentMode);
+        ? _buildEditModeScaffold(
+            context,
+            pagesAsync,
+            agenda,
+            isMissingAgenda: isMissingAgenda,
+          )
+        : _buildReadWriteScaffold(
+            context,
+            pagesAsync,
+            currentMode,
+            agenda,
+            isMissingAgenda: isMissingAgenda,
+          );
     return SaveSessionScope(session: _saveSession, child: scaffold);
   }
 
   Widget _buildPagesAsyncBody({
     required AsyncValue<List<AgendaPage>> pagesAsync,
+    required bool isMissingAgenda,
     required Widget Function(List<AgendaPage> pagesList) builder,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+
+    if (isMissingAgenda) {
+      final l10n = AppLocalizations.of(context);
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.menu_book_outlined,
+                size: 48,
+                color: colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                l10n.routerNotFoundTitle,
+                style: Theme.of(context).textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                l10n.routerNotFoundMessage,
+                style: TextStyle(color: colorScheme.onSurfaceVariant),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              FilledButton(
+                onPressed: () => context.go('/'),
+                child: Text(l10n.routerGoHome),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     if (!_positionReady) {
       return Center(
@@ -492,10 +703,14 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
   Widget _buildEditModeScaffold(
     BuildContext context,
     AsyncValue<List<AgendaPage>> pagesAsync,
-  ) {
+    Agenda? agenda, {
+    required bool isMissingAgenda,
+  }) {
     final pages = pagesAsync.value ?? [];
     final totalPages = pages.length;
+    final canEdit = agenda != null && totalPages > 0;
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
 
     return PopScope(
       canPop: false,
@@ -507,70 +722,86 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         child: Scaffold(
           backgroundColor: colorScheme.surface,
           appBar: ViewerAppBar(
+            title: agenda?.title,
             onBack: () => unawaited(_requestExit()),
-            actions: [_buildSaveStatus(), _buildExportButton(totalPages)],
-          ),
-          floatingActionButton: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (_canUndo)
-                FloatingActionButton.small(
-                  heroTag: 'undo',
-                  onPressed: _undo,
-                  backgroundColor: colorScheme.secondaryContainer,
-                  foregroundColor: colorScheme.onSecondaryContainer,
-                  child: const Icon(Icons.undo_rounded, size: 20),
-                ),
-              if (_canUndo) const SizedBox(width: 8),
-              if (_canRedo)
-                FloatingActionButton.small(
-                  heroTag: 'redo',
-                  onPressed: _redo,
-                  backgroundColor: colorScheme.secondaryContainer,
-                  foregroundColor: colorScheme.onSecondaryContainer,
-                  child: const Icon(Icons.redo_rounded, size: 20),
-                ),
-              if (_canRedo) const SizedBox(width: 8),
-              FloatingActionButton.small(
-                heroTag: 'toggle_strokes',
-                onPressed: _toggleStrokes,
-                backgroundColor: colorScheme.secondaryContainer,
-                foregroundColor: colorScheme.onSecondaryContainer,
-                child: Icon(
-                  _strokesVisible ? Icons.draw_outlined : Icons.draw,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 8),
-              FloatingActionButton.small(
-                heroTag: 'page_manager',
-                onPressed: () => _showPageManager(pages),
-                backgroundColor: colorScheme.secondaryContainer,
-                foregroundColor: colorScheme.onSecondaryContainer,
-                child: const Icon(Icons.layers_outlined, size: 20),
-              ),
-              const SizedBox(width: 8),
-              FloatingActionButton(
-                heroTag: 'add_element',
-                onPressed: () async {
-                  final def = await ViewerCatalogSheet.showElementPicker(
-                    context,
-                  );
-                  if (def == null || !mounted) return;
-                  // `_currentPagePageId` is null while pages are still loading
-                  // or when the index drifted past the end of the list.
-                  final pageId = _currentPagePageId;
-                  if (pageId == null) return;
-                  await _addCatalogElement(pageId, def);
-                },
-                backgroundColor: colorScheme.primaryContainer,
-                foregroundColor: colorScheme.onPrimaryContainer,
-                child: const Icon(Icons.add_rounded),
-              ),
+            actions: [
+              _buildSaveStatus(),
+              _buildExportButton(totalPages, enabled: canEdit),
             ],
           ),
+          floatingActionButton: canEdit
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (_canUndo)
+                      FloatingActionButton.small(
+                        heroTag: 'undo',
+                        tooltip: l10n.canvasActionUndo,
+                        onPressed: _undo,
+                        backgroundColor: colorScheme.secondaryContainer,
+                        foregroundColor: colorScheme.onSecondaryContainer,
+                        child: const Icon(Icons.undo_rounded, size: 20),
+                      ),
+                    if (_canUndo) const SizedBox(width: 8),
+                    if (_canRedo)
+                      FloatingActionButton.small(
+                        heroTag: 'redo',
+                        tooltip: l10n.canvasActionRedo,
+                        onPressed: _redo,
+                        backgroundColor: colorScheme.secondaryContainer,
+                        foregroundColor: colorScheme.onSecondaryContainer,
+                        child: const Icon(Icons.redo_rounded, size: 20),
+                      ),
+                    if (_canRedo) const SizedBox(width: 8),
+                    Semantics(
+                      toggled: _strokesVisible,
+                      child: FloatingActionButton.small(
+                        heroTag: 'toggle_strokes',
+                        tooltip: l10n.canvasInputInk,
+                        onPressed: _toggleStrokes,
+                        backgroundColor: colorScheme.secondaryContainer,
+                        foregroundColor: colorScheme.onSecondaryContainer,
+                        child: Icon(
+                          _strokesVisible ? Icons.draw_outlined : Icons.draw,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FloatingActionButton.small(
+                      heroTag: 'page_manager',
+                      tooltip: l10n.agendaPageCount(totalPages),
+                      onPressed: () => _showPageManager(pages),
+                      backgroundColor: colorScheme.secondaryContainer,
+                      foregroundColor: colorScheme.onSecondaryContainer,
+                      child: const Icon(Icons.layers_outlined, size: 20),
+                    ),
+                    const SizedBox(width: 8),
+                    FloatingActionButton(
+                      heroTag: 'add_element',
+                      tooltip: l10n.canvasActionAddElement,
+                      onPressed: () async {
+                        final def = await ViewerCatalogSheet.showElementPicker(
+                          context,
+                        );
+                        if (def == null || !mounted) return;
+                        // `_currentPagePageId` is null while pages are still
+                        // loading or when the index drifted past the end of
+                        // the list.
+                        final pageId = _currentPagePageId;
+                        if (pageId == null) return;
+                        await _addCatalogElement(pageId, def);
+                      },
+                      backgroundColor: colorScheme.primaryContainer,
+                      foregroundColor: colorScheme.onPrimaryContainer,
+                      child: const Icon(Icons.add_rounded),
+                    ),
+                  ],
+                )
+              : null,
           body: _buildPagesAsyncBody(
             pagesAsync: pagesAsync,
+            isMissingAgenda: isMissingAgenda,
             builder: (pagesList) => Stack(
               children: [
                 PageView.builder(
@@ -609,9 +840,12 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
     BuildContext context,
     AsyncValue<List<AgendaPage>> pagesAsync,
     CanvasMode currentMode,
-  ) {
+    Agenda? agenda, {
+    required bool isMissingAgenda,
+  }) {
     final pages = pagesAsync.value ?? [];
     final totalPages = pages.length;
+    final canExport = agenda != null && totalPages > 0;
 
     return PopScope(
       canPop: false,
@@ -623,15 +857,22 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
         child: Scaffold(
           backgroundColor: Theme.of(context).colorScheme.surface,
           appBar: ViewerAppBar(
+            title: agenda?.title,
             onBack: () => unawaited(_requestExit()),
-            actions: [_buildSaveStatus(), _buildExportButton(totalPages)],
+            actions: [
+              _buildSaveStatus(),
+              _buildExportButton(totalPages, enabled: canExport),
+            ],
           ),
-          floatingActionButton: ViewerCanvasModeToggle(
-            currentMode: currentMode,
-            onToggle: _toggleCanvasMode,
-          ),
+          floatingActionButton: isMissingAgenda
+              ? null
+              : ViewerCanvasModeToggle(
+                  currentMode: currentMode,
+                  onToggle: _toggleCanvasMode,
+                ),
           body: _buildPagesAsyncBody(
             pagesAsync: pagesAsync,
+            isMissingAgenda: isMissingAgenda,
             builder: (pagesList) {
               final scrollPhysics = currentMode == CanvasMode.reading
                   ? const PageScrollPhysics()
@@ -725,6 +966,8 @@ class _AgendaViewerPageState extends ConsumerState<AgendaViewerPage> {
                           strokesVisible: _strokesVisible,
                           onControllerCreated: (c) =>
                               _registerPageController(page.id, c),
+                          onControllerDisposed: (c) =>
+                              _unregisterPageController(page.id, c),
                         ),
                       );
                     },
@@ -751,6 +994,7 @@ class _PageContentLoader extends ConsumerWidget {
     required this.currentMode,
     required this.canvasControllers,
     this.onControllerCreated,
+    this.onControllerDisposed,
     this.strokesVisible = true,
     super.key,
   });
@@ -762,6 +1006,7 @@ class _PageContentLoader extends ConsumerWidget {
   /// into each canvas's element manager.
   final Map<String, PageCanvasController> canvasControllers;
   final void Function(PageCanvasController controller)? onControllerCreated;
+  final void Function(PageCanvasController controller)? onControllerDisposed;
   final bool strokesVisible;
 
   @override
@@ -804,6 +1049,7 @@ class _PageContentLoader extends ConsumerWidget {
         unawaited(_guardPersist(context, write()));
         return;
       }
+      if (session.isDisposed) return;
       unawaited(
         session.enqueue(write).catchError((Object error) {
           if (context.mounted) _reportPersistError(context, error);
@@ -819,6 +1065,7 @@ class _PageContentLoader extends ConsumerWidget {
       initialStrokes: strokes,
       strokesVisible: strokesVisible,
       onControllerCreated: onControllerCreated,
+      onControllerDisposed: onControllerDisposed,
       elementBuilder: (context, elementData) {
         final isInteractive =
             currentMode == CanvasMode.writing &&

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/agendas/domain/models/agenda_page.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/add_catalog_element_sheet.dart';
@@ -19,8 +21,9 @@ class ViewerCatalogSheet {
     required int currentPageIndex,
     required ValueChanged<int> onSelectPage,
     required ValueChanged<String> onDeletePage,
-    required void Function(String pageId, String style) onChangePaperStyle,
-    required ValueChanged<List<String>> onReorderPages,
+    required FutureOr<void> Function(String pageId, String style)
+    onChangePaperStyle,
+    required FutureOr<void> Function(List<String> pageIds) onReorderPages,
     required VoidCallback onAddPage,
     ValueChanged<String>? onDuplicatePage,
   }) {
