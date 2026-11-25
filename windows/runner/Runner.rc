@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.lamonega" "\0"
-            VALUE "FileDescription", "honeyday" "\0"
+            VALUE "FileDescription", "Honeyday" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "honeyday" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.lamonega. All rights reserved." "\0"
             VALUE "OriginalFilename", "honeyday.exe" "\0"
-            VALUE "ProductName", "honeyday" "\0"
+            VALUE "ProductName", "Honeyday" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

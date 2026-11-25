@@ -1,12 +1,12 @@
 {
-    "name": "honeyday",
-    "short_name": "honeyday",
+    "name": "Honeyday",
+    "short_name": "Honeyday",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
-    "orientation": "portrait-primary",
+    "background_color": "#FFFDF7",
+    "theme_color": "#FFFDF7",
+    "description": "A digital agenda and journal with handwritten ink and customizable pages.",
+    "orientation": "any",
     "prefer_related_applications": false,
     "icons": [
         {

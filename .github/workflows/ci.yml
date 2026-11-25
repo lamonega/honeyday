@@ -51,7 +51,7 @@ jobs:
 
       - name: Build web (JavaScript)
         # This checks the shipped JS target, not optional Wasm compatibility.
-        run: flutter build web --no-pub --no-wasm-dry-run
+        run: flutter build web --no-pub --no-wasm-dry-run --no-web-resources-cdn
 
       - name: Verify compiler dependency metadata is not shipped
         run: |
@@ -66,3 +66,82 @@ jobs:
 
       - name: Verify IndexedDB persistence across a browser reload
         run: node tool/test_web_persistence.mjs
+
+  native:
+    name: Verify ${{ matrix.platform }} release build
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: Windows
+            runner: windows-2025
+            command: flutter build windows --release --no-pub
+          - platform: Linux
+            runner: ubuntu-24.04
+            command: flutter build linux --release --no-pub
+          - platform: macOS
+            runner: macos-15
+            command: flutter build macos --release --no-pub
+          - platform: iOS
+            runner: macos-15
+            command: flutter build ios --release --no-pub --no-codesign
+          - platform: Android
+            runner: ubuntu-24.04
+            # The project uses Gradle's debug key for release APKs in CI.
+            command: flutter build apk --release --no-pub
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux desktop dependencies
+        if: matrix.platform == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev libstdc++-12-dev
+
+      - uses: actions/setup-java@v4
+        if: matrix.platform == 'Android'
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        if: matrix.platform == 'Android'
+        with:
+          # Pin the standalone sdkmanager, before the redirect to Android CLI.
+          cmdline-tools-version: '13114758'
+          # JNI plugins use API 35; the app uses Flutter's API 36 and NDK.
+          packages: >-
+            platform-tools platforms;android-35 platforms;android-36
+            build-tools;36.0.0 ndk;28.2.13676358 cmake;3.22.1
+
+      - name: Verify Android SDK packages
+        if: matrix.platform == 'Android'
+        run: |
+          for sdk_file in \
+            platform-tools/adb platforms/android-35/android.jar platforms/android-36/android.jar \
+            build-tools/36.0.0/aapt2 ndk/28.2.13676358/source.properties cmake/3.22.1/bin/cmake
+          do
+            if [[ ! -f "$ANDROID_HOME/$sdk_file" ]]; then
+              echo "::error::Android SDK file missing: $sdk_file"
+              exit 1
+            fi
+          done
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.5'
+          channel: stable
+          cache: true
+
+      - name: Select Android JDK
+        if: matrix.platform == 'Android'
+        run: flutter config --jdk-dir "$JAVA_HOME"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build native target
+        run: ${{ matrix.command }}
