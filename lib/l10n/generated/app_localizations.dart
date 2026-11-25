@@ -361,6 +361,12 @@ abstract class AppLocalizations {
   /// **'Error loading agendas'**
   String get homeErrorLoading;
 
+  /// Recovery instructions when the browser offers no persistent storage
+  ///
+  /// In en, this message translates to:
+  /// **'This browser cannot save agendas. Allow site storage or open Honeyday in a standard browser window, then reload.'**
+  String get homeStorageUnavailable;
+
   /// Empty state heading
   ///
   /// In en, this message translates to:
@@ -1410,6 +1416,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ink'**
   String get canvasInputInk;
+
+  /// Generic retry button label
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get commonRetry;
+
+  /// Generic close button label
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get commonClose;
+
+  /// Title shown when navigating to an unknown route
+  ///
+  /// In en, this message translates to:
+  /// **'Page not found'**
+  String get routerNotFoundTitle;
+
+  /// Body shown when navigating to an unknown route
+  ///
+  /// In en, this message translates to:
+  /// **'The page you requested does not exist.'**
+  String get routerNotFoundMessage;
+
+  /// Action button to return to the home route from an error screen
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Home'**
+  String get routerGoHome;
+
+  /// Tooltip for undo action
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get canvasActionUndo;
+
+  /// Tooltip for redo action
+  ///
+  /// In en, this message translates to:
+  /// **'Redo'**
+  String get canvasActionRedo;
+
+  /// Tooltip for toggling alignment grid
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle grid'**
+  String get canvasActionGrid;
+
+  /// Tooltip for adding a catalog element
+  ///
+  /// In en, this message translates to:
+  /// **'Add element'**
+  String get canvasActionAddElement;
+
+  /// Tooltip for bringing element forward
+  ///
+  /// In en, this message translates to:
+  /// **'Bring forward'**
+  String get canvasActionLayerUp;
+
+  /// Tooltip for sending element backward
+  ///
+  /// In en, this message translates to:
+  /// **'Send backward'**
+  String get canvasActionLayerDown;
+
+  /// Tooltip for duplicating selected element
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate'**
+  String get canvasActionDuplicate;
+
+  /// Tooltip for changing selected element color
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get canvasActionColor;
+
+  /// Tooltip for locking selected element
+  ///
+  /// In en, this message translates to:
+  /// **'Lock'**
+  String get canvasActionLock;
+
+  /// Tooltip for unlocking selected element
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock'**
+  String get canvasActionUnlock;
+
+  /// Tooltip for previous page button
+  ///
+  /// In en, this message translates to:
+  /// **'Previous page'**
+  String get viewerPrevPage;
+
+  /// Tooltip for next page button
+  ///
+  /// In en, this message translates to:
+  /// **'Next page'**
+  String get viewerNextPage;
+
+  /// Tooltip for deleting a page in the page manager
+  ///
+  /// In en, this message translates to:
+  /// **'Delete page'**
+  String get agendaPageDeleteTooltip;
 }
 
 class _AppLocalizationsDelegate

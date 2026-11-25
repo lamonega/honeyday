@@ -149,6 +149,10 @@
   "@homeErrorLoading": {
     "description": "Error loading agendas"
   },
+  "homeStorageUnavailable": "This browser cannot save agendas. Allow site storage or open Honeyday in a standard browser window, then reload.",
+  "@homeStorageUnavailable": {
+    "description": "Recovery instructions when the browser offers no persistent storage"
+  },
   "homeEmptyTitle": "No agendas",
   "@homeEmptyTitle": {
     "description": "Empty state heading"
@@ -825,5 +829,77 @@
   "canvasInputInk": "Ink",
   "@canvasInputInk": {
     "description": "Writing input option for drawing freehand ink strokes"
+  },
+  "commonRetry": "Retry",
+  "@commonRetry": {
+    "description": "Generic retry button label"
+  },
+  "commonClose": "Close",
+  "@commonClose": {
+    "description": "Generic close button label"
+  },
+  "routerNotFoundTitle": "Page not found",
+  "@routerNotFoundTitle": {
+    "description": "Title shown when navigating to an unknown route"
+  },
+  "routerNotFoundMessage": "The page you requested does not exist.",
+  "@routerNotFoundMessage": {
+    "description": "Body shown when navigating to an unknown route"
+  },
+  "routerGoHome": "Go to Home",
+  "@routerGoHome": {
+    "description": "Action button to return to the home route from an error screen"
+  },
+  "canvasActionUndo": "Undo",
+  "@canvasActionUndo": {
+    "description": "Tooltip for undo action"
+  },
+  "canvasActionRedo": "Redo",
+  "@canvasActionRedo": {
+    "description": "Tooltip for redo action"
+  },
+  "canvasActionGrid": "Toggle grid",
+  "@canvasActionGrid": {
+    "description": "Tooltip for toggling alignment grid"
+  },
+  "canvasActionAddElement": "Add element",
+  "@canvasActionAddElement": {
+    "description": "Tooltip for adding a catalog element"
+  },
+  "canvasActionLayerUp": "Bring forward",
+  "@canvasActionLayerUp": {
+    "description": "Tooltip for bringing element forward"
+  },
+  "canvasActionLayerDown": "Send backward",
+  "@canvasActionLayerDown": {
+    "description": "Tooltip for sending element backward"
+  },
+  "canvasActionDuplicate": "Duplicate",
+  "@canvasActionDuplicate": {
+    "description": "Tooltip for duplicating selected element"
+  },
+  "canvasActionColor": "Color",
+  "@canvasActionColor": {
+    "description": "Tooltip for changing selected element color"
+  },
+  "canvasActionLock": "Lock",
+  "@canvasActionLock": {
+    "description": "Tooltip for locking selected element"
+  },
+  "canvasActionUnlock": "Unlock",
+  "@canvasActionUnlock": {
+    "description": "Tooltip for unlocking selected element"
+  },
+  "viewerPrevPage": "Previous page",
+  "@viewerPrevPage": {
+    "description": "Tooltip for previous page button"
+  },
+  "viewerNextPage": "Next page",
+  "@viewerNextPage": {
+    "description": "Tooltip for next page button"
+  },
+  "agendaPageDeleteTooltip": "Delete page",
+  "@agendaPageDeleteTooltip": {
+    "description": "Tooltip for deleting a page in the page manager"
   }
 }

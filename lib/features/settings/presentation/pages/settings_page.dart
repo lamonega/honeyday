@@ -150,24 +150,39 @@ class SettingsPage extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(l10n.settingsDarkMode),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final mode in ThemeMode.values)
-              ListTile(
-                leading: Icon(_themeModeIcons[mode]),
-                title: Text(_themeModeLabel(l10n, mode)),
-                trailing: mode == current
-                    ? const Icon(Icons.check_rounded)
-                    : null,
-                onTap: () async {
-                  await ref.read(themeModeProvider.notifier).set(mode);
-                  if (dialogContext.mounted) {
-                    Navigator.of(dialogContext).pop();
-                  }
-                },
-              ),
-          ],
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (final mode in ThemeMode.values)
+                ListTile(
+                  leading: Icon(_themeModeIcons[mode]),
+                  title: Text(_themeModeLabel(l10n, mode)),
+                  trailing: mode == current
+                      ? const Icon(Icons.check_rounded)
+                      : null,
+                  onTap: () async {
+                    try {
+                      await ref.read(themeModeProvider.notifier).set(mode);
+                      if (dialogContext.mounted) {
+                        Navigator.of(dialogContext).pop();
+                      }
+                    } on Object {
+                      if (dialogContext.mounted) {
+                        Navigator.of(dialogContext).pop();
+                      }
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                            SnackBar(content: Text(l10n.agendaSaveError)),
+                          );
+                      }
+                    }
+                  },
+                ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -184,45 +199,88 @@ class SettingsPage extends ConsumerWidget {
     WidgetRef ref,
     Color currentColor,
   ) async {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     await showDialog<void>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(AppLocalizations.of(context).settingsAccentColor),
-        content: Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: _accentPresets.map((preset) {
-            final color = preset.$1;
-            final isSelected = color.toARGB32() == currentColor.toARGB32();
-            return GestureDetector(
-              onTap: () async {
-                await HapticFeedback.selectionClick();
-                await ref.read(accentColorProvider.notifier).set(color);
-                if (context.mounted) Navigator.of(context).pop();
-              },
-              child: AnimatedContainer(
-                duration: DesignTokens.animationNormal,
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected
-                        ? colorScheme.onSurface
-                        : Colors.transparent,
-                    width: isSelected ? 3 : 0,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.settingsAccentColor),
+        content: SingleChildScrollView(
+          child: Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: _accentPresets.map((preset) {
+              final color = preset.$1;
+              final label = preset.$2(l10n);
+              final isSelected = color.toARGB32() == currentColor.toARGB32();
+              return Semantics(
+                label: label,
+                selected: isSelected,
+                button: true,
+                child: Tooltip(
+                  message: label,
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      customBorder: const CircleBorder(),
+                      onTap: () async {
+                        unawaited(HapticFeedback.selectionClick());
+                        try {
+                          await ref
+                              .read(accentColorProvider.notifier)
+                              .set(color);
+                          if (dialogContext.mounted) {
+                            Navigator.of(dialogContext).pop();
+                          }
+                        } on Object {
+                          if (dialogContext.mounted) {
+                            Navigator.of(dialogContext).pop();
+                          }
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context)
+                              ..hideCurrentSnackBar()
+                              ..showSnackBar(
+                                SnackBar(content: Text(l10n.agendaSaveError)),
+                              );
+                          }
+                        }
+                      },
+                      child: AnimatedContainer(
+                        duration: DesignTokens.animationNormal,
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: color,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: isSelected
+                                ? colorScheme.onSurface
+                                : Colors.transparent,
+                            width: isSelected ? 3 : 0,
+                          ),
+                        ),
+                        child: isSelected
+                            ? const Icon(
+                                Icons.check,
+                                color: Colors.white,
+                                size: 20,
+                              )
+                            : null,
+                      ),
+                    ),
                   ),
                 ),
-                child: isSelected
-                    ? const Icon(Icons.check, color: Colors.white, size: 20)
-                    : null,
-              ),
-            );
-          }).toList(),
+              );
+            }).toList(),
+          ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(l10n.commonCancel),
+          ),
+        ],
       ),
     );
   }

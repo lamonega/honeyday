@@ -9,6 +9,6 @@ final appVersionProvider = FutureProvider<String>((ref) async {
         ? '${info.version}+${info.buildNumber}'
         : info.version;
   } on Object {
-    return '0.1.7+1';
+    return '0.3.0+1';
   }
 });

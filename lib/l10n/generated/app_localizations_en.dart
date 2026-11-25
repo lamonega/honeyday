@@ -158,6 +158,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeErrorLoading => 'Error loading agendas';
 
   @override
+  String get homeStorageUnavailable =>
+      'This browser cannot save agendas. Allow site storage or open Honeyday in a standard browser window, then reload.';
+
+  @override
   String get homeEmptyTitle => 'No agendas';
 
   @override
@@ -729,4 +733,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get canvasInputInk => 'Ink';
+
+  @override
+  String get commonRetry => 'Retry';
+
+  @override
+  String get commonClose => 'Close';
+
+  @override
+  String get routerNotFoundTitle => 'Page not found';
+
+  @override
+  String get routerNotFoundMessage => 'The page you requested does not exist.';
+
+  @override
+  String get routerGoHome => 'Go to Home';
+
+  @override
+  String get canvasActionUndo => 'Undo';
+
+  @override
+  String get canvasActionRedo => 'Redo';
+
+  @override
+  String get canvasActionGrid => 'Toggle grid';
+
+  @override
+  String get canvasActionAddElement => 'Add element';
+
+  @override
+  String get canvasActionLayerUp => 'Bring forward';
+
+  @override
+  String get canvasActionLayerDown => 'Send backward';
+
+  @override
+  String get canvasActionDuplicate => 'Duplicate';
+
+  @override
+  String get canvasActionColor => 'Color';
+
+  @override
+  String get canvasActionLock => 'Lock';
+
+  @override
+  String get canvasActionUnlock => 'Unlock';
+
+  @override
+  String get viewerPrevPage => 'Previous page';
+
+  @override
+  String get viewerNextPage => 'Next page';
+
+  @override
+  String get agendaPageDeleteTooltip => 'Delete page';
 }

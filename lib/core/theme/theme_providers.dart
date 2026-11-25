@@ -5,8 +5,9 @@ import 'package:honeyday/core/providers/shared_preferences_provider.dart';
 import 'package:honeyday/core/theme/app_colors.dart';
 
 /// Persisted theme mode (light / dark / system).
-final themeModeProvider =
-    AsyncNotifierProvider<ThemeModeNotifier, ThemeMode>(ThemeModeNotifier.new);
+final themeModeProvider = AsyncNotifierProvider<ThemeModeNotifier, ThemeMode>(
+  ThemeModeNotifier.new,
+);
 
 class ThemeModeNotifier extends AsyncNotifier<ThemeMode> {
   @override
@@ -20,15 +21,21 @@ class ThemeModeNotifier extends AsyncNotifier<ThemeMode> {
   }
 
   Future<void> set(ThemeMode mode) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setString(PreferencesKeys.themeMode, mode.name);
-    ref.invalidateSelf();
+    final previous = state;
+    state = AsyncData(mode);
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      final saved = await prefs.setString(PreferencesKeys.themeMode, mode.name);
+      if (!saved) throw StateError('Could not save preference.');
+    } on Object {
+      if (ref.mounted) state = previous;
+      throw StateError('Could not save preference.');
+    }
   }
 }
 
 /// Persisted accent seed color as hex string.
-final accentColorProvider =
-    AsyncNotifierProvider<AccentColorNotifier, Color>(
+final accentColorProvider = AsyncNotifierProvider<AccentColorNotifier, Color>(
   AccentColorNotifier.new,
 );
 
@@ -48,9 +55,21 @@ class AccentColorNotifier extends AsyncNotifier<Color> {
   }
 
   Future<void> set(Color color) async {
-    final hex = color.toARGB32().toRadixString(16).substring(2).toUpperCase();
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setString(PreferencesKeys.accentColor, hex);
-    ref.invalidateSelf();
+    final hex = color
+        .toARGB32()
+        .toRadixString(16)
+        .padLeft(8, '0')
+        .substring(2)
+        .toUpperCase();
+    final previous = state;
+    state = AsyncData(Color(int.parse('FF$hex', radix: 16)));
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      final saved = await prefs.setString(PreferencesKeys.accentColor, hex);
+      if (!saved) throw StateError('Could not save preference.');
+    } on Object {
+      if (ref.mounted) state = previous;
+      throw StateError('Could not save preference.');
+    }
   }
 }

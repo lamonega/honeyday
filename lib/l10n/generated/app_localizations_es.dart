@@ -150,13 +150,17 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsAccentGray => 'Gris';
 
   @override
-  String get settingsAccentTeal => 'Teal';
+  String get settingsAccentTeal => 'Verde azulado';
 
   @override
   String get homeTitle => 'Honeyday';
 
   @override
   String get homeErrorLoading => 'Error al cargar agendas';
+
+  @override
+  String get homeStorageUnavailable =>
+      'Este navegador no puede guardar agendas. Permite el almacenamiento del sitio o abre Honeyday en una ventana normal y vuelve a cargar.';
 
   @override
   String get homeEmptyTitle => 'Sin agendas';
@@ -734,4 +738,58 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get canvasInputInk => 'Tinta';
+
+  @override
+  String get commonRetry => 'Reintentar';
+
+  @override
+  String get commonClose => 'Cerrar';
+
+  @override
+  String get routerNotFoundTitle => 'Página no encontrada';
+
+  @override
+  String get routerNotFoundMessage => 'La página que buscaste no existe.';
+
+  @override
+  String get routerGoHome => 'Ir al inicio';
+
+  @override
+  String get canvasActionUndo => 'Deshacer';
+
+  @override
+  String get canvasActionRedo => 'Rehacer';
+
+  @override
+  String get canvasActionGrid => 'Mostrar u ocultar cuadrícula';
+
+  @override
+  String get canvasActionAddElement => 'Añadir elemento';
+
+  @override
+  String get canvasActionLayerUp => 'Traer adelante';
+
+  @override
+  String get canvasActionLayerDown => 'Enviar atrás';
+
+  @override
+  String get canvasActionDuplicate => 'Duplicar';
+
+  @override
+  String get canvasActionColor => 'Color';
+
+  @override
+  String get canvasActionLock => 'Bloquear';
+
+  @override
+  String get canvasActionUnlock => 'Desbloquear';
+
+  @override
+  String get viewerPrevPage => 'Página anterior';
+
+  @override
+  String get viewerNextPage => 'Página siguiente';
+
+  @override
+  String get agendaPageDeleteTooltip => 'Eliminar página';
 }
