@@ -36,24 +36,39 @@ class BudgetSummaryCards extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _SummaryTile(
-            label: l10n.catalogBudgetIncome,
-            value: '+$currency${formatNumber(totalIncome)}',
-            color: AppColors.incomeGreen,
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: _SummaryTile(
+                label: l10n.catalogBudgetIncome,
+                value: '+$currency${formatNumber(totalIncome)}',
+                color: AppColors.incomeGreen,
+              ),
+            ),
           ),
           Container(width: 1, height: 24, color: cs.outline),
-          _SummaryTile(
-            label: l10n.catalogBudgetExpenses,
-            value: '-$currency${formatNumber(totalExpenses)}',
-            color: AppColors.expenseRed,
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: _SummaryTile(
+                label: l10n.catalogBudgetExpenses,
+                value: '-$currency${formatNumber(totalExpenses)}',
+                color: AppColors.expenseRed,
+              ),
+            ),
           ),
           Container(width: 1, height: 24, color: cs.outline),
-          _SummaryTile(
-            label: l10n.catalogBudgetBalance,
-            value:
-                '${isPositive ? '+' : ''}$currency${formatNumber(netBalance)}',
-            color: isPositive ? cs.primary : AppColors.expenseRed,
-            isBold: true,
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: _SummaryTile(
+                label: l10n.catalogBudgetBalance,
+                value:
+                    '${isPositive ? '+' : ''}$currency${formatNumber(netBalance)}',
+                color: isPositive ? cs.primary : AppColors.expenseRed,
+                isBold: true,
+              ),
+            ),
           ),
         ],
       ),

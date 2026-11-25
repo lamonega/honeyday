@@ -86,45 +86,42 @@ class CanvasElementManager {
   }
 
   void handleAdaptToPage(String elementId) {
-    recordStateForUndo();
     final index = _elements.indexWhere((e) => e.id == elementId);
-    if (index != -1) {
-      _elements[index] = _elements[index].copyWith(
-        position: Offset.zero,
-        size: pageSize,
-        rotation: 0,
-      );
-      _updateCache();
-    }
+    if (index == -1) return;
+    recordStateForUndo();
+    _elements[index] = _elements[index].copyWith(
+      position: Offset.zero,
+      size: pageSize,
+      rotation: 0,
+    );
+    _updateCache();
   }
 
   void handleFitWidth(String elementId) {
-    recordStateForUndo();
     final index = _elements.indexWhere((e) => e.id == elementId);
-    if (index != -1) {
-      const margin = kCanvasMargin;
-      final current = _elements[index];
-      _elements[index] = current.copyWith(
-        position: Offset(margin, current.position.dy),
-        size: Size(pageSize.width - (margin * 2), current.size.height),
-      );
-      _updateCache();
-    }
+    if (index == -1) return;
+    recordStateForUndo();
+    const margin = kCanvasMargin;
+    final current = _elements[index];
+    _elements[index] = current.copyWith(
+      position: Offset(margin, current.position.dy),
+      size: Size(pageSize.width - (margin * 2), current.size.height),
+    );
+    _updateCache();
   }
 
   void handleCenter(String elementId) {
-    recordStateForUndo();
     final index = _elements.indexWhere((e) => e.id == elementId);
-    if (index != -1) {
-      final current = _elements[index];
-      _elements[index] = current.copyWith(
-        position: Offset(
-          (pageSize.width - current.size.width) / 2,
-          (pageSize.height - current.size.height) / 2,
-        ),
-      );
-      _updateCache();
-    }
+    if (index == -1) return;
+    recordStateForUndo();
+    final current = _elements[index];
+    _elements[index] = current.copyWith(
+      position: Offset(
+        (pageSize.width - current.size.width) / 2,
+        (pageSize.height - current.size.height) / 2,
+      ),
+    );
+    _updateCache();
   }
 
   void handleColorChanged(
@@ -132,18 +129,17 @@ class CanvasElementManager {
     Color fillColor,
     Color borderColor,
   ) {
-    recordStateForUndo();
     final index = _elements.indexWhere((e) => e.id == elementId);
-    if (index != -1) {
-      final current = _elements[index];
-      final newJson = ElementConfig.updateColorInJson(
-        current.configJson,
-        fillColor: fillColor,
-        borderColor: borderColor,
-      );
-      _elements[index] = current.copyWith(configJson: newJson);
-      _updateCache();
-    }
+    if (index == -1) return;
+    recordStateForUndo();
+    final current = _elements[index];
+    final newJson = ElementConfig.updateColorInJson(
+      current.configJson,
+      fillColor: fillColor,
+      borderColor: borderColor,
+    );
+    _elements[index] = current.copyWith(configJson: newJson);
+    _updateCache();
   }
 
   void addElement(CanvasWidgetData element) {

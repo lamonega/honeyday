@@ -55,6 +55,7 @@ class JournalPriorityList extends StatelessWidget {
         ...List.generate(priorities.length, (index) {
           final priority = priorities[index];
           return JournalPriorityItemWidget(
+            key: ValueKey(priority.id),
             priority: priority,
             isInteractive: isInteractive,
             onToggle: () => onToggle(index),

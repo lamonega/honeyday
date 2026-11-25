@@ -69,6 +69,7 @@ class JournalBlockWidget extends StatefulWidget {
 
 class _JournalBlockWidgetState extends State<JournalBlockWidget> {
   late CatalogConfigHelper<JournalBlockConfig> _configHelper;
+  late final TextEditingController _dateController;
   SaveSession? _saveSession;
 
   JournalBlockConfig get _config => _configHelper.config;
@@ -81,6 +82,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
       configToJson: (c) => c.toJsonString(),
       initialJson: widget.configJson,
     )..onConfigChanged = widget.onConfigChanged;
+    _dateController = TextEditingController(text: _config.date);
   }
 
   @override
@@ -99,6 +101,15 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
     _configHelper.onConfigChanged = widget.onConfigChanged;
     if (oldWidget.configJson != widget.configJson) {
       _configHelper.updateFromJson(widget.configJson);
+      final date = _config.date;
+      if (_dateController.text != date) {
+        _dateController.value = TextEditingValue(
+          text: date,
+          selection: TextSelection.collapsed(offset: date.length),
+        );
+      }
+    } else if (oldWidget.isInteractive && !widget.isInteractive) {
+      _configHelper.flush();
     }
   }
 
@@ -106,6 +117,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
   void dispose() {
     _saveSession?.unregisterEditor(_configHelper.flush);
     _configHelper.dispose();
+    _dateController.dispose();
     super.dispose();
   }
 
@@ -193,15 +205,20 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
         ],
       ),
       padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 220;
+          final moodSelector = JournalMoodSelector(
+            selectedMood: _config.mood,
+            isInteractive: widget.isInteractive,
+            onMoodSelected: _selectMood,
+          );
+          final headerRow = Row(
             children: [
               Expanded(
                 child: widget.isInteractive
                     ? TextFormField(
-                        initialValue: displayDate,
+                        controller: _dateController,
                         key: ValueKey('date_${widget.elementId}'),
                         style: TextStyle(
                           fontSize: 13,
@@ -209,6 +226,7 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                           color: colorScheme.onSurface,
                         ),
                         decoration: InputDecoration(
+                          hintText: l10n.catalogJournalDefaultDate,
                           isDense: true,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 4,
@@ -233,39 +251,73 @@ class _JournalBlockWidgetState extends State<JournalBlockWidget> {
                       ),
               ),
               const SizedBox(width: 8),
-              JournalMoodSelector(
-                selectedMood: _config.mood,
-                isInteractive: widget.isInteractive,
-                onMoodSelected: _selectMood,
-              ),
+              if (isNarrow)
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: moodSelector,
+                  ),
+                )
+              else
+                moodSelector,
             ],
-          ),
-          const SizedBox(height: 6),
-          Divider(height: 1, color: colorScheme.outline),
-          const SizedBox(height: 8),
-          JournalPriorityList(
+          );
+
+          final priorities = JournalPriorityList(
             priorities: _config.priorities,
             isInteractive: widget.isInteractive,
             onToggle: _togglePriority,
             onTextChanged: _editPriorityText,
             localizeText: (priority) => _localizedPriorityText(priority, l10n),
             headerText: l10n.catalogJournalPrioritiesHeader,
-          ),
-          const SizedBox(height: 8),
-          Divider(height: 1, color: colorScheme.outline),
-          const SizedBox(height: 6),
-          Expanded(
-            child: JournalNotesSection(
-              notes: displayNotes,
-              elementId: widget.elementId,
-              isInteractive: widget.isInteractive,
-              onChanged: _updateNotes,
-              headerText: l10n.catalogJournalNotesHeader,
-              hintText: l10n.catalogJournalNotesHint,
-              noNotesText: l10n.catalogJournalNoNotes,
-            ),
-          ),
-        ],
+          );
+
+          final notesSection = JournalNotesSection(
+            notes: widget.isInteractive ? _config.notes : displayNotes,
+            elementId: widget.elementId,
+            isInteractive: widget.isInteractive,
+            onChanged: _updateNotes,
+            headerText: l10n.catalogJournalNotesHeader,
+            hintText: l10n.catalogJournalNotesHint,
+            noNotesText: l10n.catalogJournalNoNotes,
+          );
+
+          if (constraints.maxHeight < 200) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  headerRow,
+                  const SizedBox(height: 6),
+                  Divider(height: 1, color: colorScheme.outline),
+                  const SizedBox(height: 8),
+                  priorities,
+                  const SizedBox(height: 8),
+                  Divider(height: 1, color: colorScheme.outline),
+                  const SizedBox(height: 6),
+                  SizedBox(height: 80, child: notesSection),
+                ],
+              ),
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              headerRow,
+              const SizedBox(height: 6),
+              Divider(height: 1, color: colorScheme.outline),
+              const SizedBox(height: 8),
+              priorities,
+              const SizedBox(height: 8),
+              Divider(height: 1, color: colorScheme.outline),
+              const SizedBox(height: 6),
+              Expanded(child: notesSection),
+            ],
+          );
+        },
       ),
     );
   }

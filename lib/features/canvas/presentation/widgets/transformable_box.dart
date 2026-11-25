@@ -133,26 +133,51 @@ class _TransformableBoxState extends State<TransformableBox>
     final isNearBottom =
         (widget.position.dy + widget.size.height) >
         (pageHeight - kNearBottomThreshold);
+    final isNearTop = widget.position.dy < kRotationHandleTopOffset;
+
+    // When the action bar sits above a non-large bottom-edge element, expand
+    // the local top margin so the bar clears the rotation/delete handles AND
+    // stays inside this Stack's hit-testable bounds.
+    final extraTopMargin = (isNearBottom && !isLarge && !isNearTop)
+        ? 44.0
+        : 0.0;
+    final topMargin = kTransformTopMargin + extraTopMargin;
+
+    final double handleTop;
+    final double deleteHandleLeft;
+    if (isNearTop) {
+      handleTop = topMargin + 8;
+      deleteHandleLeft =
+          kTransformHMargin + widget.size.width - kHandleCircleSize - 8;
+    } else {
+      handleTop = topMargin - kRotationHandleTopOffset;
+      deleteHandleLeft =
+          kTransformHMargin + widget.size.width - kHandleCircleSize / 2;
+    }
 
     final double barTop;
     if (isLarge) {
-      barTop = kTransformTopMargin + kBarTopOffsetLarge;
+      barTop = isNearTop
+          ? handleTop + kHandleCircleSize + 8
+          : topMargin + kBarTopOffsetLarge;
     } else if (isNearBottom) {
-      barTop = kTransformTopMargin + kBarTopOffsetNearBottom;
+      barTop = isNearTop
+          ? handleTop + kHandleCircleSize + 8
+          : handleTop + kBarTopOffsetNearBottom;
     } else {
-      barTop = kTransformTopMargin + widget.size.height + kBarTopOffsetDefault;
+      barTop = topMargin + widget.size.height + kBarTopOffsetDefault;
     }
 
     final rotationOrigin = Offset(
       kTransformHMargin + widget.size.width / 2,
-      kTransformTopMargin + widget.size.height / 2,
+      topMargin + widget.size.height / 2,
     );
 
     return Positioned(
       left: widget.position.dx - kTransformHMargin,
-      top: widget.position.dy - kTransformTopMargin,
+      top: widget.position.dy - topMargin,
       width: widget.size.width + kTransformHMargin * 2,
-      height: widget.size.height + kTransformTopMargin + kTransformBottomMargin,
+      height: widget.size.height + topMargin + kTransformBottomMargin,
       child: Transform(
         transform: Matrix4.rotationZ(widget.rotation),
         origin: rotationOrigin,
@@ -162,7 +187,7 @@ class _TransformableBoxState extends State<TransformableBox>
             // Element body with drag gesture
             Positioned(
               left: kTransformHMargin,
-              top: kTransformTopMargin,
+              top: topMargin,
               width: widget.size.width,
               height: widget.size.height,
               child: GestureDetector(
@@ -182,17 +207,18 @@ class _TransformableBoxState extends State<TransformableBox>
 
             if (widget.isSelected) ...[
               // Stem + rotation handle
-              Positioned(
-                left: kTransformHMargin + widget.size.width / 2 - 1,
-                top: kTransformTopMargin - kSelectionStemHeight,
-                child: const SelectionStem(),
-              ),
+              if (!isNearTop)
+                Positioned(
+                  left: kTransformHMargin + widget.size.width / 2 - 1,
+                  top: topMargin - kSelectionStemHeight,
+                  child: const SelectionStem(),
+                ),
               Positioned(
                 left:
                     kTransformHMargin +
                     widget.size.width / 2 -
                     kHandleCircleSize / 2,
-                top: kTransformTopMargin - kRotationHandleTopOffset,
+                top: handleTop,
                 child: RotationHandle(
                   onPanStart: (_) {
                     updateGlobalCenter(
@@ -211,11 +237,8 @@ class _TransformableBoxState extends State<TransformableBox>
               // dot (which sits on the element's top-right corner and is
               // painted above it), swallowing taps meant for deletion.
               Positioned(
-                left:
-                    kTransformHMargin +
-                    widget.size.width -
-                    kHandleCircleSize / 2,
-                top: kTransformTopMargin - kRotationHandleTopOffset,
+                left: deleteHandleLeft,
+                top: handleTop,
                 child: DeleteHandle(onTap: widget.onDelete),
               ),
 
@@ -224,13 +247,10 @@ class _TransformableBoxState extends State<TransformableBox>
                 left: 0,
                 top: 0,
                 width: widget.size.width + kTransformHMargin * 2,
-                height:
-                    widget.size.height +
-                    kTransformTopMargin +
-                    kTransformBottomMargin,
+                height: widget.size.height + topMargin + kTransformBottomMargin,
                 child: ResizeHandles(
                   hMargin: kTransformHMargin,
-                  topMargin: kTransformTopMargin,
+                  topMargin: topMargin,
                   size: widget.size,
                   handleRadius: kResizeHandleRadius,
                   onResizeNW: handleResizeNW,

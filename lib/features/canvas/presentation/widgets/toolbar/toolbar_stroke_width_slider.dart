@@ -51,26 +51,41 @@ class ToolbarStrokeWidthSlider extends StatelessWidget {
   /// Called when the user drags to a new value.
   final ValueChanged<double> onChanged;
 
+  void _updateFromGlobalPosition(
+    BuildContext context,
+    Offset globalPosition,
+    double min,
+    double max,
+  ) {
+    final box = context.findRenderObject()! as RenderBox;
+    final localX = box.globalToLocal(globalPosition).dx;
+    final barWidth = box.size.width;
+    final newRatio = (localX / barWidth).clamp(0.0, 1.0);
+    onChanged(min + (max - min) * newRatio);
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final min = tool == InkToolType.highlighter ? kHighlighterWidthMin : kPenWidthMin;
-    final max = tool == InkToolType.highlighter ? kHighlighterWidthMax : kPenWidthMax;
+    final min = tool == InkToolType.highlighter
+        ? kHighlighterWidthMin
+        : kPenWidthMin;
+    final max = tool == InkToolType.highlighter
+        ? kHighlighterWidthMax
+        : kPenWidthMax;
     final clamped = strokeWidth.clamp(min, max);
     final ratio = (clamped - min) / (max - min);
 
     return GestureDetector(
-      onHorizontalDragUpdate: (details) {
-        final box = context.findRenderObject()! as RenderBox;
-        final localX = box.globalToLocal(details.globalPosition).dx;
-        final barWidth = box.size.width;
-        final newRatio = (localX / barWidth).clamp(0.0, 1.0);
-        onChanged(min + (max - min) * newRatio);
-      },
+      onTapDown: (details) =>
+          _updateFromGlobalPosition(context, details.globalPosition, min, max),
+      onHorizontalDragUpdate: (details) =>
+          _updateFromGlobalPosition(context, details.globalPosition, min, max),
       child: SizedBox(
         width: kToolbarSliderWidth,
         height: kToolbarSliderHeight,
         child: Stack(
+          clipBehavior: Clip.none,
           alignment: Alignment.center,
           children: [
             // Track

@@ -15,8 +15,8 @@ class TextBoxColorPicker extends StatelessWidget {
     super.key,
   });
 
-  /// The currently selected colour preset.
-  final TextBoxColor selectedColor;
+  /// The currently selected colour preset, or `null` when using a custom colour.
+  final TextBoxColor? selectedColor;
 
   /// Whether the user can tap to change the colour.
   final bool isInteractive;
@@ -46,9 +46,7 @@ class TextBoxColorPicker extends StatelessWidget {
                     : c.color,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected
-                      ? colorScheme.primary
-                      : colorScheme.outline,
+                  color: isSelected ? colorScheme.primary : colorScheme.outline,
                   width: isSelected ? 2 : 1,
                 ),
               ),

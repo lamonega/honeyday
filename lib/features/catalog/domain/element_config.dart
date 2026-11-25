@@ -27,52 +27,42 @@ class ElementColorPreset {
 /// 10 aesthetic color presets matching digital planner designs.
 const List<ElementColorPreset> kElementColorPresets = [
   ElementColorPreset(
-    
     fillColor: Color(0xFFFEF3C7), // Amber 100
     borderColor: Color(0xFFD97706), // Amber 600
   ),
   ElementColorPreset(
-    
     fillColor: Color(0xFFFFE4E6), // Rose 100
     borderColor: Color(0xFFE11D48), // Rose 600
   ),
   ElementColorPreset(
-    
     fillColor: Color(0xFFD1FAE5), // Emerald 100
     borderColor: Color(0xFF059669), // Emerald 600
   ),
   ElementColorPreset(
-    
     fillColor: Color(0xFFEDE9FE), // Violet 100
     borderColor: Color(0xFF7C3AED), // Violet 600
   ),
   ElementColorPreset(
-    
     fillColor: Color(0xFFE0F2FE), // Sky 100
     borderColor: Color(0xFF0284C7), // Sky 600
   ),
   ElementColorPreset(
-    
     fillColor: Color(0xFFFFEDD5), // Orange 100
     borderColor: Color(0xFFEA580C), // Orange 600
   ),
   ElementColorPreset(
-    
     fillColor: Color(0xFFFFFFFF),
     borderColor: Color(0xFFCBD5E1), // Slate 300
   ),
   ElementColorPreset(
-    
     fillColor: Color(0xFFFFFDF7),
     borderColor: Color(0xFFE2E8F0),
   ),
   ElementColorPreset(
-    
     fillColor: Color(0xFFF1F5F9), // Slate 100
     borderColor: Color(0xFF475569), // Slate 600
   ),
   ElementColorPreset(
-    
     fillColor: Colors.transparent,
     borderColor: Color(0xFF64748B),
   ),
@@ -138,10 +128,18 @@ class ElementConfig {
   Color get borderColor =>
       _parseColor(borderColorHex, defaultColor: const Color(0xFFD97706));
 
-  /// Parses a hex color string into a [Color].
+  static const Map<String, Color> _namedColors = {
+    'honey': Color(0xFFFEF3C7),
+    'rose': Color(0xFFFFE4E6),
+    'sage': Color(0xFFDCFCE7),
+    'transparent': Colors.transparent,
+  };
+
+  /// Parses a hex or named preset color string into a [Color].
   static Color _parseColor(String? hex, {required Color defaultColor}) {
     if (hex == null || hex.isEmpty) return defaultColor;
-    if (hex == 'transparent') return Colors.transparent;
+    final named = _namedColors[hex.trim().toLowerCase()];
+    if (named != null) return named;
     return hexToColor(hex, fallback: defaultColor);
   }
 

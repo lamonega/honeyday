@@ -44,3 +44,62 @@ double distanceSquaredToSegment(Offset p, StrokePoint a, StrokePoint b) {
   final dy = p.dy - projY;
   return dx * dx + dy * dy;
 }
+
+/// Spatial calculation determining if [stroke] intersects a swept eraser
+/// capsule from [start] to [end] with radius [eraserRadius].
+bool strokeIntersectsSegment(
+  InkStroke stroke,
+  Offset start,
+  Offset end,
+  double eraserRadius,
+) {
+  if (start == end) {
+    return strokeIntersectsPoint(stroke, end, eraserRadius);
+  }
+  final points = stroke.points;
+  if (points.isEmpty) return false;
+  final totalRadius = stroke.strokeWidth / 2 + eraserRadius;
+  final radiusSquared = totalRadius * totalRadius;
+
+  final segA = StrokePoint(start.dx, start.dy, 0.5);
+  final segB = StrokePoint(end.dx, end.dy, 0.5);
+
+  if (points.length == 1) {
+    final p = Offset(points.single.x, points.single.y);
+    return distanceSquaredToSegment(p, segA, segB) <= radiusSquared;
+  }
+
+  for (var i = 0; i < points.length - 1; i++) {
+    final p1 = points[i];
+    final p2 = points[i + 1];
+    if (_segmentsIntersect(start, end, Offset(p1.x, p1.y), Offset(p2.x, p2.y))) {
+      return true;
+    }
+    if (distanceSquaredToSegment(start, p1, p2) <= radiusSquared ||
+        distanceSquaredToSegment(end, p1, p2) <= radiusSquared ||
+        distanceSquaredToSegment(Offset(p1.x, p1.y), segA, segB) <=
+            radiusSquared ||
+        distanceSquaredToSegment(Offset(p2.x, p2.y), segA, segB) <=
+            radiusSquared) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool _segmentsIntersect(Offset a, Offset b, Offset c, Offset d) {
+  final d1 = _cross(c, d, a);
+  final d2 = _cross(c, d, b);
+  final d3 = _cross(a, b, c);
+  final d4 = _cross(a, b, d);
+
+  if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+      ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) {
+    return true;
+  }
+  return false;
+}
+
+double _cross(Offset o, Offset a, Offset b) {
+  return (a.dx - o.dx) * (b.dy - o.dy) - (a.dy - o.dy) * (b.dx - o.dx);
+}

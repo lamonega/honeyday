@@ -20,10 +20,12 @@ final class PlannerPrioritiesDefinition extends AgendaWidgetDefinition {
   String get id => 'planner_priorities';
 
   @override
-  String name(BuildContext context) => AppLocalizations.of(context).catalogTemplatePriorities;
+  String name(BuildContext context) =>
+      AppLocalizations.of(context).catalogTemplatePriorities;
 
   @override
-  String description(BuildContext context) => AppLocalizations.of(context).catalogTemplatePrioritiesDesc;
+  String description(BuildContext context) =>
+      AppLocalizations.of(context).catalogTemplatePrioritiesDesc;
 
   @override
   ElementCategory get category => ElementCategory.planner;
@@ -37,6 +39,14 @@ final class PlannerPrioritiesDefinition extends AgendaWidgetDefinition {
   @override
   String get initialConfigJson => const ElementConfig().toJsonString();
 
+  static double _contrastRatio(Color a, Color b) {
+    final l1 = a.computeLuminance();
+    final l2 = b.computeLuminance();
+    final lighter = l1 > l2 ? l1 : l2;
+    final darker = l1 > l2 ? l2 : l1;
+    return (lighter + 0.05) / (darker + 0.05);
+  }
+
   @override
   Widget build(
     BuildContext context, {
@@ -47,6 +57,13 @@ final class PlannerPrioritiesDefinition extends AgendaWidgetDefinition {
   }) {
     final config = ElementConfig.fromJsonString(configJson);
     final l10n = AppLocalizations.of(context);
+    final effectiveBackground = config.fillColor.a < 0.5
+        ? Colors.white
+        : config.fillColor;
+    final accentColor =
+        _contrastRatio(config.borderColor, effectiveBackground) < 2.5
+        ? const Color(0xFF334155)
+        : config.borderColor;
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -70,15 +87,19 @@ final class PlannerPrioritiesDefinition extends AgendaWidgetDefinition {
         children: [
           Row(
             children: [
-              Icon(Icons.star_rounded, size: 16, color: config.borderColor),
+              Icon(Icons.star_rounded, size: 16, color: accentColor),
               const SizedBox(width: 6),
-              Text(
-                l10n.catalogPrioritiesHeader,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.8,
-                  color: config.borderColor,
+              Expanded(
+                child: Text(
+                  l10n.catalogPrioritiesHeader,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
+                    color: accentColor,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -94,7 +115,7 @@ final class PlannerPrioritiesDefinition extends AgendaWidgetDefinition {
                       width: 20,
                       height: 20,
                       decoration: BoxDecoration(
-                        color: config.borderColor.withValues(alpha: 0.15),
+                        color: accentColor.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -103,7 +124,7 @@ final class PlannerPrioritiesDefinition extends AgendaWidgetDefinition {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: config.borderColor,
+                            color: accentColor,
                           ),
                         ),
                       ),
@@ -112,7 +133,7 @@ final class PlannerPrioritiesDefinition extends AgendaWidgetDefinition {
                     Expanded(
                       child: Container(
                         height: 1,
-                        color: config.borderColor.withValues(alpha: 0.25),
+                        color: accentColor.withValues(alpha: 0.25),
                       ),
                     ),
                   ],

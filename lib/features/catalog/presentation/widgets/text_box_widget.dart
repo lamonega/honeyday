@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/core/theme/app_colors.dart';
 import 'package:honeyday/features/agendas/presentation/controllers/save_session.dart';
 import 'package:honeyday/features/agendas/presentation/widgets/save_session_scope.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
@@ -115,6 +116,8 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
           selection: TextSelection.collapsed(offset: text.length),
         );
       }
+    } else if (oldWidget.isInteractive && !widget.isInteractive) {
+      _configHelper.flush();
     }
   }
 
@@ -160,7 +163,16 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final isTransparent = _config.color == TextBoxColor.transparent;
+    // Notes are drawn on light paper and use pastel fills even in dark mode.
+    final isDarkTheme = colorScheme.brightness == Brightness.dark;
+    final textColor = isDarkTheme
+        ? AppColors.inkPrimary
+        : colorScheme.onSurface;
+    final hintColor = isDarkTheme
+        ? AppColors.inkSecondary
+        : colorScheme.onSurfaceVariant;
+    final outline = isDarkTheme ? AppColors.paperBorder : colorScheme.outline;
+    final isTransparent = _config.isTransparent;
     final l10n = AppLocalizations.of(context);
     final isDefaultContent =
         _config.text.isEmpty ||
@@ -171,12 +183,10 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
 
     return Container(
       decoration: BoxDecoration(
-        color: _config.color.color,
+        color: _config.effectiveColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isTransparent
-              ? colorScheme.outline.withValues(alpha: 0.7)
-              : colorScheme.outline,
+          color: isTransparent ? outline.withValues(alpha: 0.7) : outline,
         ),
         boxShadow: isTransparent
             ? null
@@ -189,69 +199,78 @@ class _TextBoxWidgetState extends State<TextBoxWidget> {
               ],
       ),
       padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (widget.isInteractive) ...[
-            Row(
-              children: [
-                TextBoxColorPicker(
-                  selectedColor: _config.color,
-                  isInteractive: widget.isInteractive,
-                  onColorSelected: _setColor,
-                ),
-                const Spacer(),
-                TextBoxToolbar(
-                  fontSize: _config.fontSize,
-                  isInteractive: widget.isInteractive,
-                  onCycleFontSize: _cycleFontSize,
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Divider(
-              height: 1,
-              color: colorScheme.outline.withValues(alpha: 0.8),
-            ),
-            const SizedBox(height: 6),
-          ],
-          Expanded(
-            child: widget.isInteractive
-                ? TextFormField(
-                    controller: _textController,
-                    key: ValueKey('text_${widget.elementId}'),
-                    maxLines: null,
-                    expands: true,
-                    textAlignVertical: TextAlignVertical.top,
-                    style: TextStyle(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final showToolbar =
+              widget.isInteractive && constraints.maxHeight >= 60;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (showToolbar) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: TextBoxColorPicker(
+                          selectedColor: _config.customColor == null
+                              ? _config.color
+                              : null,
+                          isInteractive: widget.isInteractive,
+                          onColorSelected: _setColor,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    TextBoxToolbar(
                       fontSize: _config.fontSize,
-                      height: 1.5,
-                      color: colorScheme.onSurface,
+                      isInteractive: widget.isInteractive,
+                      onCycleFontSize: _cycleFontSize,
                     ),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: EdgeInsets.zero,
-                      border: InputBorder.none,
-                      hintText: l10n.catalogTextboxHint,
-                      hintStyle: TextStyle(
-                        fontSize: 13,
-                        color: colorScheme.onSurfaceVariant,
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Divider(height: 1, color: outline.withValues(alpha: 0.8)),
+                const SizedBox(height: 6),
+              ],
+              Expanded(
+                child: widget.isInteractive
+                    ? TextFormField(
+                        controller: _textController,
+                        key: ValueKey('text_${widget.elementId}'),
+                        maxLines: null,
+                        expands: true,
+                        textAlignVertical: TextAlignVertical.top,
+                        style: TextStyle(
+                          fontSize: _config.fontSize,
+                          height: 1.5,
+                          color: textColor,
+                        ),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.zero,
+                          border: InputBorder.none,
+                          hintText: l10n.catalogTextboxHint,
+                          hintStyle: TextStyle(fontSize: 13, color: hintColor),
+                        ),
+                        onChanged: _updateText,
+                      )
+                    : SingleChildScrollView(
+                        child: Text(
+                          currentText,
+                          style: TextStyle(
+                            fontSize: _config.fontSize,
+                            height: 1.5,
+                            color: textColor,
+                          ),
+                        ),
                       ),
-                    ),
-                    onChanged: _updateText,
-                  )
-                : SingleChildScrollView(
-                    child: Text(
-                      currentText,
-                      style: TextStyle(
-                        fontSize: _config.fontSize,
-                        height: 1.5,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-          ),
-        ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }

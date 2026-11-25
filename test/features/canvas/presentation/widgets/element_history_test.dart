@@ -63,6 +63,56 @@ void main() {
       expect(jsonDecode(history.undo([original])!.single.configJson), isEmpty);
     });
 
+    test('rebasing ignores malformed or non-map JSON without throwing', () {
+      final history = ElementHistory();
+      final malformedElement = _el('a').copyWith(configJson: '{not-json');
+      final arrayElement = _el('b').copyWith(configJson: '[1, 2, 3]');
+      final validElement = _el('c').copyWith(configJson: '{"text":"keep"}');
+      history.push([malformedElement, arrayElement, validElement]);
+
+      expect(
+        () => history.rebaseConfig(
+          elementId: 'a',
+          beforeJson: '{bad',
+          afterJson: '{"text":"new"}',
+        ),
+        returnsNormally,
+      );
+      expect(
+        () => history.rebaseConfig(
+          elementId: 'b',
+          beforeJson: '[1]',
+          afterJson: '{"text":"new"}',
+        ),
+        returnsNormally,
+      );
+      expect(
+        () => history.rebaseConfig(
+          elementId: 'a',
+          beforeJson: '{"text":"old"}',
+          afterJson: '{"text":"new"}',
+        ),
+        returnsNormally,
+      );
+      expect(
+        () => history.rebaseConfig(
+          elementId: 'b',
+          beforeJson: '{"text":"old"}',
+          afterJson: '{"text":"new"}',
+        ),
+        returnsNormally,
+      );
+
+      final restored = history.undo([
+        malformedElement,
+        arrayElement,
+        validElement,
+      ])!;
+      expect(restored[0].configJson, '{not-json');
+      expect(restored[1].configJson, '[1, 2, 3]');
+      expect(restored[2].configJson, '{"text":"keep"}');
+    });
+
     test('starts with canUndo=false and canRedo=false', () {
       final history = ElementHistory();
       expect(history.canUndo, isFalse);

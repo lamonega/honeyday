@@ -56,6 +56,7 @@ class CalendarGrid extends StatelessWidget {
               final displayHabitTitle = _localizedHabitTitle(habit, l10n);
 
               return CalendarHabitRow(
+                key: ValueKey(habit.id),
                 habit: habit,
                 isInteractive: isInteractive,
                 displayTitle: displayHabitTitle,

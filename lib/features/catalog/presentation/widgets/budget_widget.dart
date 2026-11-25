@@ -8,6 +8,7 @@ import 'package:honeyday/features/catalog/presentation/widgets/budget/budget_ent
 import 'package:honeyday/features/catalog/presentation/widgets/budget/budget_summary_cards.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/catalog_widget_mixin.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
+import 'package:uuid/uuid.dart';
 
 export 'package:honeyday/features/catalog/presentation/widgets/budget/budget_config.dart';
 
@@ -97,6 +98,8 @@ class _BudgetWidgetState extends State<BudgetWidget> {
     _configHelper.onConfigChanged = widget.onConfigChanged;
     if (oldWidget.configJson != widget.configJson) {
       _configHelper.updateFromJson(widget.configJson);
+    } else if (oldWidget.isInteractive && !widget.isInteractive) {
+      _configHelper.flush();
     }
   }
 
@@ -111,7 +114,7 @@ class _BudgetWidgetState extends State<BudgetWidget> {
     if (!widget.isInteractive) return;
     final l10n = AppLocalizations.of(context);
     final newEntry = BudgetEntryItem(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: const Uuid().v4(),
       description: l10n.catalogBudgetNewExpense,
       amount: 0,
       type: BudgetEntryType.expense,
@@ -153,7 +156,7 @@ class _BudgetWidgetState extends State<BudgetWidget> {
     if (!widget.isInteractive) return;
     if (index < 0 || index >= _config.entries.length) return;
     final normalized = rawAmount.trim().replaceAll(',', '.');
-    final parsed = double.tryParse(normalized);
+    final parsed = normalized.isEmpty ? 0.0 : double.tryParse(normalized);
     if (parsed == null || !parsed.isFinite || parsed < 0) return;
 
     final updated = List<BudgetEntryItem>.from(_config.entries);
@@ -198,10 +201,9 @@ class _BudgetWidgetState extends State<BudgetWidget> {
         ],
       ),
       padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final header = Row(
             children: [
               Icon(
                 Icons.account_balance_wallet_outlined,
@@ -209,49 +211,82 @@ class _BudgetWidgetState extends State<BudgetWidget> {
                 color: cs.primary,
               ),
               const SizedBox(width: 6),
-              Text(
-                displayTitle,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: cs.onSurface,
+              Flexible(
+                child: Text(
+                  displayTitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: cs.onSurface,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 8),
-          BudgetSummaryCards(
+          );
+          final summaryCards = BudgetSummaryCards(
             totalIncome: _config.totalIncome,
             totalExpenses: _config.totalExpenses,
             netBalance: netBalance,
             currency: _config.currency,
             formatNumber: _formatNumber,
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: ListView.builder(
-              padding: EdgeInsets.zero,
-              itemCount: _config.entries.length,
-              itemBuilder: (context, index) {
-                final entry = _config.entries[index];
-                final displayDesc = _localizedDescription(entry, l10n);
+          );
 
-                return BudgetEntryRow(
-                  entry: entry,
-                  currency: _config.currency,
-                  isInteractive: widget.isInteractive,
-                  onToggleType: () => _toggleType(index),
-                  onUpdateDescription: (val) => _updateDescription(index, val),
-                  onUpdateAmount: (val) => _updateAmount(index, val),
-                  onRemove: () => _removeEntry(index),
-                  formatNumber: _formatNumber,
-                  displayDescription: displayDesc,
-                );
-              },
-            ),
-          ),
-          if (widget.isInteractive) BudgetEntryForm(onAdd: _addEntry),
-        ],
+          Widget buildEntryRow(int index) {
+            final entry = _config.entries[index];
+            final displayDesc = _localizedDescription(entry, l10n);
+
+            return BudgetEntryRow(
+              key: ValueKey(entry.id),
+              entry: entry,
+              currency: _config.currency,
+              isInteractive: widget.isInteractive,
+              onToggleType: () => _toggleType(index),
+              onUpdateDescription: (val) => _updateDescription(index, val),
+              onUpdateAmount: (val) => _updateAmount(index, val),
+              onRemove: () => _removeEntry(index),
+              formatNumber: _formatNumber,
+              displayDescription: displayDesc,
+            );
+          }
+
+          if (constraints.maxHeight < 120) {
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  header,
+                  const SizedBox(height: 8),
+                  summaryCards,
+                  const SizedBox(height: 8),
+                  for (var i = 0; i < _config.entries.length; i++)
+                    buildEntryRow(i),
+                  if (widget.isInteractive) BudgetEntryForm(onAdd: _addEntry),
+                ],
+              ),
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              header,
+              const SizedBox(height: 8),
+              summaryCards,
+              const SizedBox(height: 8),
+              Expanded(
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: _config.entries.length,
+                  itemBuilder: (context, index) => buildEntryRow(index),
+                ),
+              ),
+              if (widget.isInteractive) BudgetEntryForm(onAdd: _addEntry),
+            ],
+          );
+        },
       ),
     );
   }

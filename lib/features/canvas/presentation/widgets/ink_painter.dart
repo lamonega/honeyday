@@ -13,8 +13,10 @@ import 'package:perfect_freehand/perfect_freehand.dart' hide StrokePoint;
 
 /// Freehand thinning parameter for pen strokes.
 const double kPenThinning = 0.6;
+
 /// Freehand smoothing parameter (shared by pen and highlighter).
 const double kInkSmoothing = 0.5;
+
 /// Freehand streamline parameter (shared by pen and highlighter).
 const double kInkStreamline = 0.5;
 
@@ -61,6 +63,7 @@ class InkPainter extends CustomPainter {
         stroke.points,
         strokeWidth: stroke.strokeWidth,
         tool: stroke.tool,
+        useDevicePressure: stroke.usesDevicePressure,
       );
       canvas.drawPath(strokePath, _buildStrokePaint(stroke));
     }
@@ -78,6 +81,9 @@ class InkPainter extends CustomPainter {
           activePoints!,
           strokeWidth: activeStrokeWidth,
           tool: activeTool,
+          useDevicePressure: activePoints!.any(
+            (point) => point.pressure != null,
+          ),
         );
         canvas.drawPath(activePath, _buildActivePaint());
       }
@@ -164,6 +170,7 @@ class ActiveStrokePainter extends CustomPainter {
         activePoints!,
         strokeWidth: activeStrokeWidth,
         tool: activeTool,
+        useDevicePressure: activePoints!.any((point) => point.pressure != null),
       );
       canvas.drawPath(activePath, _buildActivePaint());
     }
@@ -196,13 +203,14 @@ Path buildPath(
   required double strokeWidth,
   required InkToolType tool,
   bool isComplete = false,
+  bool useDevicePressure = false,
 }) {
   final options = StrokeOptions(
     size: strokeWidth,
     thinning: tool == InkToolType.pen ? kPenThinning : 0,
     smoothing: kInkSmoothing,
     streamline: kInkStreamline,
-    simulatePressure: tool == InkToolType.pen,
+    simulatePressure: tool == InkToolType.pen && !useDevicePressure,
     isComplete: isComplete,
   );
 

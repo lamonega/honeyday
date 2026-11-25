@@ -6,7 +6,7 @@ import 'package:honeyday/features/catalog/presentation/widgets/calendar/calendar
 ///
 /// When the row is not interactive the title is plain text
 /// and taps on checkboxes / the remove button are disabled.
-class CalendarHabitRow extends StatelessWidget {
+class CalendarHabitRow extends StatefulWidget {
   const CalendarHabitRow({
     required this.habit,
     required this.isInteractive,
@@ -29,85 +29,132 @@ class CalendarHabitRow extends StatelessWidget {
   /// Called when a day checkbox is tapped. The argument is the day index (0–6).
   final ValueChanged<int> onToggleCheck;
 
-  /// Called when the user submits a new title via the text field.
+  /// Called when the user edits the title.
   final ValueChanged<String> onEditTitle;
 
   /// Called when the remove button is tapped.
   final VoidCallback onRemove;
 
   @override
+  State<CalendarHabitRow> createState() => _CalendarHabitRowState();
+}
+
+class _CalendarHabitRowState extends State<CalendarHabitRow> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.habit.title);
+  }
+
+  @override
+  void didUpdateWidget(CalendarHabitRow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final title = widget.habit.title;
+    if (_controller.text != title) {
+      _controller.value = TextEditingValue(
+        text: title,
+        selection: TextSelection.collapsed(offset: title.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final allCompleted = habit.checks.every((checked) => checked);
+    final allCompleted = widget.habit.checks.every((checked) => checked);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(
-            child: isInteractive
-                ? TextFormField(
-                    initialValue: displayTitle,
-                    key: ValueKey('habit_${habit.id}'),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: allCompleted
-                          ? colorScheme.onSurfaceVariant
-                          : colorScheme.onSurface,
-                      decoration: allCompleted
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
-                    ),
-                    decoration: InputDecoration(
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 4,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 240;
+          final checkboxRow = _CheckboxRow(
+            checks: widget.habit.checks,
+            isInteractive: widget.isInteractive,
+            onToggleCheck: widget.onToggleCheck,
+          );
+          return Row(
+            children: [
+              Expanded(
+                child: widget.isInteractive
+                    ? TextFormField(
+                        controller: _controller,
+                        key: ValueKey('habit_${widget.habit.id}'),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: allCompleted
+                              ? colorScheme.onSurfaceVariant
+                              : colorScheme.onSurface,
+                          decoration: allCompleted
+                              ? TextDecoration.lineThrough
+                              : TextDecoration.none,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: widget.displayTitle,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 4,
+                          ),
+                          border: InputBorder.none,
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: colorScheme.primary),
+                          ),
+                        ),
+                        onChanged: widget.onEditTitle,
+                      )
+                    : Text(
+                        widget.displayTitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: allCompleted
+                              ? colorScheme.onSurfaceVariant
+                              : colorScheme.onSurface,
+                          decoration: allCompleted
+                              ? TextDecoration.lineThrough
+                              : TextDecoration.none,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      border: InputBorder.none,
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: colorScheme.primary),
-                      ),
-                    ),
-                    onChanged: onEditTitle,
-                  )
-                : Text(
-                    displayTitle,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: allCompleted
-                          ? colorScheme.onSurfaceVariant
-                          : colorScheme.onSurface,
-                      decoration: allCompleted
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-          ),
-          const SizedBox(width: 8),
-          _CheckboxRow(
-            checks: habit.checks,
-            isInteractive: isInteractive,
-            onToggleCheck: onToggleCheck,
-          ),
-          if (isInteractive)
-            InkWell(
-              onTap: onRemove,
-              borderRadius: BorderRadius.circular(12),
-              child: Padding(
-                padding: const EdgeInsets.only(left: 4),
-                child: Icon(
-                  Icons.close_rounded,
-                  size: 16,
-                  color: colorScheme.onSurfaceVariant,
-                ),
               ),
-            ),
-        ],
+              const SizedBox(width: 8),
+              if (isNarrow)
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: checkboxRow,
+                  ),
+                )
+              else
+                checkboxRow,
+              if (widget.isInteractive)
+                InkWell(
+                  onTap: widget.onRemove,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 4),
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 16,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        },
       ),
     );
   }

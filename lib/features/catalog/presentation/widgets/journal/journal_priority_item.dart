@@ -5,7 +5,7 @@ import 'package:honeyday/features/catalog/presentation/widgets/journal/journal_c
 /// styling when completed.
 ///
 /// Used inside `JournalPriorityList` to render each individual priority entry.
-class JournalPriorityItemWidget extends StatelessWidget {
+class JournalPriorityItemWidget extends StatefulWidget {
   const JournalPriorityItemWidget({
     required this.priority,
     required this.isInteractive,
@@ -31,6 +31,37 @@ class JournalPriorityItemWidget extends StatelessWidget {
   final String localizedText;
 
   @override
+  State<JournalPriorityItemWidget> createState() =>
+      _JournalPriorityItemWidgetState();
+}
+
+class _JournalPriorityItemWidgetState extends State<JournalPriorityItemWidget> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.priority.text);
+  }
+
+  @override
+  void didUpdateWidget(JournalPriorityItemWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.priority.text != _controller.text) {
+      _controller.value = TextEditingValue(
+        text: widget.priority.text,
+        selection: TextSelection.collapsed(offset: widget.priority.text.length),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -39,24 +70,24 @@ class JournalPriorityItemWidget extends StatelessWidget {
       child: Row(
         children: [
           GestureDetector(
-            onTap: isInteractive ? onToggle : null,
+            onTap: widget.isInteractive ? widget.onToggle : null,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               width: 18,
               height: 18,
               decoration: BoxDecoration(
-                color: priority.isDone
+                color: widget.priority.isDone
                     ? colorScheme.primary
                     : colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(5),
                 border: Border.all(
-                  color: priority.isDone
+                  color: widget.priority.isDone
                       ? colorScheme.primary
                       : colorScheme.outline,
                   width: 1.2,
                 ),
               ),
-              child: priority.isDone
+              child: widget.priority.isDone
                   ? Icon(
                       Icons.check_rounded,
                       size: 13,
@@ -67,20 +98,21 @@ class JournalPriorityItemWidget extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Expanded(
-            child: isInteractive
+            child: widget.isInteractive
                 ? TextFormField(
-                    initialValue: localizedText,
-                    key: ValueKey('prio_${priority.id}'),
+                    controller: _controller,
+                    key: ValueKey('prio_${widget.priority.id}'),
                     style: TextStyle(
                       fontSize: 11,
-                      color: priority.isDone
+                      color: widget.priority.isDone
                           ? colorScheme.onSurfaceVariant
                           : colorScheme.onSurface,
-                      decoration: priority.isDone
+                      decoration: widget.priority.isDone
                           ? TextDecoration.lineThrough
                           : TextDecoration.none,
                     ),
                     decoration: InputDecoration(
+                      hintText: widget.localizedText,
                       isDense: true,
                       contentPadding: const EdgeInsets.symmetric(
                         horizontal: 4,
@@ -91,16 +123,16 @@ class JournalPriorityItemWidget extends StatelessWidget {
                         borderSide: BorderSide(color: colorScheme.primary),
                       ),
                     ),
-                    onChanged: onTextChanged,
+                    onChanged: widget.onTextChanged,
                   )
                 : Text(
-                    localizedText,
+                    widget.localizedText,
                     style: TextStyle(
                       fontSize: 11,
-                      color: priority.isDone
+                      color: widget.priority.isDone
                           ? colorScheme.onSurfaceVariant
                           : colorScheme.onSurface,
-                      decoration: priority.isDone
+                      decoration: widget.priority.isDone
                           ? TextDecoration.lineThrough
                           : TextDecoration.none,
                     ),

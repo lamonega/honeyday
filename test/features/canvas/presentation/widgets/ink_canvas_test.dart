@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/canvas/domain/ink_tool.dart';
@@ -6,6 +7,23 @@ import 'package:honeyday/features/canvas/domain/models/stroke_point.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/ink_canvas_controller.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/ink_painter.dart';
+
+class _FakeInkCanvasHost implements InkCanvasHost {
+  @override
+  bool canUndo = true;
+
+  @override
+  bool canRedo = false;
+
+  @override
+  void undo() {}
+
+  @override
+  void redo() {}
+
+  @override
+  void clear() {}
+}
 
 void main() {
   group('InkCanvas & InkStroke Tests', () {
@@ -44,6 +62,7 @@ void main() {
       expect(reconstructed.points.first.x, 10.0);
       expect(reconstructed.points.first.y, 20.0);
       expect(reconstructed.tool, InkToolType.pen);
+      expect(reconstructed.usesDevicePressure, isFalse);
     });
 
     testWidgets(
@@ -137,6 +156,119 @@ void main() {
       expect(currentStrokes!.isEmpty, isTrue);
     });
 
+    testWidgets('fast erasure crosses between samples and undoes as one step', (
+      tester,
+    ) async {
+      final stroke = InkStroke(
+        id: 'crossed',
+        pageId: 'page',
+        tool: InkToolType.pen,
+        colorHex: '#FF000000',
+        strokeWidth: 2,
+        points: const [StrokePoint(100, 100), StrokePoint(100, 200)],
+        createdAt: DateTime.utc(2026),
+      );
+      final controller = InkCanvasController();
+      final writes = <List<InkStroke>>[];
+      await tester.pumpWidget(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: InkCanvas(
+            pageId: 'page',
+            activeTool: InkToolType.eraser,
+            activeColor: Colors.transparent,
+            activeStrokeWidth: 10,
+            initialStrokes: [stroke],
+            controller: controller,
+            onStrokesChanged: writes.add,
+          ),
+        ),
+      );
+
+      final gesture = await tester.startGesture(const Offset(50, 150));
+      await gesture.moveTo(const Offset(150, 150));
+      expect(writes, isEmpty);
+      await gesture.up();
+      expect(writes, [isEmpty]);
+
+      controller.undo();
+      expect(writes.last, [stroke]);
+      expect(controller.canUndo, isFalse);
+    });
+
+    testWidgets(
+      'ignores secondary mouse input and normalizes stylus pressure',
+      (tester) async {
+        final writes = <List<InkStroke>>[];
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: InkCanvas(
+              pageId: 'page',
+              activeTool: InkToolType.pen,
+              activeColor: Colors.black,
+              activeStrokeWidth: 3,
+              onStrokesChanged: writes.add,
+            ),
+          ),
+        );
+        const start = Offset(50, 50);
+        final mouse = await tester.startGesture(
+          start,
+          kind: PointerDeviceKind.mouse,
+          buttons: kSecondaryMouseButton,
+        );
+        await mouse.up();
+        expect(writes, isEmpty);
+
+        await tester.sendEventToBinding(
+          const PointerDownEvent(
+            pointer: 100,
+            position: start,
+            kind: PointerDeviceKind.stylus,
+            pressure: 30,
+            pressureMin: 10,
+            pressureMax: 90,
+          ),
+        );
+        await tester.sendEventToBinding(
+          const PointerUpEvent(
+            pointer: 100,
+            position: start,
+            kind: PointerDeviceKind.stylus,
+          ),
+        );
+        final stroke = writes.single.single;
+        expect(stroke.points.single.pressure, 0.25);
+        final restored = InkStroke.fromDb(
+          id: stroke.id,
+          pageId: stroke.pageId,
+          brushType: stroke.tool.name,
+          colorHex: stroke.colorHex,
+          strokeWidth: stroke.strokeWidth,
+          pointsJson: stroke.toJsonPoints(),
+          createdAt: stroke.createdAt,
+        );
+        expect(restored.usesDevicePressure, isTrue);
+        expect(restored.points.single.pressure, 0.25);
+      },
+    );
+
+    test('real pressure changes pen width for identical coordinates', () {
+      double width(double pressure) => buildPath(
+        [
+          StrokePoint(30, 30, pressure),
+          StrokePoint(30, 70, pressure),
+          StrokePoint(30, 130, pressure),
+        ],
+        strokeWidth: 20,
+        tool: InkToolType.pen,
+        useDevicePressure: true,
+      ).getBounds().width;
+
+      expect(width(0.9), greaterThan(width(0.1)));
+    });
+
     test('InkPainter shouldRepaint responds correctly to activePoints and strokes changes', () {
       final strokeA = InkStroke(
         id: 's1',
@@ -217,6 +349,86 @@ void main() {
         );
         final completedPainter = completedPaints.first.painter! as InkPainter;
         expect(completedPainter.strokes.length, 1);
+      },
+    );
+
+    test(
+      'InkCanvasController.detach only clears when matching host detaches',
+      () {
+        final controller = InkCanvasController();
+        final hostA = _FakeInkCanvasHost();
+        final hostB = _FakeInkCanvasHost();
+
+        controller.attach(hostA);
+        expect(controller.canUndo, isTrue);
+
+        controller
+          ..attach(hostB)
+          // Old host detaching must not clear hostB.
+          ..detach(hostA);
+        expect(controller.canUndo, isTrue);
+
+        // Active host detaching clears it.
+        controller.detach(hostB);
+        expect(controller.canUndo, isFalse);
+      },
+    );
+
+    testWidgets(
+      'stylus input preempts active touch palm gesture and appends pointer-up point',
+      (tester) async {
+        final writes = <List<InkStroke>>[];
+        await tester.pumpWidget(
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: InkCanvas(
+              pageId: 'page-1',
+              activeTool: InkToolType.pen,
+              activeColor: Colors.black,
+              activeStrokeWidth: 3,
+              onStrokesChanged: writes.add,
+            ),
+          ),
+        );
+
+        // Palm touch begins first.
+        await tester.sendEventToBinding(
+          const PointerDownEvent(pointer: 1, position: Offset(20, 20)),
+        );
+        await tester.sendEventToBinding(
+          const PointerMoveEvent(pointer: 1, position: Offset(30, 30)),
+        );
+
+        // Stylus arrives and preempts the palm touch.
+        await tester.sendEventToBinding(
+          const PointerDownEvent(
+            pointer: 2,
+            position: Offset(100, 100),
+            kind: PointerDeviceKind.stylus,
+            pressure: 0.5,
+            pressureMin: 0,
+          ),
+        );
+        await tester.sendEventToBinding(
+          const PointerUpEvent(
+            pointer: 2,
+            position: Offset(140, 160),
+            kind: PointerDeviceKind.stylus,
+            pressure: 0.5,
+            pressureMin: 0,
+          ),
+        );
+        // Palm lifts later — should be ignored.
+        await tester.sendEventToBinding(
+          const PointerUpEvent(pointer: 1, position: Offset(35, 35)),
+        );
+
+        expect(writes, hasLength(1));
+        final stroke = writes.single.single;
+        expect(stroke.points.first.x, 100);
+        expect(stroke.points.first.y, 100);
+        expect(stroke.points.last.x, 140);
+        expect(stroke.points.last.y, 160);
       },
     );
   });

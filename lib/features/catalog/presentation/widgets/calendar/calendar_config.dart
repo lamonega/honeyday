@@ -15,7 +15,10 @@ class HabitRowItem {
   ///
   /// Falls back to defaults for missing or malformed fields.
   factory HabitRowItem.fromJson(Map<String, dynamic> json) {
-    final rawChecks = json['checks'] as List<dynamic>? ?? const [];
+    final rawChecksValue = json['checks'];
+    final rawChecks = rawChecksValue is List
+        ? rawChecksValue
+        : const <dynamic>[];
     final checks = List<bool>.generate(7, (index) {
       if (index < rawChecks.length && rawChecks[index] is bool) {
         return rawChecks[index] as bool;

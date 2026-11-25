@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:honeyday/features/canvas/domain/ink_tool.dart';
@@ -11,10 +12,20 @@ import 'package:honeyday/features/canvas/presentation/widgets/toolbar/toolbar_un
 const double kToolbarBorderRadius = 28;
 
 Widget horizontallyScrollableInkControls(Widget controls) {
-  return SingleChildScrollView(
-    scrollDirection: Axis.horizontal,
-    primary: false,
-    child: controls,
+  return Builder(
+    builder: (context) {
+      final behavior = ScrollConfiguration.of(context);
+      return ScrollConfiguration(
+        behavior: behavior.copyWith(
+          dragDevices: {...behavior.dragDevices, PointerDeviceKind.mouse},
+        ),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          primary: false,
+          child: controls,
+        ),
+      );
+    },
   );
 }
 

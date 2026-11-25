@@ -17,6 +17,7 @@ class InkStroke {
     required this.strokeWidth,
     required this.points,
     required this.createdAt,
+    this.usesDevicePressure = false,
   });
 
   /// Factory creating an [InkStroke] from deserialized database parameters.
@@ -35,14 +36,16 @@ class InkStroke {
       _ => InkToolType.pen,
     };
 
+    final (points, usesDevicePressure) = _decodePoints(pointsJson);
     return InkStroke(
       id: id,
       pageId: pageId,
       tool: tool,
       colorHex: colorHex,
       strokeWidth: strokeWidth,
-      points: _pointsFromJson(pointsJson),
+      points: points,
       createdAt: createdAt,
+      usesDevicePressure: usesDevicePressure,
     );
   }
 
@@ -67,36 +70,46 @@ class InkStroke {
   /// Timestamp when the stroke was drawn.
   final DateTime createdAt;
 
+  /// Whether to render measured pressure rather than simulate it.
+  ///
+  /// Older strokes may contain pressure samples, but were always drawn with
+  /// simulated pressure.
+  final bool usesDevicePressure;
+
   /// Serializes vector points into a compact JSON string.
   String toJsonPoints() {
-    final list = points
-        .map(
-          (p) => {
-            'x': (p.x * 10).round() / 10,
-            'y': (p.y * 10).round() / 10,
-            if (p.pressure != null)
-              'p': (p.pressure! * 100).round() / 100,
-          },
-        )
-        .toList();
+    final list = [
+      for (final (index, point) in points.indexed)
+        {
+          'x': (point.x * 10).round() / 10,
+          'y': (point.y * 10).round() / 10,
+          if (point.pressure != null)
+            'p': (point.pressure! * 100).round() / 100,
+          if (index == 0 && usesDevicePressure) 'dp': true,
+        },
+    ];
     return jsonEncode(list);
   }
 
   /// Returns the stored hex color string.
   String toHexColor() => colorHex;
 
-  static List<StrokePoint> _pointsFromJson(String jsonStr) {
+  static (List<StrokePoint>, bool) _decodePoints(String jsonStr) {
     try {
       final decoded = jsonDecode(jsonStr) as List<dynamic>;
-      return decoded.map((item) {
+      final points = decoded.map((item) {
         final map = item as Map<String, dynamic>;
         final x = (map['x'] as num).toDouble();
         final y = (map['y'] as num).toDouble();
         final p = (map['p'] as num?)?.toDouble();
         return StrokePoint(x, y, p);
       }).toList();
+      final usesDevicePressure =
+          decoded.isNotEmpty &&
+          (decoded.first as Map<String, dynamic>)['dp'] == true;
+      return (points, usesDevicePressure);
     } on Object {
-      return [];
+      return ([], false);
     }
   }
 }

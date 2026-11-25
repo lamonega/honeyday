@@ -52,6 +52,7 @@ class PageViewCanvas extends ConsumerStatefulWidget {
     this.onStrokesChanged,
     this.onDirty,
     this.onControllerCreated,
+    this.onControllerDisposed,
     this.showToolbar = true,
     this.strokesVisible = true,
   });
@@ -70,6 +71,7 @@ class PageViewCanvas extends ConsumerStatefulWidget {
   final ValueChanged<List<InkStroke>>? onStrokesChanged;
   final VoidCallback? onDirty;
   final void Function(PageCanvasController controller)? onControllerCreated;
+  final ValueChanged<PageCanvasController>? onControllerDisposed;
   final bool showToolbar;
   final bool strokesVisible;
 
@@ -100,6 +102,7 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
     _pageController.addElementCallback = _addElement;
     _pageController.configSyncCallback = _elementManager.handleConfigChanged;
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       widget.onControllerCreated?.call(_pageController);
     });
   }
@@ -108,13 +111,20 @@ class _PageViewCanvasState extends ConsumerState<PageViewCanvas> {
   void didUpdateWidget(covariant PageViewCanvas oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pageId != widget.pageId) {
+      _transformActive = false;
       _elementManager.reset(widget.initialElements);
       _activeSnapGuides = const [];
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _pageController.notifyElementHistoryChanged();
+        }
+      });
     }
   }
 
   @override
   void dispose() {
+    widget.onControllerDisposed?.call(_pageController);
     _pageController.dispose();
     super.dispose();
   }

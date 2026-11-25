@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:honeyday/features/canvas/domain/canvas_mode.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/canvas_action_bar.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/static_element_box.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/transform/transform_handles.dart';
 import 'package:honeyday/features/canvas/presentation/widgets/transformable_box.dart';
@@ -10,6 +12,44 @@ import 'package:honeyday/features/canvas/presentation/widgets/transformable_box.
 import '../../../../helpers/pump_app.dart';
 
 void main() {
+  testWidgets('mouse can reach actions in a narrow canvas toolbar', (
+    tester,
+  ) async {
+    var deleted = false;
+    await tester.pumpWidget(
+      testMaterialApp(
+        home: Scaffold(
+          body: SizedBox(
+            width: 100,
+            child: CanvasActionBar(
+              showColorPalette: false,
+              onTogglePalette: () {},
+              currentColor: null,
+              onColorChanged: null,
+              onAdaptToPage: () {},
+              onFitWidth: () {},
+              onCenter: () {},
+              onDuplicate: () {},
+              onDelete: () => deleted = true,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final delete = find.byIcon(Icons.delete_outline_rounded);
+    expect(delete.hitTestable(), findsNothing);
+    await tester.drag(
+      find.byType(SingleChildScrollView),
+      const Offset(-200, 0),
+      kind: PointerDeviceKind.mouse,
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(delete);
+    expect(deleted, isTrue);
+    expect(tester.takeException(), isNull);
+  });
+
   group('TransformableBox Tests', () {
     testWidgets('rotation keeps content corners fixed across modes', (
       tester,
@@ -240,6 +280,81 @@ void main() {
         await tester.tap(find.byIcon(Icons.palette_outlined));
         await tester.pumpAndSettle();
         expect(find.byType(GestureDetector), findsWidgets);
+      },
+    );
+
+    testWidgets(
+      'handles stay inside top edge when position.dy < 36 (e.g. Adapt to Page)',
+      (tester) async {
+        await tester.pumpWidget(
+          testMaterialApp(
+            home: const Scaffold(
+              body: SizedBox(
+                width: 600,
+                height: 800,
+                child: Stack(
+                  children: [
+                    TransformableBox(
+                      position: Offset.zero,
+                      size: Size(600, 800),
+                      pageSize: Size(600, 800),
+                      canvasMode: CanvasMode.edit,
+                      child: SizedBox.expand(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final rotationRect = tester.getRect(find.byType(RotationHandle));
+        final deleteRect = tester.getRect(find.byType(DeleteHandle));
+        final barRect = tester.getRect(find.byType(CanvasActionBar));
+
+        expect(rotationRect.top, greaterThanOrEqualTo(0));
+        expect(deleteRect.top, greaterThanOrEqualTo(0));
+        expect(deleteRect.right, lessThanOrEqualTo(600));
+        expect(barRect.top, greaterThanOrEqualTo(rotationRect.bottom));
+      },
+    );
+
+    testWidgets(
+      'action bar does not overlap rotation or delete handles near bottom edge',
+      (tester) async {
+        var deleted = false;
+        await tester.pumpWidget(
+          testMaterialApp(
+            home: Scaffold(
+              body: SizedBox(
+                width: 600,
+                height: 800,
+                child: Stack(
+                  children: [
+                    TransformableBox(
+                      position: const Offset(150, 620),
+                      size: const Size(240, 140),
+                      pageSize: const Size(600, 800),
+                      canvasMode: CanvasMode.edit,
+                      onDelete: () => deleted = true,
+                      child: const SizedBox.expand(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final rotationRect = tester.getRect(find.byType(RotationHandle));
+        final deleteRect = tester.getRect(find.byType(DeleteHandle));
+        final barRect = tester.getRect(find.byType(CanvasActionBar));
+
+        expect(barRect.overlaps(rotationRect), isFalse);
+        expect(barRect.overlaps(deleteRect), isFalse);
+
+        await tester.tap(find.byType(DeleteHandle));
+        expect(deleted, isTrue);
       },
     );
   });

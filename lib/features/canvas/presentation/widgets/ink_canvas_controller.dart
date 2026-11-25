@@ -28,8 +28,11 @@ class InkCanvasController extends ChangeNotifier {
 
   /// Detaches the controller from its current canvas host state.
   ///
-  /// Should be called by the canvas widget in dispose and didUpdateWidget.
-  void detach() {
+  /// When [state] is provided, detachment only occurs if it matches the
+  /// currently attached host, preventing a disposing widget from clearing a
+  /// newly attached host.
+  void detach([InkCanvasHost? state]) {
+    if (state != null && _state != state) return;
     if (_state != null) {
       _state = null;
     }

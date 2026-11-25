@@ -68,8 +68,10 @@ class JournalBlockConfig {
         final date = decoded['date']?.toString() ?? '';
         final mood = decoded['mood']?.toString() ?? '😊';
         final notes = decoded['notes']?.toString() ?? '';
-        final rawPriorities =
-            decoded['priorities'] as List<dynamic>? ?? const [];
+        final rawPrioritiesValue = decoded['priorities'];
+        final rawPriorities = rawPrioritiesValue is List
+            ? rawPrioritiesValue
+            : const <dynamic>[];
         final priorities = rawPriorities
             .whereType<Map<String, dynamic>>()
             .map(JournalPriorityItem.fromJson)

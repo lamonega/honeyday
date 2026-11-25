@@ -59,7 +59,10 @@ class _JournalNotesSectionState extends State<JournalNotesSection> {
     // Adopt external changes (undo/redo, config reload) without clobbering
     // in-flight typing.
     if (widget.notes != _controller.text) {
-      _controller.text = widget.notes;
+      _controller.value = TextEditingValue(
+        text: widget.notes,
+        selection: TextSelection.collapsed(offset: widget.notes.length),
+      );
     }
   }
 
@@ -114,17 +117,19 @@ class _JournalNotesSectionState extends State<JournalNotesSection> {
                   ),
                   onChanged: widget.onChanged,
                 )
-              : Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(6),
-                  child: Text(
-                    widget.notes.isEmpty ? widget.noNotesText : widget.notes,
-                    style: TextStyle(
-                      fontSize: 12,
-                      height: 1.6,
-                      color: widget.notes.isEmpty
-                          ? colorScheme.onSurfaceVariant
-                          : colorScheme.onSurface,
+              : SingleChildScrollView(
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(6),
+                    child: Text(
+                      widget.notes.isEmpty ? widget.noNotesText : widget.notes,
+                      style: TextStyle(
+                        fontSize: 12,
+                        height: 1.6,
+                        color: widget.notes.isEmpty
+                            ? colorScheme.onSurfaceVariant
+                            : colorScheme.onSurface,
+                      ),
                     ),
                   ),
                 ),

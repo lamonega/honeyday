@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/canvas/canvas_constants.dart';
 import 'package:honeyday/features/canvas/domain/ink_tool.dart';
@@ -11,9 +12,6 @@ import 'package:uuid/uuid.dart';
 // ──────────────────────────────────────────────
 // Ink canvas constants (used only here)
 // ──────────────────────────────────────────────
-
-/// Default pressure when device doesn't report pressure data.
-const double kDefaultPressure = 0.5;
 
 /// Interactive vector ink drawing canvas (Layer 3).
 ///
@@ -72,6 +70,7 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
   List<StrokePoint>? _activePoints;
   bool _hasErasedDuringCurrentGesture = false;
   int? _activePointerId;
+  PointerDeviceKind? _activePointerKind;
   InkToolType? _gestureTool;
   Color? _gestureColor;
   double? _gestureWidth;
@@ -94,8 +93,8 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
   void didUpdateWidget(covariant InkCanvas oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
-      oldWidget.controller?.detach();
-    widget.controller?.attach(this);
+      oldWidget.controller?.detach(this);
+      widget.controller?.attach(this);
     }
     if (oldWidget.inputEnabled && !widget.inputEnabled) {
       _cancelGesture();
@@ -105,12 +104,17 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
       _strokes = List.from(widget.initialStrokes);
       _undoStack.clear();
       _redoStack.clear();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          widget.controller?.notifyHistoryChanged();
+        }
+      });
     }
   }
 
   @override
   void dispose() {
-    widget.controller?.detach();
+    widget.controller?.detach(this);
     super.dispose();
   }
 
@@ -154,42 +158,66 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
   }
 
   void _handlePointerDown(PointerDownEvent event) {
-    if (!widget.inputEnabled || _activePointerId != null) return;
+    final isNonPrimaryMouse =
+        event.kind == PointerDeviceKind.mouse &&
+        (event.buttons & kPrimaryMouseButton) == 0;
+    if (!widget.inputEnabled || isNonPrimaryMouse) {
+      return;
+    }
+    final isStylus =
+        event.kind == PointerDeviceKind.stylus ||
+        event.kind == PointerDeviceKind.invertedStylus;
+    if (_activePointerId != null) {
+      if (isStylus && _activePointerKind == PointerDeviceKind.touch) {
+        _cancelGesture();
+      } else {
+        return;
+      }
+    }
     _activePointerId = event.pointer;
+    _activePointerKind = event.kind;
     _gestureTool = widget.activeTool;
     _gestureColor = widget.activeColor;
     _gestureWidth = widget.activeStrokeWidth;
     _strokesBeforeGesture = List<InkStroke>.of(_strokes);
     final pos = event.localPosition;
-    final pressure = event.pressureMin == event.pressureMax
-        ? kDefaultPressure
-        : event.pressure;
-    final point = StrokePoint(pos.dx, pos.dy, pressure);
+    _activePoints = [_strokePoint(event)];
 
     if (_gestureTool == InkToolType.eraser) {
       _hasErasedDuringCurrentGesture = false;
-      _activePoints = [point];
       _eraseIntersectingStrokes(pos);
-    } else {
-      _activePoints = [point];
     }
     setState(() {});
   }
 
   void _handlePointerMove(PointerMoveEvent event) {
-    if (_activePointerId != event.pointer || _activePoints == null) return;
-    final pos = event.localPosition;
-    final pressure = event.pressureMin == event.pressureMax
-        ? kDefaultPressure
-        : event.pressure;
-    final point = StrokePoint(pos.dx, pos.dy, pressure);
-
-    _activePoints!.add(point);
+    if (_activePointerId != event.pointer) return;
+    final points = _activePoints!;
+    final last = points.last;
 
     if (_gestureTool == InkToolType.eraser) {
-      _eraseIntersectingStrokes(pos);
+      points[0] = _strokePoint(event);
+      _eraseIntersectingStrokes(
+        event.localPosition,
+        from: Offset(last.x, last.y),
+      );
+    } else {
+      points.add(_strokePoint(event));
     }
     setState(() {});
+  }
+
+  StrokePoint _strokePoint(PointerEvent event) {
+    final pos = event.localPosition;
+    final range = event.pressureMax - event.pressureMin;
+    final isPen =
+        event.kind == PointerDeviceKind.stylus ||
+        event.kind == PointerDeviceKind.invertedStylus;
+    final pressure =
+        isPen && range > 0 && range.isFinite && event.pressure.isFinite
+        ? ((event.pressure - event.pressureMin) / range).clamp(0.0, 1.0)
+        : null;
+    return StrokePoint(pos.dx, pos.dy, pressure);
   }
 
   void _handlePointerUp(PointerUpEvent event) {
@@ -198,8 +226,18 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
     var changed = false;
 
     if (_gestureTool == InkToolType.eraser) {
+      final last = _activePoints!.last;
+      _eraseIntersectingStrokes(
+        event.localPosition,
+        from: Offset(last.x, last.y),
+      );
       changed = _hasErasedDuringCurrentGesture;
     } else if (_activePoints!.isNotEmpty) {
+      final last = _activePoints!.last;
+      if (last.x != event.localPosition.dx ||
+          last.y != event.localPosition.dy) {
+        _activePoints!.add(_strokePoint(event));
+      }
       final colorHex =
           '#${_gestureColor!.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}';
       final newStroke = InkStroke(
@@ -210,6 +248,9 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
         strokeWidth: _gestureWidth!,
         points: List.from(_activePoints!),
         createdAt: DateTime.now().toUtc(),
+        usesDevicePressure: _activePoints!.any(
+          (point) => point.pressure != null,
+        ),
       );
       _strokes = [..._strokes, newStroke];
       changed = true;
@@ -244,6 +285,7 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
 
   void _resetGesture() {
     _activePointerId = null;
+    _activePointerKind = null;
     _activePoints = null;
     _gestureTool = null;
     _gestureColor = null;
@@ -252,13 +294,16 @@ class _InkCanvasState extends State<InkCanvas> implements InkCanvasHost {
     _hasErasedDuringCurrentGesture = false;
   }
 
-  void _eraseIntersectingStrokes(Offset eraserPos) {
+  void _eraseIntersectingStrokes(Offset eraserPos, {Offset? from}) {
     final eraserRadius = (_gestureWidth ?? widget.activeStrokeWidth) / 2;
     final surviving = <InkStroke>[];
     var erasedAny = false;
 
     for (final stroke in _strokes) {
-      if (strokeIntersectsPoint(stroke, eraserPos, eraserRadius)) {
+      final hits = from != null
+          ? strokeIntersectsSegment(stroke, from, eraserPos, eraserRadius)
+          : strokeIntersectsPoint(stroke, eraserPos, eraserRadius);
+      if (hits) {
         erasedAny = true;
       } else {
         surviving.add(stroke);

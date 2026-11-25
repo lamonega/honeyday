@@ -68,6 +68,9 @@ class CatalogConfigHelper<C> {
   String? _pendingJson;
 
   void updateFromJson(String jsonStr) {
+    _debounce?.cancel();
+    _debounce = null;
+    _pendingJson = null;
     config = parseConfig(jsonStr);
   }
 

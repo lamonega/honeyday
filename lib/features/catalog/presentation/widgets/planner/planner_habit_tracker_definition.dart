@@ -4,6 +4,8 @@
 /// default configuration.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:honeyday/features/catalog/domain/agenda_widget_definition.dart';
 import 'package:honeyday/features/catalog/domain/element_config.dart';
@@ -21,7 +23,8 @@ final class PlannerHabitTrackerDefinition extends AgendaWidgetDefinition {
   String get id => 'planner_habit_tracker';
 
   @override
-  String name(BuildContext context) => AppLocalizations.of(context).catalogTemplateHabits;
+  String name(BuildContext context) =>
+      AppLocalizations.of(context).catalogTemplateHabits;
 
   @override
   String description(BuildContext context) =>
@@ -80,80 +83,98 @@ final class PlannerHabitTrackerDefinition extends AgendaWidgetDefinition {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final content = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                Icons.favorite_outline_rounded,
-                size: 14,
-                color: Color(0xFFE11D48),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                l10n.catalogHabitsHeader,
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.6,
-                  color: Color(0xFF334155),
-                ),
-              ),
-              const Spacer(),
-              ...dayHeaders.map(
-                (d) => SizedBox(
-                  width: 22,
-                  child: Text(
-                    d,
-                    textAlign: TextAlign.center,
+              Row(
+                children: [
+                  const Icon(
+                    Icons.favorite_outline_rounded,
+                    size: 14,
+                    color: Color(0xFFE11D48),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    l10n.catalogHabitsHeader,
                     style: const TextStyle(
-                      fontSize: 10,
+                      fontSize: 11,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF94A3B8),
+                      letterSpacing: 0.6,
+                      color: Color(0xFF334155),
                     ),
                   ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(4, (row) {
-                return Row(
-                  children: [
-                    // Line for habit title
-                    Expanded(
-                      child: Container(
-                        height: 1,
-                        color: const Color(0xFFE2E8F0),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    // 7 day bubbles
-                    ...List.generate(
-                      7,
-                      (_) => Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                        width: 17,
-                        height: 17,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFFCBD5E1),
-                            width: 1.2,
-                          ),
+                  const Spacer(),
+                  ...dayHeaders.map(
+                    (d) => SizedBox(
+                      width: 22,
+                      child: Text(
+                        d,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF94A3B8),
                         ),
                       ),
                     ),
-                  ],
-                );
-              }),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(4, (row) {
+                    return Row(
+                      children: [
+                        // Line for habit title
+                        Expanded(
+                          child: Container(
+                            height: 1,
+                            color: const Color(0xFFE2E8F0),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // 7 day bubbles
+                        ...List.generate(
+                          7,
+                          (_) => Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                            width: 17,
+                            height: 17,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFCBD5E1),
+                                width: 1.2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }),
+                ),
+              ),
+            ],
+          );
+
+          if (constraints.maxWidth >= 260 && constraints.maxHeight >= 130) {
+            return content;
+          }
+
+          return FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.topLeft,
+            child: SizedBox(
+              width: math.max(constraints.maxWidth, 260),
+              height: math.max(constraints.maxHeight, 130),
+              child: content,
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

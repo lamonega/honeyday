@@ -37,14 +37,25 @@ class ElementHistory {
     return _redoStack.removeLast();
   }
 
+  static Map<String, dynamic>? _tryDecodeMap(String rawJson) {
+    try {
+      final decoded = jsonDecode(rawJson);
+      return decoded is Map<String, dynamic> ? decoded : null;
+    } on Object {
+      return null;
+    }
+  }
+
   /// Keeps non-undoable content edits in existing design snapshots.
   void rebaseConfig({
     required String elementId,
     required String beforeJson,
     required String afterJson,
   }) {
-    final before = jsonDecode(beforeJson) as Map<String, dynamic>;
-    final after = jsonDecode(afterJson) as Map<String, dynamic>;
+    final before = _tryDecodeMap(beforeJson);
+    final after = _tryDecodeMap(afterJson);
+    if (before == null || after == null) return;
+
     final changedKeys = <String>{...before.keys, ...after.keys}
         .where(
           (key) =>
@@ -58,7 +69,8 @@ class ElementHistory {
         for (var i = 0; i < snapshot.length; i++) {
           final element = snapshot[i];
           if (element.id != elementId) continue;
-          final config = jsonDecode(element.configJson) as Map<String, dynamic>;
+          final config = _tryDecodeMap(element.configJson);
+          if (config == null) continue;
           for (final key in changedKeys) {
             if (after.containsKey(key)) {
               config[key] = after[key];

@@ -7,6 +7,7 @@ import 'package:honeyday/features/catalog/presentation/widgets/calendar/calendar
 import 'package:honeyday/features/catalog/presentation/widgets/calendar/calendar_header.dart';
 import 'package:honeyday/features/catalog/presentation/widgets/catalog_widget_mixin.dart';
 import 'package:honeyday/l10n/generated/app_localizations.dart';
+import 'package:uuid/uuid.dart';
 
 /// Registers the calendar habit grid widget with the catalog system.
 class CalendarGridDefinition extends AgendaWidgetDefinition {
@@ -100,6 +101,8 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
     _configHelper.onConfigChanged = widget.onConfigChanged;
     if (oldWidget.configJson != widget.configJson) {
       _configHelper.updateFromJson(widget.configJson);
+    } else if (oldWidget.isInteractive && !widget.isInteractive) {
+      _configHelper.flush();
     }
   }
 
@@ -131,7 +134,7 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
 
     final l10n = AppLocalizations.of(context);
     final newHabit = HabitRowItem(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: const Uuid().v4(),
       title: l10n.catalogHabitsNew,
       checks: List<bool>.filled(7, false),
     );
@@ -186,10 +189,10 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
         ],
       ),
       padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 260;
+          final headerRow = Row(
             children: [
               Expanded(
                 child: Text(
@@ -204,22 +207,54 @@ class _CalendarGridWidgetState extends State<CalendarGridWidget> {
                 ),
               ),
               const SizedBox(width: 8),
-              CalendarHeader(days: days),
+              if (isNarrow)
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: CalendarHeader(days: days),
+                  ),
+                )
+              else
+                CalendarHeader(days: days),
               if (widget.isInteractive) const SizedBox(width: 24),
             ],
-          ),
-          const SizedBox(height: 8),
-          Expanded(
-            child: CalendarGrid(
-              habits: _config.habits,
-              isInteractive: widget.isInteractive,
-              onToggleCheck: _toggleCheck,
-              onEditTitle: _editHabitTitle,
-              onRemoveHabit: _removeHabit,
-              onAddHabit: _addNewHabit,
-            ),
-          ),
-        ],
+          );
+
+          final grid = CalendarGrid(
+            habits: _config.habits,
+            isInteractive: widget.isInteractive,
+            onToggleCheck: _toggleCheck,
+            onEditTitle: _editHabitTitle,
+            onRemoveHabit: _removeHabit,
+            onAddHabit: _addNewHabit,
+          );
+
+          if (constraints.maxHeight < 90) {
+            return SingleChildScrollView(
+              child: SizedBox(
+                height: 90,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    headerRow,
+                    const SizedBox(height: 8),
+                    Expanded(child: grid),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              headerRow,
+              const SizedBox(height: 8),
+              Expanded(child: grid),
+            ],
+          );
+        },
       ),
     );
   }

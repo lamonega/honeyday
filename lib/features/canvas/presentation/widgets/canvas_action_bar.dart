@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:honeyday/features/canvas/presentation/widgets/canvas_toolbar.dart';
 import 'package:honeyday/features/catalog/domain/element_config.dart';
+import 'package:honeyday/l10n/generated/app_localizations.dart';
 
 // ──────────────────────────────────────────────
 // Action bar constants (used only here)
@@ -7,18 +9,25 @@ import 'package:honeyday/features/catalog/domain/element_config.dart';
 
 /// Border radius of the floating action bar.
 const double kActionBarBorderRadius = 24;
+
 /// Size of the color palette toggle button.
 const double kPaletteButtonSize = 28;
+
 /// Icon size inside the palette toggle button.
 const double kPaletteToggleIconSize = 14;
+
 /// Height of divider between action bar buttons.
 const double kActionBarDividerHeight = 16;
+
 /// Icon size for action bar buttons.
 const double kActionBarIconSize = 18;
+
 /// Border radius of expanded palette row.
 const double kPaletteRowBorderRadius = 20;
+
 /// Diameter of individual palette color dots.
 const double kPaletteDotSize = 22;
+
 /// Check icon size inside selected palette dot.
 const double kPaletteCheckIconSize = 12;
 
@@ -49,6 +58,8 @@ class CanvasActionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final isSpanish = Localizations.localeOf(context).languageCode == 'es';
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -58,12 +69,19 @@ class CanvasActionBar extends StatelessWidget {
             currentColor: currentColor,
             onColorChanged: onColorChanged,
           ),
-        _buildActionBar(colorScheme),
+        _buildActionBar(colorScheme, l10n, isSpanish: isSpanish),
       ],
     );
   }
 
-  Widget _buildActionBar(ColorScheme colorScheme) {
+  Widget _buildActionBar(
+    ColorScheme colorScheme,
+    AppLocalizations l10n, {
+    required bool isSpanish,
+  }) {
+    final fillColor = currentColor ?? colorScheme.primaryContainer;
+    final paletteIconColor = _contrastingIconColor(fillColor, colorScheme);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       decoration: BoxDecoration(
@@ -78,106 +96,124 @@ class CanvasActionBar extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GestureDetector(
-            onTap: onTogglePalette,
-            child: Container(
-              width: kPaletteButtonSize,
-              height: kPaletteButtonSize,
-              padding: const EdgeInsets.all(3),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: currentColor ?? colorScheme.primaryContainer,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: colorScheme.primary, width: 2),
-                ),
-                child: Icon(
-                  Icons.palette_outlined,
-                  size: kPaletteToggleIconSize,
-                  color: colorScheme.onPrimaryContainer,
-                ),
-              ),
-            ),
-          ),
-          Container(
-            height: kActionBarDividerHeight,
-            width: 1,
-            color: colorScheme.outline,
-            margin: const EdgeInsets.symmetric(horizontal: 2),
-          ),
-          if (onAdaptToPage != null)
-            GestureDetector(
-              onTap: onAdaptToPage,
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(
-                  Icons.fit_screen_rounded,
-                  size: kActionBarIconSize,
-                  color: colorScheme.onSurface,
+      child: horizontallyScrollableInkControls(
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Tooltip(
+              message: l10n.canvasActionColor,
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: onTogglePalette,
+                  child: Container(
+                    width: kPaletteButtonSize,
+                    height: kPaletteButtonSize,
+                    padding: const EdgeInsets.all(3),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: fillColor,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: colorScheme.primary,
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.palette_outlined,
+                        size: kPaletteToggleIconSize,
+                        color: paletteIconColor,
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
-          if (onFitWidth != null)
-            GestureDetector(
-              onTap: onFitWidth,
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(
-                  Icons.swap_horiz_rounded,
-                  size: kActionBarIconSize,
-                  color: colorScheme.onSurface,
-                ),
-              ),
+            Container(
+              height: kActionBarDividerHeight,
+              width: 1,
+              color: colorScheme.outline,
+              margin: const EdgeInsets.symmetric(horizontal: 2),
             ),
-          if (onCenter != null)
-            GestureDetector(
-              onTap: onCenter,
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(
-                  Icons.filter_center_focus_rounded,
-                  size: kActionBarIconSize,
-                  color: colorScheme.onSurface,
-                ),
+            if (onAdaptToPage != null)
+              _ActionBarIconButton(
+                icon: Icons.fit_screen_rounded,
+                color: colorScheme.onSurface,
+                tooltip: isSpanish ? 'Adaptar a la página' : 'Adapt to page',
+                onTap: onAdaptToPage!,
               ),
-            ),
-          if (onDuplicate != null)
-            GestureDetector(
-              onTap: onDuplicate,
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(
-                  Icons.content_copy_rounded,
-                  size: kActionBarIconSize,
-                  color: colorScheme.onSurface,
-                ),
+            if (onFitWidth != null)
+              _ActionBarIconButton(
+                icon: Icons.swap_horiz_rounded,
+                color: colorScheme.onSurface,
+                tooltip: isSpanish ? 'Ajustar al ancho' : 'Fit width',
+                onTap: onFitWidth!,
               ),
-            ),
-          if (onDelete != null)
-            GestureDetector(
-              onTap: onDelete,
-              child: Padding(
-                padding: const EdgeInsets.all(6),
-                child: Icon(
-                  Icons.delete_outline_rounded,
-                  size: kActionBarIconSize,
-                  color: colorScheme.error,
-                ),
+            if (onCenter != null)
+              _ActionBarIconButton(
+                icon: Icons.filter_center_focus_rounded,
+                color: colorScheme.onSurface,
+                tooltip: isSpanish ? 'Centrar' : 'Center',
+                onTap: onCenter!,
               ),
-            ),
-        ],
+            if (onDuplicate != null)
+              _ActionBarIconButton(
+                icon: Icons.content_copy_rounded,
+                color: colorScheme.onSurface,
+                tooltip: l10n.canvasActionDuplicate,
+                onTap: onDuplicate!,
+              ),
+            if (onDelete != null)
+              _ActionBarIconButton(
+                icon: Icons.delete_outline_rounded,
+                color: colorScheme.error,
+                tooltip: l10n.commonDelete,
+                onTap: onDelete!,
+              ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _PaletteRow extends StatelessWidget {
-  const _PaletteRow({
-    required this.currentColor,
-    required this.onColorChanged,
+Color _contrastingIconColor(Color background, ColorScheme colorScheme) {
+  if (background.a < 0.5) return colorScheme.onSurface;
+  return background.computeLuminance() > 0.5 ? Colors.black87 : Colors.white;
+}
+
+class _ActionBarIconButton extends StatelessWidget {
+  const _ActionBarIconButton({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+    this.tooltip,
   });
+
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    final child = MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: Icon(icon, size: kActionBarIconSize, color: color),
+        ),
+      ),
+    );
+    if (tooltip == null) return child;
+    return Tooltip(message: tooltip, child: child);
+  }
+}
+
+class _PaletteRow extends StatelessWidget {
+  const _PaletteRow({required this.currentColor, required this.onColorChanged});
 
   final Color? currentColor;
   final void Function(Color fillColor, Color borderColor)? onColorChanged;
@@ -201,50 +237,53 @@ class _PaletteRow extends StatelessWidget {
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
+      child: horizontallyScrollableInkControls(
+        Row(
           mainAxisSize: MainAxisSize.min,
           children: kElementColorPresets.map((preset) {
             final isSelected = currentColor == preset.fillColor;
-            return GestureDetector(
-              onTap: () {
-                onColorChanged?.call(
-                  preset.fillColor,
-                  preset.borderColor,
-                );
-              },
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                width: kPaletteDotSize,
-                height: kPaletteDotSize,
-                decoration: BoxDecoration(
-                  color: preset.fillColor == Colors.transparent
-                      ? colorScheme.surface
-                      : preset.fillColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected
-                        ? colorScheme.primary
-                        : preset.borderColor,
-                    width: isSelected ? 2.5 : 1.2,
+            final swatchColor = preset.fillColor == Colors.transparent
+                ? colorScheme.surface
+                : preset.fillColor;
+            return MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () {
+                  onColorChanged?.call(preset.fillColor, preset.borderColor);
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: kPaletteDotSize,
+                  height: kPaletteDotSize,
+                  decoration: BoxDecoration(
+                    color: swatchColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected
+                          ? colorScheme.primary
+                          : preset.borderColor,
+                      width: isSelected ? 2.5 : 1.2,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: colorScheme.primary.withValues(alpha: 0.3),
+                              blurRadius: 4,
+                            ),
+                          ]
+                        : null,
                   ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: colorScheme.primary.withValues(alpha: 0.3),
-                            blurRadius: 4,
+                  child: isSelected
+                      ? Icon(
+                          Icons.check,
+                          size: kPaletteCheckIconSize,
+                          color: _contrastingIconColor(
+                            swatchColor,
+                            colorScheme,
                           ),
-                        ]
+                        )
                       : null,
                 ),
-                child: isSelected
-                    ? Icon(
-                        Icons.check,
-                        size: kPaletteCheckIconSize,
-                        color: colorScheme.onPrimaryContainer,
-                      )
-                    : null,
               ),
             );
           }).toList(),
