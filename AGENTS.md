@@ -20,10 +20,10 @@ Desde la raíz, según README y CI:
 - Analiza: `dart analyze --fatal-infos` (CI también rechaza avisos informativos).
 - Ejecuta pruebas: `flutter test`.
 - Regresión IndexedDB con recarga real: `node tool/test_web_persistence.mjs` (Node 22+, Chrome/Chromium y Dart; sin npm).
-- Compila Web (JavaScript, como CI): `flutter build web --no-pub --no-wasm-dry-run` después de instalar dependencias.
+- Compila Web (JavaScript, como CI): `flutter build web --no-pub --no-wasm-dry-run --no-web-resources-cdn` después de instalar dependencias.
 - Formatea los archivos modificados: `dart format <rutas>`. Evita reformatear archivos ajenos al cambio.
 
-La generación Drift no equivale a compilar la aplicación. No hay builds nativos de release verificados en CI.
+La generación Drift no equivale a compilar la aplicación. La matriz nativa de CI comprueba compilación de release, no firma de distribución ni recorridos en dispositivos físicos.
 
 CI usa Flutter 3.47.5: análisis y pruebas en Windows, build JavaScript Web en Linux. Los golden tienen variantes para Windows y CI; no actualices sus imágenes sin revisión visual. Los benchmarks de exportación están excluidos de la ejecución normal; consulta README para ejecutarlos explícitamente.
 

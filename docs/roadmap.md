@@ -44,8 +44,10 @@ Priorizar un **cuaderno/planner local y personalizable** que se pueda usar a
 
 ### 1. Validación manual y primera distribución de prueba
 
-Elegir una plataforma principal y una secundaria. La presencia de carpetas de
-seis plataformas no significa que todos sus flujos estén certificados.
+Usar la [matriz de verificación](platform-verification.md) para distinguir los
+builds de CI, las pruebas en navegadores y los recorridos en dispositivos reales.
+La presencia de carpetas de seis plataformas no significa que todos sus flujos
+estén certificados.
 
 - [ ] Crear una agenda, escribir texto y tinta, cerrar normalmente y reabrir.
 - [ ] Duplicar una página con un campo todavía enfocado; comprobar que la copia

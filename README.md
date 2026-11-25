@@ -84,8 +84,9 @@ lib/
 
 ## Development status
 
-See the [continuation roadmap and manual release checklist](docs/roadmap.md) for
-completed reliability work, known limitations and suggested next steps.
+See the [platform verification checklist](docs/platform-verification.md) for
+release requirements, and the [continuation roadmap](docs/roadmap.md) for
+completed reliability work and known limitations.
 
 ## Getting Started
 
@@ -94,10 +95,10 @@ completed reliability work, known limitations and suggested next steps.
 - [Flutter SDK](https://flutter.dev/docs/get-started/install), stable channel. CI is pinned to **Flutter 3.47.5**; use the same version for reproducible checks.
 - Dart SDK (bundled with Flutter), compatible with `pubspec.yaml` (`^3.13.3`).
 
-Platform folders exist for Android, iOS, Web, Linux, macOS and Windows. CI runs
-analysis and tests on Windows and builds the JavaScript Web target on Linux.
-A platform listing is not a guarantee that its native file dialogs, pen input
-or release packaging have been verified. Web CI also requires Node 22+ and
+CI runs analysis and tests on Windows, builds JavaScript Web, and checks native
+release compilation for Android, iOS, Linux, macOS and Windows. Native builds in
+CI are not store packages or a substitute for testing file dialogs, pen input,
+and lifecycle events on real devices. Web CI requires Node 22+ and
 Chrome/Chromium for its reload/persistence regression (no npm packages).
 
 ### Installation
@@ -122,7 +123,7 @@ flutter run
 ```bash
 dart analyze --fatal-infos
 flutter test
-flutter build web
+flutter build web --no-pub --no-wasm-dry-run --no-web-resources-cdn
 ```
 
 `flutter build web` checks the browser target; it is separate from Drift code

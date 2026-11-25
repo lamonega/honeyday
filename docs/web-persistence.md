@@ -79,6 +79,11 @@ El driver:
    perfil temporal. La prueba tiene límites de tiempo y falla si no utiliza
    el backend `sharedIndexedDb` esperado.
 
+El mismo navegador comprueba que los bytes del PDF siguen accesibles al volver
+del clic de descarga. También se repite el arranque sin workers ni IndexedDB:
+la conexión de producción debe devolver un error a las consultas activas, no
+quedarse en carga ni aceptar escrituras efímeras.
+
 Se comprobó el control negativo con el worker anterior: la prueba falla con
 `Persisted values: []; expected: [committed, after savepoint]`. Con el worker
 actual pasa. Para repetir ese diagnóstico se puede usar `DRIFT_WORKER_PATH`
@@ -96,3 +101,10 @@ Esta regresión no certifica todos los navegadores, OPFS, concurrencia entre
 múltiples pestañas, almacenamiento privado, cuotas ni recuperación ante un cierre
 forzado del sistema. No demuestra que el hosting funcione sin red. Mantener
 backups externos y completar las comprobaciones de dispositivos del roadmap.
+
+Si Drift solo consigue abrir una base en memoria, Honeyday rechaza esa conexión
+en lugar de indicar que una agenda se guardó. Inicio explica cómo permitir el
+almacenamiento o abrir una ventana normal y volver a cargar. Esto no detecta
+todos los modos privados: un navegador puede ofrecer IndexedDB durante la sesión
+y eliminarlo al cerrar. En navegadores que solo ofrecen IndexedDB sin un worker
+compartido, usar una sola pestaña para evitar escrituras concurrentes.
